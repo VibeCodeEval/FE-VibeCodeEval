@@ -1,0 +1,472 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { ArrowLeft, User, Code, CheckCircle, X } from "lucide-react"
+
+interface ParticipantEvaluationContentProps {
+  entryCode: string
+  participantId: string
+}
+
+interface ToastItem {
+  id: string
+  title: string
+  description: string
+}
+
+const participantData = {
+  name: "Alice Johnson",
+  entryCode: "AJ-2024-001",
+  avgScore: 92,
+  status: "Submitted" as const,
+  testDate: "2024-02-11",
+  duration: "32 minutes",
+  trend: "High" as const,
+  language: "Python",
+  promptScore: 86,
+  performanceScore: 81,
+  correctnessScore: 89,
+}
+
+const dummyCode = `def solution(nums: List[int], target: int) -> List[int]:
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []
+
+def optimize_query(data: List[Dict], filters: Dict) -> List[Dict]:
+    result = data
+    for key, value in filters.items():
+        result = [item for item in result if item.get(key) == value]
+    return result
+
+class DataProcessor:
+    def __init__(self, config: Dict):
+        self.config = config
+        self.cache = {}
+    
+    def process(self, input_data: Any) -> Any:
+        cache_key = hash(str(input_data))
+        if cache_key in self.cache:
+            return self.cache[cache_key]
+        result = self._transform(input_data)
+        self.cache[cache_key] = result
+        return result`
+
+const feedbackData = {
+  strengths: [
+    "Clean and readable code structure",
+    "Efficient use of hash map for O(n) time complexity",
+    "Good documentation with docstrings",
+    "Proper type hints throughout the code",
+  ],
+  weaknesses: [
+    "Missing edge case handling for empty input",
+    "No input validation for data types",
+    "Cache invalidation strategy not implemented",
+  ],
+  suggestions: [
+    "Add unit tests for edge cases",
+    "Consider using functools.lru_cache for memoization",
+    "Implement proper error handling with custom exceptions",
+  ],
+  performanceNotes: [
+    "Hash map approach is optimal for this problem",
+    "Memory usage could be reduced with generators",
+    "Consider lazy evaluation for large datasets",
+  ],
+}
+
+const testCaseResults = [
+  {
+    id: "1",
+    testCase: "Basic Input",
+    expected: "[0, 1]",
+    submitted: "[0, 1]",
+    result: "Passed" as const,
+    execTime: "12ms",
+    memory: "14.2 MB",
+    tokens: 128,
+  },
+  {
+    id: "2",
+    testCase: "Empty Array",
+    expected: "[]",
+    submitted: "[]",
+    result: "Passed" as const,
+    execTime: "8ms",
+    memory: "13.8 MB",
+    tokens: 64,
+  },
+  {
+    id: "3",
+    testCase: "Large Input",
+    expected: "[999, 1000]",
+    submitted: "[999, 1000]",
+    result: "Passed" as const,
+    execTime: "45ms",
+    memory: "28.4 MB",
+    tokens: 256,
+  },
+  {
+    id: "4",
+    testCase: "Negative Numbers",
+    expected: "[2, 4]",
+    submitted: "[2, 3]",
+    result: "Failed" as const,
+    execTime: "15ms",
+    memory: "14.6 MB",
+    tokens: 128,
+  },
+  {
+    id: "5",
+    testCase: "Duplicate Values",
+    expected: "[1, 3]",
+    submitted: "[1, 3]",
+    result: "Passed" as const,
+    execTime: "11ms",
+    memory: "14.1 MB",
+    tokens: 96,
+  },
+  {
+    id: "6",
+    testCase: "Single Element",
+    expected: "[]",
+    submitted: "[]",
+    result: "Passed" as const,
+    execTime: "6ms",
+    memory: "13.5 MB",
+    tokens: 48,
+  },
+]
+
+function StatusBadge({ status }: { status: "Submitted" | "In Progress" | "Not Started" }) {
+  const badgeStyles: Record<string, string> = {
+    Submitted: "bg-[#DCFCE7] text-[#16A34A]",
+    "In Progress": "bg-[#E0EDFF] text-[#3B82F6] font-semibold",
+    "Not Started": "bg-[#F3F4F6] text-[#6B7280]",
+  }
+  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[status]}>{status}</span>
+}
+
+function TrendBadge({ trend }: { trend: "High" | "Average" | "Low" }) {
+  const badgeStyles: Record<string, string> = {
+    High: "bg-[#DCFCE7] text-[#16A34A]",
+    Average: "bg-[#FEF3C7] text-[#D97706]",
+    Low: "bg-[#FEE2E2] text-[#DC2626]",
+  }
+  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[trend]}>{trend}</span>
+}
+
+function LanguageBadge({ language }: { language: string }) {
+  return <span className="rounded-full bg-[#F3F4F6] px-3 py-1 text-xs font-medium text-[#374151]">{language}</span>
+}
+
+function TestResultBadge({ result }: { result: "Passed" | "Failed" }) {
+  const badgeStyles: Record<string, string> = {
+    Passed: "bg-[#DCFCE7] text-[#16A34A]",
+    Failed: "bg-[#FEE2E2] text-[#DC2626]",
+  }
+  return <span className={"rounded-full px-2.5 py-0.5 text-xs font-medium " + badgeStyles[result]}>{result}</span>
+}
+
+function generateParticipantCSV(): string {
+  const header = "Metric,Value"
+  const rows = [
+    "Name," + participantData.name,
+    "Entry Code," + participantData.entryCode,
+    "Average Score," + participantData.avgScore + "%",
+    "Status," + participantData.status,
+    "Test Date," + participantData.testDate,
+    "Duration," + participantData.duration,
+    "Trend," + participantData.trend,
+    "Language," + participantData.language,
+    "Prompt Score," + participantData.promptScore + "%",
+    "Performance Score," + participantData.performanceScore + "%",
+    "Correctness Score," + participantData.correctnessScore + "%",
+  ]
+  return [header, ...rows].join("\n")
+}
+
+function downloadCSV() {
+  const csvContent = generateParticipantCSV()
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = "participants.csv"
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+export function ParticipantEvaluationContent({ entryCode, participantId }: ParticipantEvaluationContentProps) {
+  const [toasts, setToasts] = useState<ToastItem[]>([])
+
+  const showToast = (title: string, description: string) => {
+    const id = crypto.randomUUID()
+    setToasts((prev) => [...prev, { id, title, description }])
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 3000)
+  }
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  const handleExport = () => {
+    downloadCSV()
+    showToast("Participant results exported successfully.", "File: participants.csv")
+  }
+
+  return (
+    <div className="flex h-full flex-1 flex-col">
+      {/* Top Header Bar */}
+      <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Participant Evaluation Details</h1>
+          <p className="text-sm text-[#6B7280]">
+            View full evaluation results and submission details for this participant.
+          </p>
+        </div>
+      </header>
+
+      {/* Main Content Panel - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {/* Back Link */}
+        <div className="mb-4">
+          <Link
+            href={`/admin/results/${encodeURIComponent(
+              entryCode || participantData.entryCode
+            )}`}
+            className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#3B82F6]"
+          >
+            <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+            Back to Participant List
+          </Link>
+        </div>
+
+        {/* Summary Cards - Row 1 */}
+        <div className="mb-4 grid grid-cols-3 gap-4">
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Participant</span>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E0EDFF]">
+                <User className="h-5 w-5 text-[#3B82F6]" strokeWidth={1.5} />
+              </div>
+              <span className="text-base font-semibold text-[#1A1A1A]">{participantData.name}</span>
+            </div>
+          </div>
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Entry Code</span>
+            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{participantData.entryCode}</p>
+          </div>
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Average Score</span>
+            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{participantData.avgScore}%</p>
+          </div>
+        </div>
+
+        {/* Summary Cards - Row 2 */}
+        <div className="mb-6 grid grid-cols-3 gap-4">
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Test Date & Duration</span>
+            <p className="mt-3 text-base font-semibold text-[#1A1A1A]">
+              {participantData.testDate} · {participantData.duration}
+            </p>
+          </div>
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Trend</span>
+            <div className="mt-3">
+              <TrendBadge trend={participantData.trend} />
+            </div>
+          </div>
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Status</span>
+            <div className="mt-3">
+              <StatusBadge status={participantData.status} />
+            </div>
+          </div>
+        </div>
+
+        {/* Evaluation Breakdown Section */}
+        <div className="mb-6">
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">Evaluation Breakdown</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
+              <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.promptScore}%</p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">Prompt Score</p>
+              <p className="mt-1 text-xs text-[#6B7280]">Understanding & interpretation quality</p>
+            </div>
+            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
+              <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.performanceScore}%</p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">Performance Score</p>
+              <p className="mt-1 text-xs text-[#6B7280]">Execution efficiency & optimization</p>
+            </div>
+            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
+              <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.correctnessScore}%</p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">Correctness Score</p>
+              <p className="mt-1 text-xs text-[#6B7280]">Accuracy of solutions & test results</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Submitted Code Section */}
+        <div className="mb-6">
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">Submitted Code</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
+              <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <Code className="h-4 w-4 text-[#6B7280]" strokeWidth={1.5} />
+                  <span className="text-sm font-medium text-[#374151]">Code Implementation</span>
+                </div>
+                <LanguageBadge language={participantData.language} />
+              </div>
+              <div className="max-h-[400px] flex-1 overflow-y-auto p-4">
+                <pre className="text-xs leading-relaxed text-[#374151]">
+                  <code>{dummyCode}</code>
+                </pre>
+              </div>
+            </div>
+            <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
+              <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-5 py-3">
+                <span className="text-sm font-medium text-[#374151]">AI Feedback Summary</span>
+              </div>
+              <div className="max-h-[400px] flex-1 overflow-y-auto p-5">
+                <div className="mb-4">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#16A34A]">Strengths</h4>
+                  <ul className="space-y-1">
+                    {feedbackData.strengths.map((item, index) => (
+                      <li key={index} className="text-sm text-[#374151]">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mb-4">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#DC2626]">Weaknesses</h4>
+                  <ul className="space-y-1">
+                    {feedbackData.weaknesses.map((item, index) => (
+                      <li key={index} className="text-sm text-[#374151]">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mb-4">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#3B82F6]">Suggestions</h4>
+                  <ul className="space-y-1">
+                    {feedbackData.suggestions.map((item, index) => (
+                      <li key={index} className="text-sm text-[#374151]">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#D97706]">
+                    Performance Notes
+                  </h4>
+                  <ul className="space-y-1">
+                    {feedbackData.performanceNotes.map((item, index) => (
+                      <li key={index} className="text-sm text-[#374151]">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Test Case Results Section */}
+        <div className="mb-6">
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">Test Case Results</h2>
+          <div className="rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
+            <div className="px-6 pt-4 pb-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">All Test Cases</span>
+            </div>
+            <div className="grid grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-6 py-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Test Case</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Expected Output</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Submitted Output</span>
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Result</span>
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                Exec Time
+              </span>
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Memory</span>
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Tokens</span>
+            </div>
+            <div className="px-6">
+              {testCaseResults.map((testCase, index) => (
+                <div
+                  key={testCase.id}
+                  className={
+                    "grid grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] items-center gap-4 py-3 " +
+                    (index !== testCaseResults.length - 1 ? "border-b border-[#E5E5E5]" : "")
+                  }
+                >
+                  <span className="text-sm text-[#374151]">{testCase.testCase}</span>
+                  <span className="font-mono text-xs text-[#6B7280]">{testCase.expected}</span>
+                  <span className="font-mono text-xs text-[#6B7280]">{testCase.submitted}</span>
+                  <div className="flex justify-center">
+                    <TestResultBadge result={testCase.result} />
+                  </div>
+                  <span className="text-center text-sm text-[#6B7280]">{testCase.execTime}</span>
+                  <span className="text-center text-sm text-[#6B7280]">{testCase.memory}</span>
+                  <span className="text-center text-sm text-[#6B7280]">{testCase.tokens}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-5 flex justify-end gap-3">
+            <Link
+              href="/admin/analytics"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#3B82F6] bg-white px-4 py-2 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-[#E0EDFF]"
+            >
+              Analytics Overview
+            </Link>
+            <button
+              onClick={handleExport}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
+            >
+              Export Results (CSV)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <div className="fixed right-6 top-6 z-50 flex flex-col gap-3">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className="flex w-[360px] items-start gap-3 rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-lg animate-in slide-in-from-right-full duration-300"
+          >
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]">
+              <CheckCircle className="h-3.5 w-3.5 text-white" strokeWidth={2} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-[#1A1A1A]">{toast.title}</p>
+              <p className="mt-0.5 text-xs text-[#6B7280]">{toast.description}</p>
+            </div>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="shrink-0 rounded p-0.5 text-[#9CA3AF] transition-colors hover:bg-[#F3F4F6] hover:text-[#6B7280]"
+            >
+              <X className="h-4 w-4" strokeWidth={1.5} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

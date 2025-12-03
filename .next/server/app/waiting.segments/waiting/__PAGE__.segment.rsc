@@ -1,0 +1,5 @@
+1:"$Sreact.fragment"
+2:I[89225,["/_next/static/chunks/f1e68980346fa22d.js"],"OutletBoundary"]
+3:"$Sreact.suspense"
+0:{"buildId":"PMs9EmDg5XMe_l12BMfg1","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"min-h-screen w-full bg-[#F5F5F5] flex flex-col","children":[["$","header",null,{"className":"w-full h-[72px] bg-white flex items-center justify-start pl-16 shadow-sm","children":["$","h1",null,{"className":"text-xl font-medium text-foreground","children":"AI Vibe Coding Test"}]}],["$","main",null,{"className":"flex-1 flex flex-col items-center justify-center gap-8","children":[["$","div",null,{"className":"w-20 h-20 rounded-full border-[5px] border-violet-200 border-t-violet-500","style":{"animation":"spin 1.5s linear infinite"}}],["$","div",null,{"className":"flex flex-col items-center gap-1 text-center","children":[["$","p",null,{"className":"text-lg font-bold text-foreground","children":"시험 대기 중입니다."}],["$","p",null,{"className":"text-base text-gray-500","children":"관리자가 시험을 시작하면 자동으로 진행됩니다."}]]}]]}]]}],null,["$","$L2",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@4"}]}]]}],"loading":null,"isPartial":false}
+4:null

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/User/Desktop/ai-vibe-login-ui/app/admin/users/page.tsx"],"sourcesContent":["// app/admin/users/page.tsx\nimport { UsersContent } from \"@/components/ui/users-content\";\n\nexport default function AdminUsersPage() {\n  return <UsersContent />;\n}\n"],"names":[],"mappings":"AAAA,2BAA2B;;;;;;;;;;;;;AAGZ,SAAS;IACtB,qBAAO,6WAAC;;;;;AACV"}}]
+}

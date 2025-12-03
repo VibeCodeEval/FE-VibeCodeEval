@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin-signup/page": "app/admin-signup/page.js",
+  "/admin/analytics/page": "app/admin/analytics/page.js",
+  "/admin/dashboard/page": "app/admin/dashboard/page.js",
+  "/admin/entry-codes/page": "app/admin/entry-codes/page.js",
+  "/admin/logs/page": "app/admin/logs/page.js",
+  "/admin/problems/page": "app/admin/problems/page.js",
+  "/admin/results/page": "app/admin/results/page.js",
+  "/admin/server-status/page": "app/admin/server-status/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
+  "/admin/users/page": "app/admin/users/page.js",
+  "/page": "app/page.js"
+}
