@@ -78,12 +78,6 @@ pnpm dev
 # http://localhost:3000
 
 --------------------------------------------------------------------------------
-# 📄 README 수정 방법 (빠르게)
-
-# 1. VS Code에서 README.md 파일 열기
-# 2. 기존 내용 전체 삭제 후 이 텍스트 전체 붙여넣기
-# 3. 저장(Ctrl+S)
-# 4. GitHub 반영:
 
 git add README.md
 git commit -m "Update README for user test modals & master UI"
