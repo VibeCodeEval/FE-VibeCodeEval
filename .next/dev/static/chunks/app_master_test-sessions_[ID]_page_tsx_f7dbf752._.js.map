@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/User/Desktop/ai-vibe-login-ui/app/master/test-sessions/%5BID%5D/page.tsx"],"sourcesContent":["\"use client\";\r\n\r\nimport { useParams } from \"next/navigation\";\r\n\r\nexport default function Page() {\r\n  const params = useParams();\r\n  const sessionId = params?.id;\r\n\r\n  return (\r\n    <main className=\"mt-[0px] min-h-[calc(100vh-80px)] overflow-y-auto py-6 px-8\">\r\n      <h1 className=\"text-2xl font-semibold mb-4\">Test Session Details</h1>\r\n      <p className=\"text-base mb-2\">Session ID: {sessionId}</p>\r\n      <p className=\"text-sm text-neutral-500\">\r\n        이 페이지는 아직 상세 UI가 구현되지 않은 임시 화면입니다.\r\n      </p>\r\n    </main>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;AAEA;;;AAFA;;AAIe,SAAS;;IACtB,MAAM,SAAS,IAAA,iRAAS;IACxB,MAAM,YAAY,QAAQ;IAE1B,qBACE,4TAAC;QAAK,WAAU;;0BACd,4TAAC;gBAAG,WAAU;0BAA8B;;;;;;0BAC5C,4TAAC;gBAAE,WAAU;;oBAAiB;oBAAa;;;;;;;0BAC3C,4TAAC;gBAAE,WAAU;0BAA2B;;;;;;;;;;;;AAK9C;GAbwB;;QACP,iRAAS;;;KADF"}}]
+}

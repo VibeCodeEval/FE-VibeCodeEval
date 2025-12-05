@@ -286,7 +286,10 @@ function ParticipantCard({ participant }: { participant: Participant }) {
 
       <div className="mt-4 flex justify-end">
         <Link
-          href={`/admin/results/${encodeURIComponent(participant.entryCode)}/${participant.id}`}
+          href={{
+            pathname: `/admin/results/${encodeURIComponent(participant.entryCode)}/${participant.id}`,
+            query: { from: "analytics" }, // 🔹 2번 루트 표시
+          }}
           className="text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]"
         >
           View Detail →

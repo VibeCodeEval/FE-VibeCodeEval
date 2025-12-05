@@ -11,14 +11,27 @@ type TabType = "user" | "admin"
 
 export default function LoginCard() {
   const [activeTab, setActiveTab] = useState<TabType>("user")
+  // 🔹 Admin 로그인 입력값 상태
+  const [adminNumber, setAdminNumber] = useState<string>("");
+  const [adminPassword, setAdminPassword] = useState<string>("");
   const router = useRouter();
 
+  const MASTER_KEY = "master";
 
-  const handleClick = () => {                // 🔹 버튼 클릭 핸들러 추가
+
+  const handleClick = () => {
     if (activeTab === "user") {
-      router.push("/waiting");               // User 탭일 때만 시험 대기 화면으로 이동
+      // User 탭 → 기존처럼 대기 화면으로
+      router.push("/waiting");
     } else {
-      // TODO: admin 탭일 때 로그인 처리 로직은 나중에 여기 작성
+      // Admin 탭 → 입력값에 따라 분기
+      if (adminNumber.trim().toLowerCase() === MASTER_KEY) {
+        // Admin Number 가 "master" 일 때 → Master Dashboard
+        router.push("/master");
+      } else {
+        // 그 외 → 기존 Admin Dashboard
+        router.push("/admin/dashboard");
+      }
     }
   };
 
@@ -88,11 +101,18 @@ export default function LoginCard() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="admin-number">Admin Number</Label>
-              <Input id="admin-number" type="text" placeholder="Enter your admin number" className="h-11" />
-            </div>
+              <Input id="admin-number" type="text" placeholder="Enter your admin number" className="h-11" 
+                value={adminNumber}                             
+                onChange={(e) => setAdminNumber(e.target.value)}
+                />
+              </div>
+
             <div className="space-y-2">
               <Label htmlFor="admin-password">Password</Label>
-              <Input id="admin-password" type="password" placeholder="Enter your password" className="h-11" />
+              <Input id="admin-password" type="password" placeholder="Enter your password" className="h-11" 
+                value={adminPassword}                            
+                onChange={(e) => setAdminPassword(e.target.value)}
+                />
               <button type="button" className="text-xs text-primary hover:underline mt-1">
                 Forgot your password?
               </button>
@@ -103,18 +123,11 @@ export default function LoginCard() {
 
       <CardFooter className="flex flex-col px-8 pb-8 pt-2 gap-4">
         <Button
-         type="button"
-         className="w-full h-11 text-base font-medium" onClick={() => {
-            if (activeTab === "admin") {
-              // Admin 탭일 때는 대시보드로 이동
-              window.location.href = "/admin/dashboard";
-            } else {
-              // User 탭일 때는 기존 동작 유지
-              handleClick();
-            }
-          }}
+          type="button"
+          className="w-full h-11 text-base font-medium"
+          onClick={handleClick}   // ✅ 여기만!
         >
-        {activeTab === "user" ? "Enter Test" : "Log In"}
+          {activeTab === "user" ? "Enter Test" : "Log In"}
         </Button>
         {activeTab === "user" ? (
           // User helper texts

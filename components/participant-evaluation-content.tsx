@@ -7,6 +7,7 @@ import { ArrowLeft, User, Code, CheckCircle, X } from "lucide-react"
 interface ParticipantEvaluationContentProps {
   entryCode: string
   participantId: string
+  onBack?: () => void;
 }
 
 interface ToastItem {
@@ -205,7 +206,7 @@ function downloadCSV() {
   URL.revokeObjectURL(url)
 }
 
-export function ParticipantEvaluationContent({ entryCode, participantId }: ParticipantEvaluationContentProps) {
+export function ParticipantEvaluationContent({ entryCode, participantId, onBack, }: ParticipantEvaluationContentProps) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
   const showToast = (title: string, description: string) => {
@@ -225,6 +226,18 @@ export function ParticipantEvaluationContent({ entryCode, participantId }: Parti
     showToast("Participant results exported successfully.", "File: participants.csv")
   }
 
+
+  const handleBackClick = (
+    e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>
+  ) => {
+    e.preventDefault();
+    if (onBack) {
+      onBack();       // 🔹 page.tsx 에서 만들어준 분기 로직 실행
+    } else {
+      router.back();  // 🔹 혹시 onBack이 없을 때 기본 동작
+    }
+  };
+
   return (
     <div className="flex h-full flex-1 flex-col">
       {/* Top Header Bar */}
@@ -241,15 +254,14 @@ export function ParticipantEvaluationContent({ entryCode, participantId }: Parti
       <div className="flex-1 overflow-y-auto p-6">
         {/* Back Link */}
         <div className="mb-4">
-          <Link
-            href={`/admin/results/${encodeURIComponent(
-              entryCode || participantData.entryCode
-            )}`}
-            className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#3B82F6]"
+          <button
+            type="button"
+            onClick={handleBackClick}
+            className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#4B5563]"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
-            Back to Participant List
-          </Link>
+            Back to Previous Page
+          </button>
         </div>
 
         {/* Summary Cards - Row 1 */}
@@ -427,13 +439,7 @@ export function ParticipantEvaluationContent({ entryCode, participantId }: Parti
               ))}
             </div>
           </div>
-          <div className="mt-5 flex justify-end gap-3">
-            <Link
-              href="/admin/analytics"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#3B82F6] bg-white px-4 py-2 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-[#E0EDFF]"
-            >
-              Analytics Overview
-            </Link>
+          <div className="mt-6 flex justify-end">
             <button
               onClick={handleExport}
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
