@@ -1,108 +1,92 @@
-# 📘 FE-VibeCodeEval  
-**AI Vibe Coding Test Evaluator – Frontend**
+# FE-VibeCodeEval
 
-AI 기반 코딩 테스트 플랫폼의 **User / Admin UI 전체를 담당하는 Frontend Repository**입니다.  
-Next.js · Tailwind CSS · shadcn/ui 기반으로 제작되었습니다.
+AI Vibe Coding Test Evaluator – Frontend
 
----
+AI 기반 코딩 테스트 플랫폼의 User / Admin / Master UI 전체를 담당하는 Frontend Repository입니다.
+Next.js · Tailwind CSS · shadcn/ui 기반으로 제작되었고, 실제 시험 환경에서 사용 가능한 화면 구성을 목표로 합니다.
 
-## 🔧 Tech Stack
+--------------------------------------------------------------------------------
+# 🚀 Features
 
-| Category | Tech |
-|---------|------|
-| Framework | **Next.js 14 (App Router)** |
-| Styling | **Tailwind CSS**, shadcn/ui |
-| State Management | Zustand |
-| Real-time | SSE / WebSocket (예정) |
-| Components | Custom UI + shadcn |
-| Package Manager | npm / pnpm |
+## ✅ User (수험자)
+- 로그인 없이 입장 코드(Entry Code), 이름, 전화번호로 시험 입장
+- 시험 대기 화면
+- 메인 시험 화면
+  - 문제 보기 석션
+  - 코드 에디터 섹션
+  - AI Assistant 사이드바
+  - 시험 타이머 & 토큰 사용량 표시
+- 제출 플로우
+  - "제출하기" → 제출 확인 모달
+  - 시험 시간 00:00:00 도달 시 "시험 시간 종료 모달"
+  - 제출 후 "시험 종료 완료 공지 모달"
+    - "홈 화면으로 돌아가기" → 로그인 화면으로 이동
 
----
-
-## 📂 Folder Structure
-
-/app  
-- /admin → 관리자 Dashboard / Results / Logs / Analytics  
-- /admin-signup → 관리자 회원가입 페이지  
-- /test → 사용자 시험 화면  
-- /waiting → 사용자 대기 화면  
-
-/components → UI 컴포넌트 및 페이지별 컴포넌트  
-/hooks → 커스텀 훅  
-/lib → util 함수  
-/public → 정적 파일  
-/styles → 글로벌 스타일  
-
----
-
-## 🚀 Getting Started
-
-### 1. Install dependencies
-
-npm 사용 시:
-- npm install
-
-pnpm 사용 시:
-- pnpm install
-
-### 2. Run development server
-
-- npm run dev  
-
-App available at:  
-👉 http://localhost:3000
-
----
-
-## 📝 Features Overview
-
-### ✔ User Side
-- Entry Code 기반 시험 입장
-- 문제 보기 + Code Editor
-- AI Assistant (SSE 기반 예정)
-- Token / Timer 표시
-- 제출 및 결과 확인
-
-### ✔ Admin Side
-- Dashboard (실시간 참가자 정보)
+--------------------------------------------------------------------------------
+## ✅ Admin (관리자)
+- Admin 로그인 / 회원가입
+- Dashboard
 - Entry Code 생성·관리
-- User 관리
-- Server Status
+- User Board (실시간 진행 현황)
+- Server Status Panel
 - Problem Management
-- Results (참가자별 상세 분석)
-- Analytics (Prompt / Performance / Correctness)
-- Settings → 계정 정보 / 로그아웃 / 계정 삭제
+- Results / Logs / Analytics
 
----
+--------------------------------------------------------------------------------
+## ✅ Master (플랫폼 운영자)
+- Master Dashboard
+- Test Sessions (Active / Completed 필터링)
+- Session Detail → 참가자 리스트 & View Detail
+- Global Settings
+  - 시험 시간 / 토큰 제한
+  - Log·Submission 보관 정책(Data Retention)
+- Problem Management
+  - Active / Draft / Archived
+  - 사용 중인 세션 표시
+  - 버전 관리
+- Platform Logs
+  - 시스템 이벤트 타임라인
+  - 타입·날짜 필터
 
-## 🔐 Environment Variables
+--------------------------------------------------------------------------------
+# 🧱 Tech Stack
 
-프로젝트 루트에 `.env.local` 파일을 생성하고, 아래와 같이 설정합니다.  
-(백엔드 연동 시 실제 값으로 교체 예정)
+Category        | Tech
+----------------|-------------------------
+Framework       | Next.js (App Router)
+Language        | TypeScript
+UI Library      | React, shadcn/ui
+Styling         | Tailwind CSS
+State Mgmt      | Zustand
+Real-time       | SSE / WebSocket (계획됨)
 
-- NEXT_PUBLIC_API_URL = 백엔드 API base URL  
-- NEXT_PUBLIC_WS_URL = WebSocket URL  
+--------------------------------------------------------------------------------
+# 📁 Project Structure
 
----
+.
+├── app/                 # 사용자/관리자/마스터 페이지
+├── components/          # UI Content 컴포넌트
+├── hooks/               # Custom Hooks
+├── public/              # 정적 파일
+└── styles/              # Tailwind & Global Styles
 
-## 📦 Build & Deployment
+--------------------------------------------------------------------------------
+# ▶️ Getting Started
 
-프로덕션 빌드:
-- npm run build  
+pnpm install
+pnpm dev
+# http://localhost:3000
 
-빌드 결과 실행:
-- npm start  
+--------------------------------------------------------------------------------
+# 📄 README 수정 방법 (빠르게)
 
----
+# 1. VS Code에서 README.md 파일 열기
+# 2. 기존 내용 전체 삭제 후 이 텍스트 전체 붙여넣기
+# 3. 저장(Ctrl+S)
+# 4. GitHub 반영:
 
-## 👨‍💻 Contributors
+git add README.md
+git commit -m "Update README for user test modals & master UI"
+git push origin main
 
-Frontend: **이찬욱 (Chanwook Lee)**  
-Backend & AI: 팀원 전체
-
----
-
-## 📄 License
-
-MIT License  
-(필요시 프로젝트 정책에 맞게 변경 가능)
+--------------------------------------------------------------------------------
