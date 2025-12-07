@@ -81,8 +81,8 @@ export function ResultsContent() {
       {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Results</h1>
-          <p className="text-sm text-[#6B7280]">View and analyze participant evaluation results.</p>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">평가 결과</h1>
+          <p className="text-sm text-[#6B7280]">참가자 평가 결과를 조회하고 분석합니다.</p>
         </div>
       </header>
 
@@ -94,7 +94,7 @@ export function ResultsContent() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" strokeWidth={1.5} />
             <input
               type="text"
-              placeholder="Search by entry code…"
+              placeholder="입장 코드를 검색하세요…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-lg border border-[#E5E5E5] bg-white py-2.5 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
@@ -106,11 +106,11 @@ export function ResultsContent() {
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-[#E5E5E5] bg-white px-12 shadow-sm">
           {/* Table Header */}
           <div className="grid shrink-0 grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-6 py-3 -mx-12">
-            <span className="pl-12 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Entry Code</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Total</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Completed</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Action</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">View</span>
+            <span className="pl-12 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">입장 코드</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">총 인원</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">완료 인원</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">다운로드</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">상세 보기</span>
           </div>
 
           {/* Table Body */}
@@ -131,7 +131,7 @@ export function ResultsContent() {
                     className="inline-flex items-center gap-1.5 rounded-full bg-[#3B82F6] px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
                   >
                     <Download className="h-3.5 w-3.5" strokeWidth={2} />
-                    Download
+                    다운로드
                   </button>
                 </div>
                 <div className="flex justify-center">
@@ -140,7 +140,7 @@ export function ResultsContent() {
                     className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#3B82F6]"
                   >
                     <Eye className="h-4 w-4" strokeWidth={1.5} />
-                    View Detail
+                    상세 보기
                   </Link>
                 </div>
               </div>
@@ -152,7 +152,7 @@ export function ResultsContent() {
         {filteredResults.length > 0 && (
           <div className="mt-4 shrink-0 border-t border-[#E5E7EB] pt-4">
             <span className="text-sm text-[#6B7280]">
-              Showing 1–{filteredResults.length} of {filteredResults.length} results
+              총 {filteredResults.length}개의 결과 중 1–{filteredResults.length} 표시
             </span>
           </div>
         )}

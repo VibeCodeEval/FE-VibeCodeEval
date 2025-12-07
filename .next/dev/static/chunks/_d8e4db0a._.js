@@ -414,7 +414,7 @@ function SettingsContent() {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                             className: "text-2xl font-semibold text-[#111111]",
-                            children: "Settings"
+                            children: "설정"
                         }, void 0, false, {
                             fileName: "[project]/components/settings-content.tsx",
                             lineNumber: 53,
@@ -422,7 +422,7 @@ function SettingsContent() {
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-sm text-[#6B7280] mt-1",
-                            children: "Manage your admin account, profile, and access settings."
+                            children: "관리자 계정, 프로필, 접근 설정을 관리합니다."
                         }, void 0, false, {
                             fileName: "[project]/components/settings-content.tsx",
                             lineNumber: 54,
@@ -449,7 +449,7 @@ function SettingsContent() {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                     className: "text-lg font-semibold text-[#111111]",
-                                    children: "Account Settings"
+                                    children: "계정 설정"
                                 }, void 0, false, {
                                     fileName: "[project]/components/settings-content.tsx",
                                     lineNumber: 63,
@@ -457,7 +457,7 @@ function SettingsContent() {
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-sm text-[#6B7280] mt-1",
-                                    children: "Manage your profile details and account security."
+                                    children: "프로필 정보와 계정 보안 설정을 관리합니다."
                                 }, void 0, false, {
                                     fileName: "[project]/components/settings-content.tsx",
                                     lineNumber: 64,
@@ -495,7 +495,7 @@ function SettingsContent() {
                                                             lineNumber: 77,
                                                             columnNumber: 19
                                                         }, this),
-                                                        "Log Out"
+                                                        "로그아웃"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/settings-content.tsx",
@@ -515,7 +515,7 @@ function SettingsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
                                                             className: "text-sm font-medium text-[#374151]",
-                                                            children: "Admin Name"
+                                                            children: "관리자 이름"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/settings-content.tsx",
                                                             lineNumber: 85,
@@ -540,7 +540,7 @@ function SettingsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
                                                             className: "text-sm font-medium text-[#374151]",
-                                                            children: "Email Address"
+                                                            children: "이메일 주소"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/settings-content.tsx",
                                                             lineNumber: 93,
@@ -565,7 +565,7 @@ function SettingsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
                                                             className: "text-sm font-medium text-[#374151]",
-                                                            children: "Admin Number"
+                                                            children: "관리자 번호"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/settings-content.tsx",
                                                             lineNumber: 101,
@@ -613,7 +613,7 @@ function SettingsContent() {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                                 className: "text-lg font-semibold text-[#111111]",
-                                                children: "Delete Account"
+                                                children: "계정 삭제"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/settings-content.tsx",
                                                 lineNumber: 116,
@@ -621,7 +621,7 @@ function SettingsContent() {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-[#6B7280] mt-1",
-                                                children: "Deleting your admin account will permanently remove dashboard access."
+                                                children: "관리자 계정을 삭제하면 대시보드 접근 권한이 영구적으로 제거됩니다."
                                             }, void 0, false, {
                                                 fileName: "[project]/components/settings-content.tsx",
                                                 lineNumber: 117,
@@ -636,7 +636,7 @@ function SettingsContent() {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                         className: "bg-[#DC2626] hover:bg-[#B91C1C] text-white",
                                         onClick: ()=>setShowDeleteModal(true),
-                                        children: "Delete Account"
+                                        children: "계정 삭제"
                                     }, void 0, false, {
                                         fileName: "[project]/components/settings-content.tsx",
                                         lineNumber: 121,

@@ -66,7 +66,7 @@ export default function UserTestScreen() {
       <header className="bg-white border-b border-[#D0D0D0]">
         <div className="flex items-center justify-between px-6 py-4">
           {/* Left - Logo */}
-          <span className="font-semibold text-[#1F2937] pl-2">AI Vibe Coding Test</span>
+          <span className="font-semibold text-[#1F2937] pl-2">Vibe Coding Evaluator</span>
 
           {/* Center - Remaining Time */}
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
@@ -79,7 +79,7 @@ export default function UserTestScreen() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 text-[#4B5563]">
               <Coins className="w-4 h-4" />
-              <span className="text-sm font-medium">Token:</span>
+              <span className="text-sm font-medium">토큰:</span>
               <span className="font-mono text-[#1F2937] font-semibold">204 / 20000</span>
             </div>
             <Button
@@ -184,7 +184,7 @@ export default function UserTestScreen() {
                 <CheckCircle2 className="w-8 h-8 text-emerald-500" />
               </div>
               <span className="text-xs tracking-wide text-gray-400 uppercase">
-                Test Finished
+                시험 종료 안내
               </span>
             </div>
 

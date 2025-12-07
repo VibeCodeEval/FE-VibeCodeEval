@@ -19,117 +19,117 @@ const initialParticipants = [
         id: "1",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "Submitted",
+        connectionStatus: "연결됨",
+        submissionStatus: "제출 완료",
         tokenUsage: 1250
     },
     {
         id: "2",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "In Progress",
+        connectionStatus: "연결됨",
+        submissionStatus: "진행 중",
         tokenUsage: 890
     },
     {
         id: "3",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Pending",
-        submissionStatus: "Not Started",
+        connectionStatus: "대기 중",
+        submissionStatus: "시작 전",
         tokenUsage: 0
     },
     {
         id: "4",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "In Progress",
+        connectionStatus: "연결됨",
+        submissionStatus: "진행 중",
         tokenUsage: 1450
     },
     {
         id: "5",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "Not Started",
+        connectionStatus: "연결됨",
+        submissionStatus: "시작 전",
         tokenUsage: 0
     },
     {
         id: "6",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Pending",
-        submissionStatus: "Not Started",
+        connectionStatus: "대기 중",
+        submissionStatus: "시작 전",
         tokenUsage: 0
     },
     {
         id: "7",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "Submitted",
+        connectionStatus: "연결됨",
+        submissionStatus: "제출 완료",
         tokenUsage: 1120
     },
     {
         id: "8",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "In Progress",
+        connectionStatus: "연결됨",
+        submissionStatus: "진행 중",
         tokenUsage: 760
     },
     {
         id: "9",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Pending",
-        submissionStatus: "Not Started",
+        connectionStatus: "대기 중",
+        submissionStatus: "시작 전",
         tokenUsage: 0
     },
     {
         id: "10",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "Submitted",
+        connectionStatus: "연결됨",
+        submissionStatus: "제출 완료",
         tokenUsage: 1340
     },
     {
         id: "11",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Pending",
-        submissionStatus: "Not Started",
+        connectionStatus: "대기 중",
+        submissionStatus: "시작 전",
         tokenUsage: 0
     },
     {
         id: "12",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "In Progress",
+        connectionStatus: "연결됨",
+        submissionStatus: "진행 중",
         tokenUsage: 815
     },
     {
         id: "13",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "Submitted",
+        connectionStatus: "연결됨",
+        submissionStatus: "제출 완료",
         tokenUsage: 980
     },
     {
         id: "14",
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
-        connectionStatus: "Connected",
-        submissionStatus: "In Progress",
+        connectionStatus: "연결됨",
+        submissionStatus: "제출 완료",
         tokenUsage: 1025
     }
 ];
 function ConnectionBadge({ status }) {
-    const isConnected = status === "Connected";
+    const isConnected = status === "연결됨";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
         className: `rounded-full border px-2.5 py-0.5 text-xs font-medium ${isConnected ? "border-[#3B82F6] bg-white text-[#3B82F6]" : "border-[#6B7280] bg-white text-[#6B7280]"}`,
         children: status
@@ -141,9 +141,9 @@ function ConnectionBadge({ status }) {
 }
 function SubmissionBadge({ status }) {
     const styles = {
-        "Not Started": "bg-[#F3F4F6] text-[#6B7280]",
-        "In Progress": "bg-[#E0EDFF] text-[#3B82F6]",
-        Submitted: "bg-[#DCFCE7] text-[#16A34A]"
+        "시작 전": "bg-[#F3F4F6] text-[#6B7280]",
+        "진행 중": "bg-[#E0EDFF] text-[#3B82F6]",
+        "제출 완료": "bg-[#DCFCE7] text-[#16A34A]"
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
         className: `rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`,
@@ -173,7 +173,7 @@ function UsersContent() {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                             className: "text-2xl font-semibold text-[#1A1A1A]",
-                            children: "Participants"
+                            children: "참가자 목록"
                         }, void 0, false, {
                             fileName: "[project]/components/users-content.tsx",
                             lineNumber: 174,
@@ -181,7 +181,7 @@ function UsersContent() {
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-sm text-[#6B7280]",
-                            children: "Real-time monitoring of test participants"
+                            children: "실시간 참가자 모니터링"
                         }, void 0, false, {
                             fileName: "[project]/components/users-content.tsx",
                             lineNumber: 175,
@@ -209,7 +209,7 @@ function UsersContent() {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Name"
+                                        children: "이름"
                                     }, void 0, false, {
                                         fileName: "[project]/components/users-content.tsx",
                                         lineNumber: 185,
@@ -217,7 +217,7 @@ function UsersContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Phone Number"
+                                        children: "전화번호"
                                     }, void 0, false, {
                                         fileName: "[project]/components/users-content.tsx",
                                         lineNumber: 186,
@@ -225,7 +225,7 @@ function UsersContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Connection"
+                                        children: "연결 상태"
                                     }, void 0, false, {
                                         fileName: "[project]/components/users-content.tsx",
                                         lineNumber: 187,
@@ -233,7 +233,7 @@ function UsersContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Submission"
+                                        children: "제출 상태"
                                     }, void 0, false, {
                                         fileName: "[project]/components/users-content.tsx",
                                         lineNumber: 188,
@@ -241,7 +241,7 @@ function UsersContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-right text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Token Usage"
+                                        children: "토큰 사용량"
                                     }, void 0, false, {
                                         fileName: "[project]/components/users-content.tsx",
                                         lineNumber: 189,
@@ -333,13 +333,13 @@ function UsersContent() {
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 className: "text-sm text-[#6B7280]",
                                 children: [
-                                    "Showing ",
+                                    "총 ",
+                                    participants.length,
+                                    "명 중 ",
                                     displayStart,
                                     "–",
                                     displayEnd,
-                                    " of ",
-                                    participants.length,
-                                    " Participants"
+                                    "명 보여주는 중"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/users-content.tsx",
@@ -361,7 +361,7 @@ function UsersContent() {
                                                 lineNumber: 230,
                                                 columnNumber: 17
                                             }, this),
-                                            "Prev"
+                                            "이전"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/users-content.tsx",
@@ -384,7 +384,7 @@ function UsersContent() {
                                         disabled: currentPage === totalPages || totalPages === 0,
                                         className: "flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white",
                                         children: [
-                                            "Next",
+                                            "다음",
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$1$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {

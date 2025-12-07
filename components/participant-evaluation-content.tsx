@@ -244,9 +244,9 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
       {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Participant Evaluation Details</h1>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">참가자 평가 상세</h1>
           <p className="text-sm text-[#6B7280]">
-            View full evaluation results and submission details for this participant.
+            이 참가자의 평가 결과와 제출 세부 정보를 모두 확인할 수 있습니다.
           </p>
         </div>
       </header>
@@ -261,14 +261,14 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
             className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#4B5563]"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
-            Back to Previous Page
+            이전 페이지로 돌아가기
           </button>
         </div>
 
         {/* Summary Cards - Row 1 */}
         <div className="mb-4 grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Participant</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">참가자</span>
             <div className="mt-3 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E0EDFF]">
                 <User className="h-5 w-5 text-[#3B82F6]" strokeWidth={1.5} />
@@ -277,11 +277,11 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
             </div>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Entry Code</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">입장 코드</span>
             <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{participantData.entryCode}</p>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Average Score</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">평균 점수</span>
             <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{participantData.avgScore}%</p>
           </div>
         </div>
@@ -289,19 +289,19 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
         {/* Summary Cards - Row 2 */}
         <div className="mb-6 grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Test Date & Duration</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">시험 일시 및 소요 시간</span>
             <p className="mt-3 text-base font-semibold text-[#1A1A1A]">
               {participantData.testDate} · {participantData.duration}
             </p>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Trend</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">추세</span>
             <div className="mt-3">
               <TrendBadge trend={participantData.trend} />
             </div>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Status</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출 상태</span>
             <div className="mt-3">
               <StatusBadge status={participantData.status} />
             </div>
@@ -310,35 +310,35 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
 
         {/* Evaluation Breakdown Section */}
         <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">Evaluation Breakdown</h2>
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">평가 점수 세부 내역</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
               <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.promptScore}%</p>
-              <p className="mt-1 text-sm font-medium text-[#374151]">Prompt Score</p>
-              <p className="mt-1 text-xs text-[#6B7280]">Understanding & interpretation quality</p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">프롬프트 점수</p>
+              <p className="mt-1 text-xs text-[#6B7280]">이해 및 문제 해석 능력</p>
             </div>
             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
               <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.performanceScore}%</p>
-              <p className="mt-1 text-sm font-medium text-[#374151]">Performance Score</p>
-              <p className="mt-1 text-xs text-[#6B7280]">Execution efficiency & optimization</p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">성능 점수</p>
+              <p className="mt-1 text-xs text-[#6B7280]">실행 효율 및 최적화</p>
             </div>
             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
               <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.correctnessScore}%</p>
-              <p className="mt-1 text-sm font-medium text-[#374151]">Correctness Score</p>
-              <p className="mt-1 text-xs text-[#6B7280]">Accuracy of solutions & test results</p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">정답률 점수</p>
+              <p className="mt-1 text-xs text-[#6B7280]">솔루션 정확도 및 테스트 결과 일치율</p>
             </div>
           </div>
         </div>
 
         {/* Submitted Code Section */}
         <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">Submitted Code</h2>
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">제출한 코드</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
               <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <Code className="h-4 w-4 text-[#6B7280]" strokeWidth={1.5} />
-                  <span className="text-sm font-medium text-[#374151]">Code Implementation</span>
+                  <span className="text-sm font-medium text-[#374151]">코드 구현</span>
                 </div>
                 <LanguageBadge language={participantData.language} />
               </div>
@@ -350,11 +350,11 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
             </div>
             <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
               <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-5 py-3">
-                <span className="text-sm font-medium text-[#374151]">AI Feedback Summary</span>
+                <span className="text-sm font-medium text-[#374151]">AI 피드백 요약</span>
               </div>
               <div className="max-h-[400px] flex-1 overflow-y-auto p-5">
                 <div className="mb-4">
-                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#16A34A]">Strengths</h4>
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#16A34A]">강점</h4>
                   <ul className="space-y-1">
                     {feedbackData.strengths.map((item, index) => (
                       <li key={index} className="text-sm text-[#374151]">
@@ -364,7 +364,7 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
                   </ul>
                 </div>
                 <div className="mb-4">
-                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#DC2626]">Weaknesses</h4>
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#DC2626]">약점</h4>
                   <ul className="space-y-1">
                     {feedbackData.weaknesses.map((item, index) => (
                       <li key={index} className="text-sm text-[#374151]">
@@ -374,7 +374,7 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
                   </ul>
                 </div>
                 <div className="mb-4">
-                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#3B82F6]">Suggestions</h4>
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#3B82F6]">개선 제안</h4>
                   <ul className="space-y-1">
                     {feedbackData.suggestions.map((item, index) => (
                       <li key={index} className="text-sm text-[#374151]">
@@ -385,7 +385,7 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
                 </div>
                 <div>
                   <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#D97706]">
-                    Performance Notes
+                    성능 관련 메모
                   </h4>
                   <ul className="space-y-1">
                     {feedbackData.performanceNotes.map((item, index) => (
@@ -402,21 +402,21 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
 
         {/* Test Case Results Section */}
         <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">Test Case Results</h2>
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">테스트 케이스 결과</h2>
           <div className="rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
             <div className="px-6 pt-4 pb-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">All Test Cases</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">전체 테스트 케이스</span>
             </div>
             <div className="grid grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-6 py-3">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Test Case</span>
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Expected Output</span>
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Submitted Output</span>
-              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Result</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">테스트 케이스</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">기대 출력값</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출된 출력값</span>
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">결과</span>
               <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                Exec Time
+                실행 시간
               </span>
-              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Memory</span>
-              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Tokens</span>
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">메모리 사용량</span>
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">토큰 수</span>
             </div>
             <div className="px-6">
               {testCaseResults.map((testCase, index) => (
@@ -445,7 +445,7 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
               onClick={handleExport}
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
             >
-              Export Results (CSV)
+              결과 내보내기 (CSV)
             </button>
           </div>
         </div>

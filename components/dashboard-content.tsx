@@ -47,7 +47,7 @@ export function DashboardContent() {
     <div className="flex flex-1 flex-col">
       {/* Section 2: Top Header Bar - distinct horizontal section */}
       <header className="flex h-[88px] items-center border-b border-[#E5E5E5] bg-white px-8">
-        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Admin dashboard</h1>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">관리자 대시보드</h1>
       </header>
 
       {/* Section 3: Main Content Panel - separate content area */}
@@ -60,10 +60,10 @@ export function DashboardContent() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
                 <Users className="h-5 w-5 text-blue-500" />
               </div>
-              <span className="text-sm font-medium text-gray-500">Total Participants</span>
+              <span className="text-sm font-medium text-gray-500">총 참가자 수</span>
             </div>
             <p className="mt-6 text-4xl font-bold text-gray-900">248</p>
-            <p className="mt-1 text-xs text-gray-400">Last 7 days</p>
+            <p className="mt-1 text-xs text-gray-400">최근 7일 기준</p>
           </div>
 
           {/* Completed Evaluations */}
@@ -72,10 +72,10 @@ export function DashboardContent() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
                 <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
-              <span className="text-sm font-medium text-gray-500">Completed Evaluations</span>
+              <span className="text-sm font-medium text-gray-500">평가 완료 수</span>
             </div>
             <p className="mt-6 text-4xl font-bold text-gray-900">186</p>
-            <p className="mt-1 text-xs text-gray-400">75% completion rate</p>
+            <p className="mt-1 text-xs text-gray-400">완료율 75%</p>
           </div>
 
           {/* Average Prompt Score */}
@@ -84,10 +84,10 @@ export function DashboardContent() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
                 <TrendingUp className="h-5 w-5 text-purple-500" />
               </div>
-              <span className="text-sm font-medium text-gray-500">Average Prompt Score</span>
+              <span className="text-sm font-medium text-gray-500">평균 프롬프트 점수</span>
             </div>
             <p className="mt-6 text-4xl font-bold text-gray-900">78.5</p>
-            <p className="mt-1 text-xs text-gray-400">+2.3 from last week</p>
+            <p className="mt-1 text-xs text-gray-400">지난주 대비 +2.3</p>
           </div>
 
           {/* Active Test Sessions */}
@@ -96,10 +96,10 @@ export function DashboardContent() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
                 <Play className="h-5 w-5 text-orange-500" />
               </div>
-              <span className="text-sm font-medium text-gray-500">Active Test Sessions</span>
+              <span className="text-sm font-medium text-gray-500">진행 중인 테스트 세션</span>
             </div>
             <p className="mt-6 text-4xl font-bold text-gray-900">4</p>
-            <p className="mt-1 text-xs text-gray-400">Currently in progress</p>
+            <p className="mt-1 text-xs text-gray-400">현재 진행 중</p>
           </div>
         </div>
 
@@ -107,14 +107,14 @@ export function DashboardContent() {
         <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-700">Recent Activity</h2>
-              <p className="text-sm text-gray-400">Latest system events and actions</p>
+              <h2 className="text-lg font-semibold text-gray-700">최근 활동</h2>
+              <p className="text-sm text-gray-400">시스템 이벤트 및 활동 내역</p>
             </div>
             <Link
               href="/admin/logs"
               className="flex items-center gap-1 text-[13px] font-normal text-blue-600 transition-all hover:text-blue-700 hover:underline"
             >
-              View All <ArrowRight className="h-4 w-4" />
+              모두 보기 <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
@@ -143,15 +143,15 @@ export function DashboardContent() {
                 </div>
               </div>
             ) : (
-              <p className="py-8 text-center text-sm text-gray-400">No recent activity.</p>
+              <p className="py-8 text-center text-sm text-gray-400">최근 활동이 없습니다.</p>
             )}
           </div>
         </div>
 
         {/* 3) Quick Actions */}
         <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm -mt-3">
-          <h2 className="text-lg font-semibold text-gray-700">Quick Actions</h2>
-          <p className="text-sm text-gray-400">Frequently used admin functions</p>
+          <h2 className="text-lg font-semibold text-gray-700">빠른 작업</h2>
+          <p className="text-sm text-gray-400">자주 사용하는 관리자 기능</p>
 
           <div className="mt-5 flex items-center gap-3">
             <Link
@@ -159,21 +159,21 @@ export function DashboardContent() {
               className="flex items-center gap-2 rounded-lg bg-[#3B82F6] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
             >
               <Plus className="h-4 w-4" />
-              Create Entry Code
+              입장 코드 생성
             </Link>
             <Link
               href="/admin/users"
               className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               <Users className="h-4 w-4" />
-              View Participants
+              참가자 목록 보기
             </Link>
             <Link
               href="/admin/analytics"
               className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               <BarChart3 className="h-4 w-4" />
-              Open Analytics
+              분석 화면 열기
             </Link>
           </div>
         </div>

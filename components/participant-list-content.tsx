@@ -133,8 +133,8 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
       {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Participant List (Entry Code Overview)</h1>
-          <p className="text-sm text-[#6B7280]">View participant scores and performance for this entry code.</p>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">참가자 목록 (입장 코드 요약)</h1>
+          <p className="text-sm text-[#6B7280]">해당 입장 코드의 참가자 점수 및 성과를 확인합니다.</p>
         </div>
       </header>
 
@@ -147,7 +147,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
             className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#3B82F6]"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
-            Back to Results
+            평가 결과로 돌아가기
           </Link>
         </div>
 
@@ -156,19 +156,19 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
           <div className="flex items-center gap-16">
             {/* Entry Code */}
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Entry Code</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">입장 코드</span>
               <span className="text-lg font-semibold text-[#1A1A1A]">{displayEntryCode}</span>
             </div>
 
             {/* Total Participants */}
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Total Participants</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">총 참가자 수</span>
               <span className="text-lg font-semibold text-[#1A1A1A]">{summaryData.totalParticipants}</span>
             </div>
 
             {/* Completed */}
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Completed</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">완료 인원</span>
               <span className="text-lg font-semibold text-[#1A1A1A]">{summaryData.completed}</span>
             </div>
           </div>
@@ -178,10 +178,10 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
           {/* Table Header */}
           <div className="grid shrink-0 grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-12 py-3">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Participant</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Avg Score</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Trend</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Action</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">참가자</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">평균 점수</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 추이</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">상세 보기</span>
           </div>
 
           {/* Table Body - Uses pageParticipants instead of full array */}
@@ -213,7 +213,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
                     className="inline-flex items-center gap-1.5 rounded-md border-[#3B82F6] bg-white px-3 py-1.5 text-sm text-[#3B82F6] hover:bg-[#EFF6FF]"
                   >
                     <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
-                    View Detail
+                    상세 보기
                   </Link>
                 </div>
               </div>
@@ -222,7 +222,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
 
           <div className="flex shrink-0 items-center justify-between border-t border-[#E5E5E5] bg-white px-12 py-3">
             <p className="text-sm text-[#6B7280]">
-              Showing {startIndex + 1}–{Math.min(endIndex, totalParticipants)} of {totalParticipants} participants
+              총 {totalParticipants}명 중 {startIndex + 1}–{Math.min(endIndex, totalParticipants)}명 표시
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -235,10 +235,10 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
                 }`}
               >
                 <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
-                Prev
+                이전
               </button>
               <span className="px-2 text-sm text-[#6B7280]">
-                Page {page} of {totalPages}
+                {page} / {totalPages} 페이지
               </span>
               <button
                 onClick={handleNextPage}
@@ -249,7 +249,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
                     : "border-[#E5E5E5] text-[#374151] hover:bg-[#F3F4F6]"
                 }`}
               >
-                Next
+                다음
                 <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
               </button>
             </div>

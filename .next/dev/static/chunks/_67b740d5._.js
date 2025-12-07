@@ -112,7 +112,7 @@ function ResultsContent() {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                             className: "text-2xl font-semibold text-[#1A1A1A]",
-                            children: "Results"
+                            children: "평가 결과"
                         }, void 0, false, {
                             fileName: "[project]/components/results-content.tsx",
                             lineNumber: 84,
@@ -120,7 +120,7 @@ function ResultsContent() {
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-sm text-[#6B7280]",
-                            children: "View and analyze participant evaluation results."
+                            children: "참가자 평가 결과를 조회하고 분석합니다."
                         }, void 0, false, {
                             fileName: "[project]/components/results-content.tsx",
                             lineNumber: 85,
@@ -155,7 +155,7 @@ function ResultsContent() {
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     type: "text",
-                                    placeholder: "Search by entry code…",
+                                    placeholder: "입장 코드를 검색하세요…",
                                     value: searchQuery,
                                     onChange: (e)=>setSearchQuery(e.target.value),
                                     className: "w-full rounded-lg border border-[#E5E5E5] bg-white py-2.5 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
@@ -183,7 +183,7 @@ function ResultsContent() {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "pl-12 text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Entry Code"
+                                        children: "입장 코드"
                                     }, void 0, false, {
                                         fileName: "[project]/components/results-content.tsx",
                                         lineNumber: 109,
@@ -191,7 +191,7 @@ function ResultsContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Total"
+                                        children: "총 인원"
                                     }, void 0, false, {
                                         fileName: "[project]/components/results-content.tsx",
                                         lineNumber: 110,
@@ -199,7 +199,7 @@ function ResultsContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Completed"
+                                        children: "완료 인원"
                                     }, void 0, false, {
                                         fileName: "[project]/components/results-content.tsx",
                                         lineNumber: 111,
@@ -207,7 +207,7 @@ function ResultsContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Action"
+                                        children: "다운로드"
                                     }, void 0, false, {
                                         fileName: "[project]/components/results-content.tsx",
                                         lineNumber: 112,
@@ -215,7 +215,7 @@ function ResultsContent() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "View"
+                                        children: "상세 보기"
                                     }, void 0, false, {
                                         fileName: "[project]/components/results-content.tsx",
                                         lineNumber: 113,
@@ -270,7 +270,7 @@ function ResultsContent() {
                                                             lineNumber: 133,
                                                             columnNumber: 21
                                                         }, this),
-                                                        "Download"
+                                                        "다운로드"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/results-content.tsx",
@@ -296,7 +296,7 @@ function ResultsContent() {
                                                             lineNumber: 142,
                                                             columnNumber: 21
                                                         }, this),
-                                                        "View Detail"
+                                                        "상세 보기"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/results-content.tsx",
@@ -330,11 +330,11 @@ function ResultsContent() {
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                             className: "text-sm text-[#6B7280]",
                             children: [
-                                "Showing 1–",
+                                "총 ",
                                 filteredResults.length,
-                                " of ",
+                                "개의 결과 중 1–",
                                 filteredResults.length,
-                                " results"
+                                " 표시"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/results-content.tsx",

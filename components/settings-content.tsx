@@ -50,8 +50,8 @@ export function SettingsContent() {
       {/* Header */}
       <div className="shrink-0 h-[88px] bg-white border-b border-[#E5E5E5] flex items-center px-10">
         <div>
-          <h1 className="text-2xl font-semibold text-[#111111]">Settings</h1>
-          <p className="text-sm text-[#6B7280] mt-1">Manage your admin account, profile, and access settings.</p>
+          <h1 className="text-2xl font-semibold text-[#111111]">설정</h1>
+          <p className="text-sm text-[#6B7280] mt-1">관리자 계정, 프로필, 접근 설정을 관리합니다.</p>
         </div>
       </div>
 
@@ -60,8 +60,8 @@ export function SettingsContent() {
         <div className="flex flex-col gap-10">
           {/* Card 1: Account Settings */}
           <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-sm px-12 py-8">
-            <h2 className="text-lg font-semibold text-[#111111]">Account Settings</h2>
-            <p className="text-sm text-[#6B7280] mt-1">Manage your profile details and account security.</p>
+            <h2 className="text-lg font-semibold text-[#111111]">계정 설정</h2>
+            <p className="text-sm text-[#6B7280] mt-1">프로필 정보와 계정 보안 설정을 관리합니다.</p>
 
             <div className="mt-8 flex gap-12">
               {/* Left: Profile Icon and Logout */}
@@ -75,14 +75,14 @@ export function SettingsContent() {
                   onClick={() => setShowLogoutModal(true)}
                 >
                   <LogOut className="w-4 h-4" />
-                  Log Out
+                  로그아웃
                 </Button>
               </div>
 
               {/* Right: Admin Information Fields */}
               <div className="flex-1 space-y-6">
                 <div>
-                  <Label className="text-sm font-medium text-[#374151]">Admin Name</Label>
+                  <Label className="text-sm font-medium text-[#374151]">관리자 이름</Label>
                   <Input
                     value={adminProfile.name}
                     disabled
@@ -90,7 +90,7 @@ export function SettingsContent() {
                   />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-[#374151]">Email Address</Label>
+                  <Label className="text-sm font-medium text-[#374151]">이메일 주소</Label>
                   <Input
                     value={adminProfile.email}
                     disabled
@@ -98,7 +98,7 @@ export function SettingsContent() {
                   />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-[#374151]">Admin Number</Label>
+                  <Label className="text-sm font-medium text-[#374151]">관리자 번호</Label>
                   <Input
                     value={adminProfile.adminNumber}
                     disabled
@@ -113,13 +113,13 @@ export function SettingsContent() {
           <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-sm px-12 py-8">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-[#111111]">Delete Account</h2>
+                <h2 className="text-lg font-semibold text-[#111111]">계정 삭제</h2>
                 <p className="text-sm text-[#6B7280] mt-1">
-                  Deleting your admin account will permanently remove dashboard access.
+                  관리자 계정을 삭제하면 대시보드 접근 권한이 영구적으로 제거됩니다.
                 </p>
               </div>
               <Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white" onClick={() => setShowDeleteModal(true)}>
-                Delete Account
+                계정 삭제
               </Button>
             </div>
           </div>

@@ -9,25 +9,25 @@ interface Problem {
   id: string
   title: string
   version: string
-  difficulty: "Easy" | "Medium" | "Hard"
+  difficulty: "쉬움" | "중간" | "어려움"
   available: boolean
 }
 
 const initialProblems: Problem[] = [
-  { id: "1", title: "String Compression", version: "v1.2", difficulty: "Medium", available: true },
-  { id: "2", title: "Median of Two Sorted Arrays", version: "v2.0", difficulty: "Hard", available: false },
-  { id: "3", title: "Longest Substring Without Repeating", version: "v1.5", difficulty: "Medium", available: true },
-  { id: "4", title: "Regular Expression Matching", version: "v1.1", difficulty: "Hard", available: true },
-  { id: "5", title: "Two Sum", version: "v3.0", difficulty: "Easy", available: false },
+  { id: "1", title: "String Compression", version: "v1.2", difficulty: "중간", available: true },
+  { id: "2", title: "Median of Two Sorted Arrays", version: "v2.0", difficulty: "어려움", available: false },
+  { id: "3", title: "Longest Substring Without Repeating", version: "v1.5", difficulty: "중간", available: true },
+  { id: "4", title: "Regular Expression Matching", version: "v1.1", difficulty: "어려움", available: true },
+  { id: "5", title: "Two Sum", version: "v3.0", difficulty: "쉬움", available: false },
 ]
 
-type FilterOption = "All" | "Available Only" | "Unavailable Only"
+type FilterOption = "전체" | "사용 가능만 보기" | "사용 불가만 보기"
 
-function DifficultyBadge({ difficulty }: { difficulty: "Easy" | "Medium" | "Hard" }) {
+function DifficultyBadge({ difficulty }: { difficulty: "쉬움" | "중간" | "어려움" }) {
   const styles = {
-    Easy: "bg-[#D1FAE5] text-[#059669]",
-    Medium: "bg-[#FEF3C7] text-[#D97706]",
-    Hard: "bg-[#FEE2E2] text-[#DC2626]",
+    쉬움: "bg-[#D1FAE5] text-[#059669]",
+    중간: "bg-[#FEF3C7] text-[#D97706]",
+    어려움: "bg-[#FEE2E2] text-[#DC2626]",
   }
   return <span className={"rounded-full px-2.5 py-0.5 text-xs font-medium " + styles[difficulty]}>{difficulty}</span>
 }
@@ -35,7 +35,7 @@ function DifficultyBadge({ difficulty }: { difficulty: "Easy" | "Medium" | "Hard
 export function ProblemsContent() {
   const [problems, setProblems] = useState<Problem[]>(initialProblems)
   const [searchQuery, setSearchQuery] = useState("")
-  const [filter, setFilter] = useState<FilterOption>("All")
+  const [filter, setFilter] = useState<FilterOption>("전체")
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 8
 
@@ -46,9 +46,9 @@ export function ProblemsContent() {
       result = result.filter((problem) => problem.title.toLowerCase().includes(searchQuery.toLowerCase()))
     }
 
-    if (filter === "Available Only") {
+    if (filter === "사용 가능만 보기") {
       result = result.filter((problem) => problem.available)
-    } else if (filter === "Unavailable Only") {
+    } else if (filter === "사용 불가만 보기") {
       result = result.filter((problem) => !problem.available)
     }
 
@@ -84,9 +84,9 @@ export function ProblemsContent() {
       {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Problem Management</h1>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">문제 관리</h1>
           <p className="text-sm text-[#6B7280]">
-            Manage which coding problems are available for upcoming test sessions.
+            테스트 세션에서 사용할 코딩 문제를 관리합니다.
           </p>
         </div>
       </header>
@@ -100,7 +100,7 @@ export function ProblemsContent() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" strokeWidth={1.5} />
             <input
               type="text"
-              placeholder="Search Problem…"
+              placeholder="문제 검색…"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="h-10 w-72 rounded-lg border border-[#E5E5E5] bg-white pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
@@ -116,10 +116,10 @@ export function ProblemsContent() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onClick={() => handleFilterChange("All")}>All</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterChange("Available Only")}>Available Only</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterChange("Unavailable Only")}>
-                Unavailable Only
+              <DropdownMenuItem onClick={() => handleFilterChange("전체")}>전체</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleFilterChange("사용 가능만 보기")}>사용 가능만 보기</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleFilterChange("사용 불가만 보기")}>
+                사용 불가만 보기
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -156,7 +156,7 @@ export function ProblemsContent() {
                         (problem.available ? "bg-[#E0EDFF] text-[#3B82F6]" : "bg-[#F3F4F6] text-[#6B7280]")
                       }
                     >
-                      {problem.available ? "Available" : "Unavailable"}
+                      {problem.available ? "사용 가능" : "사용 불가"}
                     </span>
                     <Switch
                       checked={problem.available}
@@ -174,7 +174,7 @@ export function ProblemsContent() {
         {filteredProblems.length > 0 && (
           <div className="mt-4 flex shrink-0 items-center justify-between border-t border-[#E5E7EB] pt-4">
             <span className="text-sm text-[#6B7280]">
-              Showing {displayStart}–{displayEnd} of {filteredProblems.length} Problems
+              총 {filteredProblems.length}개의 문제 중 {displayStart}–{displayEnd} 표시
             </span>
 
             <div className="flex items-center gap-1">
@@ -184,7 +184,7 @@ export function ProblemsContent() {
                 className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Prev
+                이전
               </button>
 
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -207,7 +207,7 @@ export function ProblemsContent() {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
-                Next
+                다음
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

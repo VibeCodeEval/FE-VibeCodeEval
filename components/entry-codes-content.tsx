@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
-type EntryCodeStatus = "Not Started" | "In Progress"
+type EntryCodeStatus = "대기 중" | "진행 중"
 
 interface EntryCode {
   id: string
@@ -23,10 +23,10 @@ interface EntryCode {
 }
 
 const initialEntryCodes: EntryCode[] = [
-  { id: "1", code: "AIVIBE2024A", createdAt: "2024-01-15", status: "Not Started" },
-  { id: "2", code: "AIVIBE2024B", createdAt: "2024-01-16", status: "Not Started" },
-  { id: "3", code: "AIVIBE2024C", createdAt: "2024-01-17", status: "Not Started" },
-  { id: "4", code: "AIVIBE2024D", createdAt: "2024-01-18", status: "Not Started" },
+  { id: "1", code: "AIVIBE2024A", createdAt: "2024-01-15", status: "대기 중" },
+  { id: "2", code: "AIVIBE2024B", createdAt: "2024-01-16", status: "대기 중" },
+  { id: "3", code: "AIVIBE2024C", createdAt: "2024-01-17", status: "대기 중" },
+  { id: "4", code: "AIVIBE2024D", createdAt: "2024-01-18", status: "대기 중" },
 ]
 
 function generateUniqueCode(): string {
@@ -44,7 +44,7 @@ function getTodayDate(): string {
 }
 
 function StatusBadge({ status }: { status: EntryCodeStatus }) {
-  const isInProgress = status === "In Progress"
+  const isInProgress = status === "진행 중"
   return (
     <span
       className={`rounded-full px-2.5 py-0.5 text-xs ${
@@ -115,7 +115,7 @@ export function EntryCodesContent() {
       id: crypto.randomUUID(),
       code: generateUniqueCode(),
       createdAt: getTodayDate(),
-      status: "Not Started",
+      status: "대기 중",
     }
     setEntryCodes((prev) => {
       const newList = [...prev, newEntry]
@@ -129,7 +129,7 @@ export function EntryCodesContent() {
   const handleConfirmStartTest = () => {
     if (selectedId) {
       setEntryCodes((prev) =>
-        prev.map((entry) => (entry.id === selectedId ? { ...entry, status: "In Progress" } : entry)),
+        prev.map((entry) => (entry.id === selectedId ? { ...entry, status: "진행 중" } : entry)),
       )
     }
     setStartTestModalOpen(false)
@@ -142,14 +142,14 @@ export function EntryCodesContent() {
       {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Entry Codes</h1>
-          <p className="text-sm text-[#6B7280]">Manage access codes for test participants</p>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">코드 관리</h1>
+          <p className="text-sm text-[#6B7280]">참가자 시험 입장 코드를 관리합니다</p>
         </div>
         <button
           onClick={() => setGenerateModalOpen(true)}
           className="rounded-full bg-[#3B82F6] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
         >
-          Generate Code
+          코드 생성
         </button>
       </header>
 
@@ -171,22 +171,22 @@ export function EntryCodesContent() {
                 >
                   <Copy className="h-4 w-4" strokeWidth={1.5} />
                 </button>
-                <span className="text-xs text-[#9CA3AF]">Created: {entry.createdAt}</span>
+                <span className="text-xs text-[#9CA3AF]">생성일: {entry.createdAt}</span>
                 <StatusBadge status={entry.status} />
               </div>
 
               {/* Right side: Start Test button, More menu */}
               <div className="flex items-center gap-3">
-                {entry.status === "In Progress" ? (
+                {entry.status === "진행 중" ? (
                   <span className="rounded-full border border-[#3B82F6] bg-[#E0EDFF] px-4 py-1.5 text-sm font-medium text-[#3B82F6]">
-                    In Progress
+                    진행 중
                   </span>
                 ) : (
                   <button
                     onClick={() => handleStartTestClick(entry.id, entry.code)}
                     className="rounded-full border border-[#3B82F6] bg-white px-4 py-1.5 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-[#E0EDFF]"
                   >
-                    Start Test &gt;
+                    시험 시작 &gt;
                   </button>
                 )}
                 <DropdownMenu>
@@ -196,12 +196,12 @@ export function EntryCodesContent() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-32">
-                    <DropdownMenuItem onClick={() => handleCopy(entry.code)}>Copy</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleCopy(entry.code)}>복사</DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => handleDeleteClick(entry.id, entry.code)}
                       className="text-red-600 focus:text-red-600"
                     >
-                      Delete
+                      삭제
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -214,7 +214,7 @@ export function EntryCodesContent() {
           <div className="mt-4 flex shrink-0 items-center justify-between border-t border-[#E5E7EB] pt-4">
             {/* Left side: Showing X-Y of N */}
             <span className="text-sm text-[#6B7280]">
-              Showing {displayStart}–{displayEnd} of {entryCodes.length} Entry Codes
+              총 {entryCodes.length}개의 입장 코드 중 {displayStart}–{displayEnd} 표시
             </span>
 
             {/* Right side: Pagination controls */}
@@ -226,7 +226,7 @@ export function EntryCodesContent() {
                 className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Prev
+                이전
               </button>
 
               {/* Page number buttons */}
@@ -250,7 +250,7 @@ export function EntryCodesContent() {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
-                Next
+                다음
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
@@ -265,7 +265,7 @@ export function EntryCodesContent() {
             <DialogTitle>입장 코드를 삭제하시겠습니까?</DialogTitle>
             <DialogDescription className="whitespace-pre-line pt-2 text-[#6B7280]">
               {
-                "선택된 Entry Code를 삭제하면 되돌릴 수 없습니다.\n해당 코드와 연관된 참여자 데이터는 유지되지만,\n입장용 코드는 더 이상 사용할 수 없습니다."
+                "선택된 입장 코드를 삭제하면 되돌릴 수 없습니다.\n해당 코드와 연관된 참여자 데이터는 유지되지만,\n입장용 코드는 더 이상 사용할 수 없습니다."
               }
             </DialogDescription>
           </DialogHeader>
@@ -284,10 +284,10 @@ export function EntryCodesContent() {
       <Dialog open={generateModalOpen} onOpenChange={setGenerateModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>새 Entry Code를 생성하시겠습니까?</DialogTitle>
+            <DialogTitle>새 입장 코드를 생성하시겠습니까?</DialogTitle>
             <DialogDescription className="whitespace-pre-line pt-2 text-[#6B7280]">
               {
-                "새로운 Entry Code가 생성되며 참여자에게 제공할 수 있습니다.\n생성된 코드는 Entry Codes 목록에 자동으로 추가됩니다."
+                "새로운 입장 코드가 생성되며 참여자에게 제공할 수 있습니다.\n생성된 코드는 코드 관리 목록에 자동으로 추가됩니다."
               }
             </DialogDescription>
           </DialogHeader>

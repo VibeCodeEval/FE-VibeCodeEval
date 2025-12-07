@@ -11,11 +11,7 @@
   "/admin/server-status/page": "app/admin/server-status/page.js",
   "/admin/settings/page": "app/admin/settings/page.js",
   "/admin/users/page": "app/admin/users/page.js",
-  "/master/global-settings/page": "app/master/global-settings/page.js",
-  "/master/page": "app/master/page.js",
-  "/master/platform-logs/page": "app/master/platform-logs/page.js",
-  "/master/problem/page": "app/master/problem/page.js",
-  "/master/test-sessions/[ID]/page": "app/master/test-sessions/[ID]/page.js",
-  "/master/test-sessions/page": "app/master/test-sessions/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/test/page": "app/test/page.js",
+  "/waiting/page": "app/waiting/page.js"
 }
