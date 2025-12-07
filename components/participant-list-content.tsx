@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation";
 import { ArrowLeft, Eye, ChevronLeft, ChevronRight } from "lucide-react"
 
 type TrendLevel = "High" | "Average" | "Low"
@@ -93,7 +94,22 @@ function TrendBadge({ trend }: { trend: TrendLevel }) {
 
 export function ParticipantListContent({ entryCode }: ParticipantListContentProps) {
   // Use the passed entryCode or fallback to sample data
-  const displayEntryCode = entryCode || summaryData.entryCode
+  const pathname = usePathname();
+
+  // URL (/admin/results/AIV-2024-001) 에서 마지막 세그먼트를 추출
+  const displayEntryCode = useMemo(() => {
+    if (!pathname) {
+      return entryCode || summaryData.totalParticipants.toString(); // <- fallback은 아래에서 다시 정리
+    }
+
+    const segments = pathname.split("/");
+    const fromPath = decodeURIComponent(segments[segments.length - 1] || "");
+
+    // 1순위: props로 받은 entryCode
+    // 2순위: URL에서 파싱한 값
+    // 3순위: 없으면 샘플 데이터/기본값
+    return entryCode || fromPath || summaryData.entryCode;
+  }, [pathname, entryCode]);
 
   const pageSize = 10
   const [page, setPage] = useState(1)
@@ -184,8 +200,17 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
                 </div>
                 <div className="flex justify-center">
                   <Link
-                    href={`/admin/results/${encodeURIComponent(entryCode)}/${participant.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[#3B82F6] bg-white px-3 py-1.5 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-[#E0EDFF]"
+                    href={{
+                      // 참가자 상세 페이지 경로 (id 사용)
+                      pathname: `/admin/results/participants/${encodeURIComponent(participant.id)}`,
+                      // 여기에 우리가 넘기고 싶은 값들 추가
+                      query: {
+                        entryCode: entryCode,              // 상단 카드에 보여줄 Entry Code
+                        participantName: participant.name, // 상단 카드에 보여줄 이름
+                        from: "results",                   // 기존에 쓰던 from 값 유지하고 싶으면 같이 전달
+                      },
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-md border-[#3B82F6] bg-white px-3 py-1.5 text-sm text-[#3B82F6] hover:bg-[#EFF6FF]"
                   >
                     <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
                     View Detail

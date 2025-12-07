@@ -12,6 +12,11 @@ type TabType = "user" | "admin"
 export default function LoginCard() {
   const [activeTab, setActiveTab] = useState<TabType>("user")
   // 🔹 Admin 로그인 입력값 상태
+
+  const [entryCode, setEntryCode] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+
   const [adminNumber, setAdminNumber] = useState<string>("");
   const [adminPassword, setAdminPassword] = useState<string>("");
   const router = useRouter();
@@ -20,20 +25,32 @@ export default function LoginCard() {
 
 
   const handleClick = () => {
-    if (activeTab === "user") {
-      // User 탭 → 기존처럼 대기 화면으로
-      router.push("/waiting");
-    } else {
-      // Admin 탭 → 입력값에 따라 분기
-      if (adminNumber.trim().toLowerCase() === MASTER_KEY) {
-        // Admin Number 가 "master" 일 때 → Master Dashboard
-        router.push("/master");
-      } else {
-        // 그 외 → 기존 Admin Dashboard
-        router.push("/admin/dashboard");
-      }
+  if (activeTab === "user") {
+    // ✅ User 탭: 입력값 검증 후 대기 화면으로 이동
+    if (
+      entryCode.trim() === "" ||
+      userName.trim() === "" ||
+      phoneNumber.trim() === ""
+    ) {
+      alert("Entry Code, Name, Phone Number를 모두 입력해 주세요.");
+      return;
     }
-  };
+
+    // TODO: 나중에 여기서 실제 API 호출을 붙이면 됨
+    // 예: await startUserSession({ entryCode, userName, phoneNumber });
+
+    router.push("/waiting");
+  } else {
+    // ✅ Admin 탭: 입력값에 따라 분기
+    if (adminNumber.trim().toLowerCase() === MASTER_KEY) {
+      // Admin Number 가 "master" 일 때 -> Master Dashboard
+      router.push("/master");
+    } else {
+      // 그 외의 기존 Admin Dashboard
+      router.push("/admin/dashboard");
+    }
+  }
+};
 
 
   return (
@@ -71,7 +88,7 @@ export default function LoginCard() {
 
       <CardContent className="px-8 pt-6 pb-4">
         {activeTab === "user" ? (
-          <div className="space-y-5">
+          <div key="user-form" className="space-y-5">
             <div className="text-left mb-6">
               <h2 className="text-lg font-semibold text-foreground">Enter Test</h2>
               <p className="text-sm text-muted-foreground">
@@ -92,7 +109,7 @@ export default function LoginCard() {
             </div>
           </div>
         ) : (
-          <div className="space-y-5">
+          <div key="admin-form" className="space-y-5">
             <div className="text-left mb-6">
               <h2 className="text-lg font-semibold text-foreground">Admin Login</h2>
               <p className="text-sm text-muted-foreground">
@@ -113,9 +130,6 @@ export default function LoginCard() {
                 value={adminPassword}                            
                 onChange={(e) => setAdminPassword(e.target.value)}
                 />
-              <button type="button" className="text-xs text-primary hover:underline mt-1">
-                Forgot your password?
-              </button>
             </div>
           </div>
         )}

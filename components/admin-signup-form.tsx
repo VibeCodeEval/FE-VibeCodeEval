@@ -62,13 +62,7 @@ export default function AdminSignupForm() {
               onChange={handleChange}
               className="w-full h-11 px-3.5 pr-24 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
             />
-            <button
-              type="button"
-              onClick={handleVerifyEmail}
-              className="absolute right-3 text-xs font-medium text-gray-500 hover:text-gray-800 hover:underline transition-all cursor-pointer"
-            >
-              Verify Email
-            </button>
+          
           </div>
         </div>
 

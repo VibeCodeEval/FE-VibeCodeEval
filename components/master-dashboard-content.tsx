@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Users, UserCheck, CheckCircle2, CalendarClock, FileCode, ScrollText, ArrowRight } from "lucide-react"
+import Link from "next/link";
 
 const recentSessions = [
   { id: 1, sessionId: "SESSION-2025-001", status: "Active", createdAt: "Jan 14, 2025", participants: 18 },
@@ -149,13 +150,15 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
             </div>
             <div className="mt-auto pt-3" style={{ borderTop: "1px solid #E5E5E5" }}>
               <Button
+                asChild
                 variant="ghost"
                 className="w-full flex items-center justify-center gap-2"
-                onClick={() => onNavigate("Test Sessions")}
                 style={{ color: "#3B82F6", fontSize: "14px", fontWeight: 500 }}
               >
-                View All Sessions
-                <ArrowRight size={16} />
+                <Link href="/master/test-sessions">
+                  View All Sessions
+                  <ArrowRight size={16} />
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -217,13 +220,15 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
             </div>
             <div className="mt-auto pt-3" style={{ borderTop: "1px solid #E5E5E5" }}>
               <Button
+                asChild
                 variant="ghost"
                 className="w-full flex items-center justify-center gap-2"
-                onClick={() => onNavigate("Platform Logs")}
                 style={{ color: "#3B82F6", fontSize: "14px", fontWeight: 500 }}
               >
-                View All Logs
-                <ArrowRight size={16} />
+                <Link href="/master/platform-logs">
+                  View All Logs
+                  <ArrowRight size={16} />
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -235,97 +240,100 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
         <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A", marginBottom: "16px" }}>Quick Access</h2>
         <div className="grid grid-cols-3 gap-4">
           {/* Manage Test Sessions */}
-          <Card
-            className="cursor-pointer transition-all hover:shadow-md"
-            onClick={() => onNavigate("Test Sessions")}
-            style={{
-              borderRadius: "12px",
-              border: "1px solid #E5E5E5",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-            }}
-          >
-            <CardContent className="p-5">
-              <div className="flex items-center gap-4">
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    backgroundColor: "#EFF6FF",
-                    borderRadius: "12px",
-                  }}
-                >
-                  <CalendarClock size={24} style={{ color: "#3B82F6" }} />
+          <Link href="/master/test-sessions" className="block">
+            <Card
+              className="cursor-pointer transition-all hover:shadow-md"
+              style={{
+                borderRadius: "12px",
+                border: "1px solid #E5E5E5",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}
+            >
+              <CardContent className="p-5">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      backgroundColor: "#EFF6FF",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    <CalendarClock size={24} style={{ color: "#3B82F6" }} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Manage Test Sessions</span>
+                    <span style={{ fontSize: "13px", color: "#6B7280" }}>View and manage all coding test sessions</span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Manage Test Sessions</span>
-                  <span style={{ fontSize: "13px", color: "#6B7280" }}>View and manage all coding test sessions</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
 
           {/* Manage Problems */}
-          <Card
-            className="cursor-pointer transition-all hover:shadow-md"
-            onClick={() => onNavigate("Problem")}
-            style={{
-              borderRadius: "12px",
-              border: "1px solid #E5E5E5",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-            }}
-          >
-            <CardContent className="p-5">
-              <div className="flex items-center gap-4">
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    backgroundColor: "#F3E8FF",
-                    borderRadius: "12px",
-                  }}
-                >
-                  <FileCode size={24} style={{ color: "#7C3AED" }} />
+          <Link href="/master/problem" className="block">
+            <Card
+              className="cursor-pointer transition-all hover:shadow-md"
+              style={{
+                borderRadius: "12px",
+                border: "1px solid #E5E5E5",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}
+            >
+              <CardContent className="p-5">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      backgroundColor: "#F3E8FF",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    <FileCode size={24} style={{ color: "#7C3AED" }} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Manage Problems</span>
+                    <span style={{ fontSize: "13px", color: "#6B7280" }}>Browse and manage coding problems</span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Manage Problems</span>
-                  <span style={{ fontSize: "13px", color: "#6B7280" }}>Browse and manage coding problems</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
 
           {/* Open Platform Logs */}
-          <Card
-            className="cursor-pointer transition-all hover:shadow-md"
-            onClick={() => onNavigate("Platform Logs")}
-            style={{
-              borderRadius: "12px",
-              border: "1px solid #E5E5E5",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-            }}
-          >
-            <CardContent className="p-5">
-              <div className="flex items-center gap-4">
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    backgroundColor: "#F3F4F6",
-                    borderRadius: "12px",
-                  }}
-                >
-                  <ScrollText size={24} style={{ color: "#6B7280" }} />
+          <Link href="/master/platform-logs" className="block">
+            <Card
+              className="cursor-pointer transition-all hover:shadow-md"
+              style={{
+                borderRadius: "12px",
+                border: "1px solid #E5E5E5",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}
+            >
+              <CardContent className="p-5">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      backgroundColor: "#F3F4F6",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    <ScrollText size={24} style={{ color: "#6B7280" }} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Open Platform Logs</span>
+                    <span style={{ fontSize: "13px", color: "#6B7280" }}>View system activity and audit logs</span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Open Platform Logs</span>
-                  <span style={{ fontSize: "13px", color: "#6B7280" }}>View system activity and audit logs</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
     </div>
