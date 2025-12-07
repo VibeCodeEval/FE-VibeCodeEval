@@ -397,9 +397,9 @@ export function AnalyticsContent() {
     <div className="flex h-full flex-1 flex-col">
       <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">Analytics</h1>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">통계 분석</h1>
           <p className="text-sm text-[#6B7280]">
-            Visualize performance, correctness, and system trends across all test sessions.
+            모든 시험 세션의 성능, 정답률, 시스템 추세를 시각화합니다.
           </p>
         </div>
       </header>
@@ -442,23 +442,23 @@ export function AnalyticsContent() {
             className="inline-flex items-center gap-2 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
           >
             <Download className="h-4 w-4" strokeWidth={2} />
-            Export Results (CSV)
+            결과 내보내기 (CSV)
           </button>
         </div>
 
         <div className="mb-8 grid grid-cols-4 gap-4">
           <MetricCard
-            label="Prompt Score"
+            label="프롬프트 점수"
             value={metrics.promptScore}
             suffix={metrics.promptScore !== "–" ? "/ 100" : undefined}
           />
           <MetricCard
-            label="Performance Score"
+            label="성능 점수"
             value={metrics.performanceScore}
             suffix={metrics.performanceScore !== "–" ? "/ 100" : undefined}
           />
           <MetricCard
-            label="Correctness Score"
+            label="정답률 점수"
             value={metrics.correctnessScore}
             suffix={metrics.correctnessScore !== "–" ? "/ 100" : undefined}
           />
@@ -467,14 +467,14 @@ export function AnalyticsContent() {
 
         {filteredParticipants.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5E5E5] bg-white py-16">
-            <p className="text-lg font-medium text-[#6B7280]">No participants found</p>
-            <p className="mt-1 text-sm text-[#9CA3AF]">Try adjusting your filters to see results.</p>
+            <p className="text-lg font-medium text-[#6B7280]">조회된 참가자가 없습니다</p>
+            <p className="mt-1 text-sm text-[#9CA3AF]">필터 설정을 변경해 결과를 확인해보세요.</p>
           </div>
         )}
 
         {highPerformers.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">High Performers (85%+)</h2>
+            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">우수 참가자 (85%+)</h2>
             <div className="grid grid-cols-2 gap-6">
               {highPerformers.map((participant) => (
                 <ParticipantCard key={participant.id} participant={participant} />
@@ -485,7 +485,7 @@ export function AnalyticsContent() {
 
         {midPerformers.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">Mid Performers (60–84%)</h2>
+            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">중간 성과자 (60–84%)</h2>
             <div className="grid grid-cols-2 gap-6">
               {midPerformers.map((participant) => (
                 <ParticipantCard key={participant.id} participant={participant} />
@@ -497,7 +497,7 @@ export function AnalyticsContent() {
         {lowPerformers.length > 0 && (
           <div className="mb-8">
             <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">
-              Low Performers (&lt;60%)
+              저성과자 (&lt;60%)
             </h2>
             <div className="grid grid-cols-2 gap-6">
               {lowPerformers.map((participant) => (

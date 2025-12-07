@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Search, ChevronDown } from "lucide-react"
 
-type LogStatus = "Room Created" | "Room Started" | "Evaluation Completed" | "Room Ended"
+type LogStatus = "방 생성" | "시험 시작" | "평가 완료" | "시험 종료"
 
 interface LogEntry {
   id: number
@@ -17,83 +17,83 @@ const initialLogs: LogEntry[] = [
   {
     id: 1,
     timestamp: "2025-01-07 18:30",
-    status: "Room Ended",
+    status: "시험 종료",
     entryCode: "AV4B203A",
-    message: "The test session has ended.",
+    message: "시험 세션이 종료되었습니다.",
   },
   {
     id: 2,
     timestamp: "2025-01-07 18:20",
-    status: "Evaluation Completed",
+    status: "평가 완료",
     entryCode: "AV4B203A",
-    message: "Scoring process finished successfully.",
+    message: "채점 과정이 성공적으로 완료되었습니다.",
   },
   {
     id: 3,
     timestamp: "2025-01-07 18:10",
-    status: "Room Started",
+    status: "시험 시작",
     entryCode: "AV4B203A",
-    message: "The test session has officially started.",
+    message: "시험 세션이 시작되었습니다.",
   },
   {
     id: 4,
     timestamp: "2025-01-07 17:55",
-    status: "Room Created",
+    status: "방 생성",
     entryCode: "AV4B203A",
-    message: "New room created with entry code AV4B203A.",
+    message: "시험 방 생성됨",
   },
   {
     id: 5,
     timestamp: "2025-01-06 16:45",
-    status: "Room Ended",
+    status: "시험 종료",
     entryCode: "AV3C102B",
-    message: "The test session has ended.",
+    message: "시험 세션이 종료되었습니다.",
   },
   {
     id: 6,
     timestamp: "2025-01-06 16:30",
-    status: "Evaluation Completed",
+    status: "평가 완료",
     entryCode: "AV3C102B",
-    message: "Scoring process finished successfully.",
+    message: "채점 과정이 성공적으로 완료되었습니다.",
   },
   {
     id: 7,
     timestamp: "2025-01-06 15:20",
-    status: "Room Started",
+    status: "시험 시작",
     entryCode: "AV3C102B",
-    message: "The test session has officially started.",
+    message: "시험 세션이 시작되었습니다.",
   },
   {
     id: 8,
     timestamp: "2025-01-06 15:00",
-    status: "Room Created",
+    status: "방 생성",
     entryCode: "AV3C102B",
-    message: "New room created with entry code AV3C102B.",
+    message: "시험 방 생성됨",
   },
   {
     id: 9,
     timestamp: "2025-01-05 14:30",
-    status: "Room Ended",
+    status: "시험 종료",
     entryCode: "AV2A501C",
-    message: "The test session has ended.",
+    message: "시험 세션이 종료되었습니다.",
   },
   {
     id: 10,
     timestamp: "2025-01-05 14:00",
-    status: "Evaluation Completed",
+    status: "평가 완료",
     entryCode: "AV2A501C",
-    message: "Scoring process finished successfully.",
+    message: "채점 과정이 성공적으로 완료되었습니다.",
   },
 ]
 
 const statusColors: Record<LogStatus, { bg: string; text: string; marker: string }> = {
-  "Room Created": { bg: "#EBF0FA", text: "#4A74E0", marker: "#4A74E0" },
-  "Room Started": { bg: "#F0EBFA", text: "#7A5AF8", marker: "#7A5AF8" },
-  "Evaluation Completed": { bg: "#E8F5EF", text: "#4AA785", marker: "#4AA785" },
-  "Room Ended": { bg: "#FBEAEC", text: "#D6455D", marker: "#D6455D" },
+  "방 생성": { bg: "#EBF0FA", text: "#4A74E0", marker: "#4A74E0" },
+  "시험 시작": { bg: "#F0EBFA", text: "#7A5AF8", marker: "#7A5AF8" },
+  "평가 완료": { bg: "#E8F5EF", text: "#4AA785", marker: "#4AA785" },
+  "시험 종료": { bg: "#FBEAEC", text: "#D6455D", marker: "#D6455D" },
 }
 
-const statusOptions = ["All Status", "Room Created", "Room Started", "Evaluation Completed", "Room Ended"]
+const statusOptions = ["전체 상태", "방 생성", "시험 시작", "평가 완료", "시험 종료"]
 
 function getDateFromTimestamp(timestamp: string): string {
   return timestamp.split(" ")[0]
@@ -113,14 +113,14 @@ function groupLogsByDate(logs: LogEntry[]): Map<string, LogEntry[]> {
 
 export function LogsContent() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("All Status")
+  const [statusFilter, setStatusFilter] = useState("전체 상태")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const filteredLogs = initialLogs.filter((log) => {
     const matchesSearch =
       log.entryCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.message.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "All Status" || log.status === statusFilter
+    const matchesStatus = statusFilter === "전체 상태" || log.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
@@ -132,9 +132,9 @@ export function LogsContent() {
     {/* Top Header Bar */}
     <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
       <div>
-        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Logs</h1>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">로그</h1>
         <p className="text-sm text-[#6B7280]">
-          Monitor real-time events and API activity during test sessions.
+          시험 세션 중 발생하는 실시간 이벤트와 API 활동을 모니터링합니다.
         </p>
       </div>
     </header>
@@ -150,7 +150,7 @@ export function LogsContent() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search Logs..."
+                placeholder="로그 검색…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

@@ -633,7 +633,7 @@ function AnalyticsContent() {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                             className: "text-2xl font-semibold text-[#1A1A1A]",
-                            children: "Analytics"
+                            children: "통계 분석"
                         }, void 0, false, {
                             fileName: "[project]/components/analytics-content.tsx",
                             lineNumber: 400,
@@ -641,7 +641,7 @@ function AnalyticsContent() {
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-sm text-[#6B7280]",
-                            children: "Visualize performance, correctness, and system trends across all test sessions."
+                            children: "모든 시험 세션의 성능, 정답률, 시스템 추세를 시각화합니다."
                         }, void 0, false, {
                             fileName: "[project]/components/analytics-content.tsx",
                             lineNumber: 401,
@@ -802,7 +802,7 @@ function AnalyticsContent() {
                                         lineNumber: 444,
                                         columnNumber: 13
                                     }, this),
-                                    "Export Results (CSV)"
+                                    "결과 내보내기 (CSV)"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/analytics-content.tsx",
@@ -819,7 +819,7 @@ function AnalyticsContent() {
                         className: "mb-8 grid grid-cols-4 gap-4",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(MetricCard, {
-                                label: "Prompt Score",
+                                label: "프롬프트 점수",
                                 value: metrics.promptScore,
                                 suffix: metrics.promptScore !== "–" ? "/ 100" : undefined
                             }, void 0, false, {
@@ -828,7 +828,7 @@ function AnalyticsContent() {
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(MetricCard, {
-                                label: "Performance Score",
+                                label: "성능 점수",
                                 value: metrics.performanceScore,
                                 suffix: metrics.performanceScore !== "–" ? "/ 100" : undefined
                             }, void 0, false, {
@@ -837,7 +837,7 @@ function AnalyticsContent() {
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(MetricCard, {
-                                label: "Correctness Score",
+                                label: "정답률 점수",
                                 value: metrics.correctnessScore,
                                 suffix: metrics.correctnessScore !== "–" ? "/ 100" : undefined
                             }, void 0, false, {
@@ -864,7 +864,7 @@ function AnalyticsContent() {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-lg font-medium text-[#6B7280]",
-                                children: "No participants found"
+                                children: "조회된 참가자가 없습니다"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-content.tsx",
                                 lineNumber: 470,
@@ -872,7 +872,7 @@ function AnalyticsContent() {
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "mt-1 text-sm text-[#9CA3AF]",
-                                children: "Try adjusting your filters to see results."
+                                children: "필터 설정을 변경해 결과를 확인해보세요."
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-content.tsx",
                                 lineNumber: 471,
@@ -889,7 +889,7 @@ function AnalyticsContent() {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 className: "mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]",
-                                children: "High Performers (85%+)"
+                                children: "우수 참가자 (85%+)"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-content.tsx",
                                 lineNumber: 477,
@@ -920,7 +920,7 @@ function AnalyticsContent() {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 className: "mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]",
-                                children: "Mid Performers (60–84%)"
+                                children: "중간 성과자 (60–84%)"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-content.tsx",
                                 lineNumber: 488,
@@ -951,7 +951,7 @@ function AnalyticsContent() {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 className: "mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]",
-                                children: "Low Performers (<60%)"
+                                children: "저성과자 (<60%)"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-content.tsx",
                                 lineNumber: 499,

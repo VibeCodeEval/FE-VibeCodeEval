@@ -56,8 +56,8 @@ export default function LoginCard() {
   return (
     <Card className="w-[500px] shadow-lg border-0 shadow-black/5">
       <CardHeader className="text-center pb-2 pt-8">
-        <h1 className="text-2xl font-semibold text-foreground">Welcome to AI Vibe</h1>
-        <p className="text-muted-foreground text-sm">Coding Test Evaluator</p>
+        <h1 className="text-2xl font-semibold text-foreground">Vibe Coding Evaluator</h1>
+        <p className="text-muted-foreground text-sm">코딩 테스트 평가 시스템</p>
       </CardHeader>
 
       {/* Tab Navigation */}
@@ -71,7 +71,7 @@ export default function LoginCard() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            User
+            사용자
           </button>
           <button
             onClick={() => setActiveTab("admin")}
@@ -81,7 +81,7 @@ export default function LoginCard() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Admin
+            관리자
           </button>
         </div>
       </div>
@@ -90,43 +90,43 @@ export default function LoginCard() {
         {activeTab === "user" ? (
           <div key="user-form" className="space-y-5">
             <div className="text-left mb-6">
-              <h2 className="text-lg font-semibold text-foreground">Enter Test</h2>
+              <h2 className="text-lg font-semibold text-foreground">시험 입장</h2>
               <p className="text-sm text-muted-foreground">
-                Please enter your access code and details to join the test.
+                시험 참여를 위해 아래 정보를 입력해주세요.
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="entry-code">Entry Code</Label>
-              <Input id="entry-code" type="text" placeholder="Enter your access code" className="h-11" />
+              <Label htmlFor="entry-code">입장 코드</Label>
+              <Input id="entry-code" type="text" placeholder="입장 코드를 입력하세요" className="h-11" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" type="text" placeholder="Enter your full name" className="h-11" />
+              <Label htmlFor="name">이름</Label>
+              <Input id="name" type="text" placeholder="이름을 입력하세요" className="h-11" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" type="tel" placeholder="Enter your phone number" className="h-11" />
+              <Label htmlFor="phone">전화번호</Label>
+              <Input id="phone" type="tel" placeholder="전화번호를 입력하세요" className="h-11" />
             </div>
           </div>
         ) : (
           <div key="admin-form" className="space-y-5">
             <div className="text-left mb-6">
-              <h2 className="text-lg font-semibold text-foreground">Admin Login</h2>
+              <h2 className="text-lg font-semibold text-foreground">관리자 로그인</h2>
               <p className="text-sm text-muted-foreground">
-                Please enter your admin credentials to access the dashboard.
+                관리자 대시보드에 접속하려면 아래 정보를 입력해주세요.
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="admin-number">Admin Number</Label>
-              <Input id="admin-number" type="text" placeholder="Enter your admin number" className="h-11" 
+              <Label htmlFor="admin-number">관리자 번호</Label>
+              <Input id="admin-number" type="text" placeholder="관리자 번호를 입력하세요" className="h-11" 
                 value={adminNumber}                             
                 onChange={(e) => setAdminNumber(e.target.value)}
                 />
               </div>
 
             <div className="space-y-2">
-              <Label htmlFor="admin-password">Password</Label>
-              <Input id="admin-password" type="password" placeholder="Enter your password" className="h-11" 
+              <Label htmlFor="admin-password">비밀번호</Label>
+              <Input id="admin-password" type="password" placeholder="비밀번호를 입력하세요" className="h-11" 
                 value={adminPassword}                            
                 onChange={(e) => setAdminPassword(e.target.value)}
                 />
@@ -141,19 +141,19 @@ export default function LoginCard() {
           className="w-full h-11 text-base font-medium"
           onClick={handleClick}   // ✅ 여기만!
         >
-          {activeTab === "user" ? "Enter Test" : "Log In"}
+          {activeTab === "user" ? "시험에 참여하기" : "로그인"}
         </Button>
         {activeTab === "user" ? (
           // User helper texts
           <>
             <p className="text-xs text-muted-foreground text-center">
-              Your information is used only for test participation.
+              입력하신 정보는 시험 참여 목적에만 사용됩니다.
             </p>
-            <p className="text-xs text-muted-foreground text-center">Need help? Contact your test administrator.</p>
+            <p className="text-xs text-muted-foreground text-center">도움이 필요하시면 시험 관리자에게 문의하세요.</p>
           </>
         ) : (
           <>
-            <p className="text-xs text-muted-foreground text-center">Authorized access only. For admin use.</p>
+            <p className="text-xs text-muted-foreground text-center">이 페이지는 관리자 전용 페이지입니다.</p>
             <div className="w-full border-t border-border pt-4 mt-2">
                <Button
                   type="button"
@@ -161,16 +161,16 @@ export default function LoginCard() {
                   className="w-full h-11 text-base font-medium bg-transparent"
                   onClick={() => router.push("/admin-signup")}
                 >
-                Sign Up
+                회원가입
               </Button>
               <p className="text-xs text-muted-foreground text-center mt-3">
-                Don't have an admin account?{" "}
+                관리자 계정이 없으신가요?{" "}
                 <button
                   type="button"
                   onClick={() => router.push("/admin-signup")}
-                  className="text-primary underline hover:text-primary/80"
+                  className="text-blue-600 underline hover:text-primary/80"
                 >
-                  Sign up here
+                  회원가입하기
                 </button>
               </p>
             </div>

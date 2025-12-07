@@ -16,21 +16,21 @@ import {
 } from "lucide-react"
 
 const menuGroupA = [
-  { icon: LayoutDashboard, label: "Dashboard",   href: "/admin/dashboard" },
-  { icon: KeyRound,        label: "Entry Codes", href: "/admin/entry-codes" },
-  { icon: Users,           label: "Users",       href: "/admin/users" },
-  { icon: Server,          label: "Server Status", href: "/admin/server-status" },
+  { icon: LayoutDashboard, label: "대시보드",   href: "/admin/dashboard" },
+  { icon: KeyRound,        label: "코드 관리", href: "/admin/entry-codes" },
+  { icon: Users,           label: "참가자 목록",       href: "/admin/users" },
+  { icon: Server,          label: "서버 상태", href: "/admin/server-status" },
 ];
 
 const menuGroupB = [
-  { icon: FileText,  label: "Problems", href: "/admin/problems" },
-  { icon: Trophy,    label: "Results",  href: "/admin/results" },
-  { icon: ScrollText,label: "Logs",     href: "/admin/logs" },
+  { icon: FileText,  label: "문제 관리", href: "/admin/problems" },
+  { icon: Trophy,    label: "평가 결과",  href: "/admin/results" },
+  { icon: ScrollText,label: "로그",     href: "/admin/logs" },
 ];
 
 const menuGroupC = [
-  { icon: Settings,  label: "Settings",  href: "/admin/settings" },
-  { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
+  { icon: Settings,  label: "설정",  href: "/admin/settings" },
+  { icon: BarChart3, label: "통계 분석", href: "/admin/analytics" },
 ];
 
 function MenuItem({
@@ -87,7 +87,7 @@ export function AdminSidebar() {
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-medium text-[#1A1A1A]">Admin</span>
-          <span className="text-xs text-[#6B7280]">Administrator</span>
+          <span className="text-xs text-[#6B7280]">관리자</span>
         </div>
       </div>
 

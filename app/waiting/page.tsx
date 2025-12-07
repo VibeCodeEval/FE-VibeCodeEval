@@ -17,7 +17,7 @@ export default function WaitingPage() {
   return (
     <div className="min-h-screen w-full bg-[#F5F5F5] flex flex-col">
       <header className="w-full h-[72px] bg-white flex items-center justify-start pl-16 shadow-sm">
-        <h1 className="text-xl font-medium text-foreground">AI Vibe Coding Test</h1>
+        <h1 className="text-xl font-medium text-foreground">Vibe Coding Evaluator</h1>
       </header>
 
       {/* 🔥 여기 flex-1 추가 */}

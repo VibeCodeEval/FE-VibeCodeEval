@@ -278,7 +278,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                             className: "text-2xl font-semibold text-[#1A1A1A]",
-                            children: "Participant Evaluation Details"
+                            children: "참가자 평가 상세"
                         }, void 0, false, {
                             fileName: "[project]/components/participant-evaluation-content.tsx",
                             lineNumber: 247,
@@ -286,7 +286,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-sm text-[#6B7280]",
-                            children: "View full evaluation results and submission details for this participant."
+                            children: "이 참가자의 평가 결과와 제출 세부 정보를 모두 확인할 수 있습니다."
                         }, void 0, false, {
                             fileName: "[project]/components/participant-evaluation-content.tsx",
                             lineNumber: 248,
@@ -321,7 +321,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                     lineNumber: 263,
                                     columnNumber: 13
                                 }, this),
-                                "Back to Previous Page"
+                                "이전 페이지로 돌아가기"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/participant-evaluation-content.tsx",
@@ -341,7 +341,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Participant"
+                                        children: "참가자"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-evaluation-content.tsx",
                                         lineNumber: 271,
@@ -390,7 +390,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Entry Code"
+                                        children: "입장 코드"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-evaluation-content.tsx",
                                         lineNumber: 280,
@@ -415,7 +415,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Average Score"
+                                        children: "평균 점수"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-evaluation-content.tsx",
                                         lineNumber: 284,
@@ -452,7 +452,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Test Date & Duration"
+                                        children: "시험 일시 및 소요 시간"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-evaluation-content.tsx",
                                         lineNumber: 292,
@@ -481,7 +481,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Trend"
+                                        children: "추세"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-evaluation-content.tsx",
                                         lineNumber: 298,
@@ -512,7 +512,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "Status"
+                                        children: "제출 상태"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-evaluation-content.tsx",
                                         lineNumber: 304,
@@ -549,7 +549,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 className: "mb-4 text-lg font-semibold text-[#1A1A1A]",
-                                children: "Evaluation Breakdown"
+                                children: "평가 점수 세부 내역"
                             }, void 0, false, {
                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                 lineNumber: 313,
@@ -574,7 +574,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "mt-1 text-sm font-medium text-[#374151]",
-                                                children: "Prompt Score"
+                                                children: "프롬프트 점수"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 317,
@@ -582,7 +582,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "mt-1 text-xs text-[#6B7280]",
-                                                children: "Understanding & interpretation quality"
+                                                children: "이해 및 문제 해석 능력"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 318,
@@ -610,7 +610,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "mt-1 text-sm font-medium text-[#374151]",
-                                                children: "Performance Score"
+                                                children: "성능 점수"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 322,
@@ -618,7 +618,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "mt-1 text-xs text-[#6B7280]",
-                                                children: "Execution efficiency & optimization"
+                                                children: "실행 효율 및 최적화"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 323,
@@ -646,7 +646,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "mt-1 text-sm font-medium text-[#374151]",
-                                                children: "Correctness Score"
+                                                children: "정답률 점수"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 327,
@@ -654,7 +654,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "mt-1 text-xs text-[#6B7280]",
-                                                children: "Accuracy of solutions & test results"
+                                                children: "솔루션 정확도 및 테스트 결과 일치율"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 328,
@@ -683,7 +683,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 className: "mb-4 text-lg font-semibold text-[#1A1A1A]",
-                                children: "Submitted Code"
+                                children: "제출한 코드"
                             }, void 0, false, {
                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                 lineNumber: 335,
@@ -711,7 +711,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "text-sm font-medium text-[#374151]",
-                                                                children: "Code Implementation"
+                                                                children: "코드 구현"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                                 lineNumber: 341,
@@ -770,7 +770,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                                 className: "flex items-center gap-2 border-b border-[#E5E5E5] px-5 py-3",
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "text-sm font-medium text-[#374151]",
-                                                    children: "AI Feedback Summary"
+                                                    children: "AI 피드백 요약"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/participant-evaluation-content.tsx",
                                                     lineNumber: 353,
@@ -789,7 +789,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
                                                                 className: "mb-2 text-xs font-semibold uppercase tracking-wide text-[#16A34A]",
-                                                                children: "Strengths"
+                                                                children: "강점"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                                 lineNumber: 357,
@@ -824,7 +824,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
                                                                 className: "mb-2 text-xs font-semibold uppercase tracking-wide text-[#DC2626]",
-                                                                children: "Weaknesses"
+                                                                children: "약점"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                                 lineNumber: 367,
@@ -859,7 +859,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
                                                                 className: "mb-2 text-xs font-semibold uppercase tracking-wide text-[#3B82F6]",
-                                                                children: "Suggestions"
+                                                                children: "개선 제안"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                                 lineNumber: 377,
@@ -893,7 +893,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
                                                                 className: "mb-2 text-xs font-semibold uppercase tracking-wide text-[#D97706]",
-                                                                children: "Performance Notes"
+                                                                children: "성능 관련 메모"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                                 lineNumber: 387,
@@ -952,7 +952,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 className: "mb-4 text-lg font-semibold text-[#1A1A1A]",
-                                children: "Test Case Results"
+                                children: "테스트 케이스 결과"
                             }, void 0, false, {
                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                 lineNumber: 405,
@@ -965,7 +965,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                         className: "px-6 pt-4 pb-2",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-xs font-medium uppercase tracking-wide text-slate-500",
-                                            children: "All Test Cases"
+                                            children: "전체 테스트 케이스"
                                         }, void 0, false, {
                                             fileName: "[project]/components/participant-evaluation-content.tsx",
                                             lineNumber: 408,
@@ -981,7 +981,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                                children: "Test Case"
+                                                children: "테스트 케이스"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 411,
@@ -989,7 +989,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                                children: "Expected Output"
+                                                children: "기대 출력값"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 412,
@@ -997,7 +997,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                                children: "Submitted Output"
+                                                children: "제출된 출력값"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 413,
@@ -1005,7 +1005,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                                children: "Result"
+                                                children: "결과"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 414,
@@ -1013,7 +1013,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                                children: "Exec Time"
+                                                children: "실행 시간"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 415,
@@ -1021,7 +1021,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                                children: "Memory"
+                                                children: "메모리 사용량"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 418,
@@ -1029,7 +1029,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                                children: "Tokens"
+                                                children: "토큰 수"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-evaluation-content.tsx",
                                                 lineNumber: 419,
@@ -1130,7 +1130,7 @@ function ParticipantEvaluationContent({ entryCode, participantId, onBack }) {
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     onClick: handleExport,
                                     className: "inline-flex items-center gap-1.5 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]",
-                                    children: "Export Results (CSV)"
+                                    children: "결과 내보내기 (CSV)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/participant-evaluation-content.tsx",
                                     lineNumber: 444,

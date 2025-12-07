@@ -74,7 +74,7 @@ export function AiAssistantSidebar({ isOpen, onToggle }: AiAssistantSidebarProps
             <div className="w-8 h-8 bg-[#2563EB] rounded-lg flex items-center justify-center">
               <Bot className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-[#1F2937]">AI Assistant</span>
+            <span className="font-semibold text-[#1F2937]">AI 어시스턴트</span>
           </div>
           <button onClick={onToggle} className="p-1.5 hover:bg-[#F3F4F6] rounded-md transition-colors">
             <ChevronRight className="w-5 h-5 text-[#6B7280]" />
