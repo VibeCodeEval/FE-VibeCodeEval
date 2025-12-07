@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Clock, Coins } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { ProblemSection } from "@/components/problem-section"
 import { CodeEditorSection } from "@/components/code-editor-section"
 import { AiAssistantSidebar } from "@/components/ai-assistant-sidebar"
 import { useRouter } from "next/navigation";
+import { CheckCircle2 } from "lucide-react";
 
 export default function UserTestScreen() {
   const router = useRouter();
@@ -100,7 +101,7 @@ export default function UserTestScreen() {
             marginRight: isSidebarOpen ? "400px" : "48px",
           }}
         >
-          <div className="flex flex-col gap-6 h-[calc(100vh-88px)]">
+          <div className="flex flex-col gap-6">
             {/* Problem Section */}
             <ProblemSection />
 
@@ -170,27 +171,46 @@ export default function UserTestScreen() {
 
       {/* 2) 시험 종료 완료 공지 모달 */}
       <Dialog open={showFinishedModal} onOpenChange={setShowFinishedModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-lg font-semibold">
+        <DialogContent className="max-w-md w-full rounded-2xl border border-gray-100 shadow-xl bg-white p-8">
+          
+          {/* 접근성용 DialogTitle (화면에는 안 보이게) */}
+          <DialogTitle className="sr-only">시험이 종료되었습니다.</DialogTitle>
+          
+          <div className="flex flex-col items-center text-center space-y-5">
+
+            {/* 아이콘 + 서브텍스트 */}
+            <div className="flex flex-col items-center space-y-3">
+              <div className="p-3 rounded-full bg-emerald-50">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+              </div>
+              <span className="text-xs tracking-wide text-gray-400 uppercase">
+                Test Finished
+              </span>
+            </div>
+
+            {/* 타이틀 */}
+            <h2 className="text-xl font-semibold text-gray-900">
               시험이 종료되었습니다.
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-2 text-sm text-center text-muted-foreground">
-            수고하셨습니다!
-            <br />
-            시험이 정상적으로 종료되었습니다.
-          </div>
-          <div className="mt-6 flex justify-center">
-            <Button
-              variant="outline"
-              className="px-8"
-              onClick={() => {
-                router.push("/"); // 로그인 화면으로 이동
-              }}
-            >
-              홈 화면으로 돌아가기
-            </Button>
+            </h2>
+
+            {/* 설명 */}
+            <p className="text-sm text-gray-500 leading-relaxed">
+              수고하셨습니다! <br />
+              시험이 정상적으로 종료되었습니다.
+            </p>
+
+            {/* 얇은 구분선 */}
+            <div className="w-full h-px bg-gray-100" />
+
+            {/* 버튼 영역 */}
+            <div className="w-full flex flex-col gap-2">
+              <Button
+                className="w-full rounded-lg bg-gray-900 text-white hover:bg-black"
+                onClick={() => router.push("/")}   // 기존 동작 유지
+              >
+                홈 화면으로 돌아가기
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

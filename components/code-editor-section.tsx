@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const defaultCode = `# 언어를 선택하시고
@@ -18,6 +18,8 @@ export function CodeEditorSection() {
   const [code, setCode] = useState(defaultCode)
   const [cursorPosition, setCursorPosition] = useState({ line: 1, col: 1 })
 
+  const lineNumberRef = useRef<HTMLDivElement | null>(null);
+
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCode(e.target.value)
     updateCursorPosition(e.target)
@@ -31,7 +33,18 @@ export function CodeEditorSection() {
     setCursorPosition({ line, col })
   }
 
-  const lineNumbers = code.split("\n").map((_, i) => i + 1)
+  const handleEditorScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (lineNumberRef.current) {
+      lineNumberRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
+  };
+
+  const MIN_LINES = 15;
+
+  const actualLineCount = code.split("\n").length || 1;
+  const lineCount = Math.max(MIN_LINES, actualLineCount);
+
+  const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   return (
     <div className="bg-white rounded-xl border border-[#D0D0D0] flex flex-col flex-1 min-h-0">
@@ -52,9 +65,12 @@ export function CodeEditorSection() {
       </div>
 
       {/* Editor Content */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 min-h-0">
         {/* Line Numbers */}
-        <div className="bg-[#F9FAFB] border-r border-[#E5E7EB] px-3 py-4 select-none overflow-hidden">
+        <div
+          ref={lineNumberRef}
+          className="bg-[#F9FAFB] border-r border-[#E5E7EB] px-3 py-4 select-none overflow-hidden"
+        >
           <div className="font-mono text-sm text-[#9CA3AF] leading-6 text-right">
             {lineNumbers.map((num) => (
               <div key={num}>{num}</div>
@@ -68,6 +84,8 @@ export function CodeEditorSection() {
           onChange={handleTextChange}
           onClick={(e) => updateCursorPosition(e.currentTarget)}
           onKeyUp={(e) => updateCursorPosition(e.currentTarget)}
+          onScroll={handleEditorScroll}
+          rows={15}
           className="flex-1 p-4 font-mono text-sm text-[#1F2937] bg-white resize-none focus:outline-none leading-6"
           spellCheck={false}
         />
