@@ -52,6 +52,7 @@ __turbopack_context__.n(__TURBOPACK__imported__module__$5b$project$5d2f$componen
 "[project]/app/admin/results/[entryCode]/page.tsx [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
+// app/admin/results/[entryCode]/page.tsx
 __turbopack_context__.s([
     "default",
     ()=>ResultParticipantsPage
@@ -61,13 +62,16 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$participant$2d
 ;
 ;
 function ResultParticipantsPage({ params }) {
-    const { entryCode } = params;
+    // Next.js 동적 세그먼트에서 받은 값
+    const rawEntryCode = params?.entryCode ?? "";
+    // 혹시 인코딩 되어 있을 수 있으니 decode
+    const decodedEntryCode = decodeURIComponent(rawEntryCode);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$participant$2d$list$2d$content$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["ParticipantListContent"], {
-        entryCode: decodeURIComponent(entryCode)
+        entryCode: decodedEntryCode
     }, void 0, false, {
         fileName: "[project]/app/admin/results/[entryCode]/page.tsx",
-        lineNumber: 15,
-        columnNumber: 5
+        lineNumber: 23,
+        columnNumber: 10
     }, this);
 }
 }),

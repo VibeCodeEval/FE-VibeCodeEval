@@ -1077,20 +1077,8 @@
     height: 88px;
   }
 
-  .h-\[420px\] {
-    height: 420px;
-  }
-
-  .h-\[460px\] {
-    height: 460px;
-  }
-
   .h-\[520px\] {
     height: 520px;
-  }
-
-  .h-\[1000px\] {
-    height: 1000px;
   }
 
   .h-\[calc\(100\%-1px\)\] {
@@ -1099,10 +1087,6 @@
 
   .h-\[calc\(100vh-73px\)\] {
     height: calc(100vh - 73px);
-  }
-
-  .h-\[calc\(100vh-88px\)\] {
-    height: calc(100vh - 88px);
   }
 
   .h-\[var\(--radix-navigation-menu-viewport-height\)\] {
@@ -3744,6 +3728,12 @@
   @media (hover: hover) {
     .hover\:bg-\[\#E0EDFF\]:hover {
       background-color: #e0edff;
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-\[\#EFF6FF\]:hover {
+      background-color: #eff6ff;
     }
   }
 

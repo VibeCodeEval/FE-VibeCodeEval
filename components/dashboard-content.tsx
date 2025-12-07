@@ -111,7 +111,7 @@ export function DashboardContent() {
               <p className="text-sm text-gray-400">Latest system events and actions</p>
             </div>
             <Link
-              href="/logs"
+              href="/admin/logs"
               className="flex items-center gap-1 text-[13px] font-normal text-blue-600 transition-all hover:text-blue-700 hover:underline"
             >
               View All <ArrowRight className="h-4 w-4" />
@@ -155,21 +155,21 @@ export function DashboardContent() {
 
           <div className="mt-5 flex items-center gap-3">
             <Link
-              href="/entry-codes"
+              href="/admin/entry-codes"
               className="flex items-center gap-2 rounded-lg bg-[#3B82F6] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
             >
               <Plus className="h-4 w-4" />
               Create Entry Code
             </Link>
             <Link
-              href="/users"
+              href="/admin/users"
               className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               <Users className="h-4 w-4" />
               View Participants
             </Link>
             <Link
-              href="/analytics"
+              href="/admin/analytics"
               className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
               <BarChart3 className="h-4 w-4" />

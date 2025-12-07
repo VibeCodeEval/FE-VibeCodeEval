@@ -6,6 +6,7 @@ import { ArrowLeft, User, Code, CheckCircle, X } from "lucide-react"
 
 interface ParticipantEvaluationContentProps {
   entryCode: string
+  participantName: string;   // ✅ 새로 추가
   participantId: string
   onBack?: () => void;
 }
