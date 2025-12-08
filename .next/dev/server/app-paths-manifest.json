@@ -1,5 +1,4 @@
 {
-  "/admin-signup/page": "app/admin-signup/page.js",
   "/admin/analytics/page": "app/admin/analytics/page.js",
   "/admin/dashboard/page": "app/admin/dashboard/page.js",
   "/admin/entry-codes/page": "app/admin/entry-codes/page.js",
@@ -11,7 +10,8 @@
   "/admin/server-status/page": "app/admin/server-status/page.js",
   "/admin/settings/page": "app/admin/settings/page.js",
   "/admin/users/page": "app/admin/users/page.js",
-  "/page": "app/page.js",
-  "/test/page": "app/test/page.js",
-  "/waiting/page": "app/waiting/page.js"
+  "/master/admin-accounts/page": "app/master/admin-accounts/page.js",
+  "/master/page": "app/master/page.js",
+  "/master/test-sessions/page": "app/master/test-sessions/page.js",
+  "/page": "app/page.js"
 }

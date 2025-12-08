@@ -1310,7 +1310,7 @@ const initialAdminUsers = [
         id: 1,
         name: "John Smith",
         email: "john.smith@company.com",
-        status: "Active",
+        status: "활성화",
         lastLogin: "2025-01-14 10:33 AM",
         createdAt: "Dec 15, 2024",
         secretKey: "sk_prod_abc123xyz789def456",
@@ -1320,7 +1320,7 @@ const initialAdminUsers = [
         id: 2,
         name: "Sarah Johnson",
         email: "sarah.j@company.com",
-        status: "Active",
+        status: "활성화",
         lastLogin: "2025-01-14 10:33 AM",
         createdAt: "Dec 20, 2024",
         secretKey: "sk_prod_def456abc789xyz123",
@@ -1330,7 +1330,7 @@ const initialAdminUsers = [
         id: 3,
         name: "Mike Davis",
         email: "mike.davis@company.com",
-        status: "Disabled",
+        status: "비활성화",
         lastLogin: "2025-01-10 11:05 AM",
         createdAt: "Nov 28, 2024",
         secretKey: "sk_prod_xyz789def456abc123",
@@ -1399,7 +1399,7 @@ function AdminAccountsContent() {
         if (!selectedAdmin) return;
         setAdminUsers((prevUsers)=>prevUsers.map((user)=>user.id === selectedAdmin.id ? {
                     ...user,
-                    status: user.status === "Active" ? "Disabled" : "Active"
+                    status: user.status === "활성화" ? "비활성화" : "활성화"
                 } : user));
         setIsChangeStatusOpen(false);
     };
@@ -1492,7 +1492,7 @@ function AdminAccountsContent() {
                             color: "#1A1A1A",
                             marginBottom: "4px"
                         },
-                        children: "Admin Accounts"
+                        children: "관리자 계정 관리"
                     }, void 0, false, {
                         fileName: "[project]/components/admin-accounts-content.tsx",
                         lineNumber: 238,
@@ -1503,7 +1503,7 @@ function AdminAccountsContent() {
                             fontSize: "14px",
                             color: "#6B7280"
                         },
-                        children: "Manage admin users and their access."
+                        children: "관리자 계정과 접근 권한을 관리합니다."
                     }, void 0, false, {
                         fileName: "[project]/components/admin-accounts-content.tsx",
                         lineNumber: 248,
@@ -1527,7 +1527,7 @@ function AdminAccountsContent() {
                                     fontWeight: 700,
                                     color: "#1A1A1A"
                                 },
-                                children: "Admin Users"
+                                children: "관리자 목록"
                             }, void 0, false, {
                                 fileName: "[project]/components/admin-accounts-content.tsx",
                                 lineNumber: 261,
@@ -1542,7 +1542,7 @@ function AdminAccountsContent() {
                                     fontSize: "14px",
                                     fontWeight: 500
                                 },
-                                children: "+ Generate Key"
+                                children: "+ 인증키 생성"
                             }, void 0, false, {
                                 fileName: "[project]/components/admin-accounts-content.tsx",
                                 lineNumber: 270,
@@ -1573,7 +1573,7 @@ function AdminAccountsContent() {
                                                         color: "#6B7280",
                                                         paddingLeft: "24px"
                                                     },
-                                                    children: "Admin Name"
+                                                    children: "관리자 이름"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                                     lineNumber: 288,
@@ -1586,7 +1586,7 @@ function AdminAccountsContent() {
                                                         fontWeight: 500,
                                                         color: "#6B7280"
                                                     },
-                                                    children: "Email"
+                                                    children: "이메일"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                                     lineNumber: 299,
@@ -1599,7 +1599,7 @@ function AdminAccountsContent() {
                                                         fontWeight: 500,
                                                         color: "#6B7280"
                                                     },
-                                                    children: "Status"
+                                                    children: "상태"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                                     lineNumber: 309,
@@ -1612,7 +1612,7 @@ function AdminAccountsContent() {
                                                         fontWeight: 500,
                                                         color: "#6B7280"
                                                     },
-                                                    children: "Last Login"
+                                                    children: "최근 로그인"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                                     lineNumber: 319,
@@ -1626,7 +1626,7 @@ function AdminAccountsContent() {
                                                         color: "#6B7280",
                                                         paddingRight: "24px"
                                                     },
-                                                    children: "Actions"
+                                                    children: "작업"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                                     lineNumber: 329,
@@ -1676,12 +1676,12 @@ function AdminAccountsContent() {
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
                                                         className: "w-[120px]",
                                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
-                                                            variant: user.status === "Active" ? "default" : "secondary",
+                                                            variant: user.status === "활성화" ? "default" : "secondary",
                                                             style: {
                                                                 fontSize: "12px",
                                                                 fontWeight: 500,
-                                                                backgroundColor: user.status === "Active" ? "#DCFCE7" : "#F3F4F6",
-                                                                color: user.status === "Active" ? "#166534" : "#6B7280",
+                                                                backgroundColor: user.status === "활성화" ? "#DCFCE7" : "#F3F4F6",
+                                                                color: user.status === "활성화" ? "#166534" : "#6B7280",
                                                                 border: "none"
                                                             },
                                                             children: user.status
@@ -1756,7 +1756,7 @@ function AdminAccountsContent() {
                                                                                     lineNumber: 401,
                                                                                     columnNumber: 29
                                                                                 }, this),
-                                                                                "View Details"
+                                                                                "상세 보기"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/admin-accounts-content.tsx",
@@ -1778,7 +1778,7 @@ function AdminAccountsContent() {
                                                                                     lineNumber: 409,
                                                                                     columnNumber: 29
                                                                                 }, this),
-                                                                                "Change Status"
+                                                                                "상태 변경"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/admin-accounts-content.tsx",
@@ -1800,7 +1800,7 @@ function AdminAccountsContent() {
                                                                                     lineNumber: 417,
                                                                                     columnNumber: 29
                                                                                 }, this),
-                                                                                "Reset Password"
+                                                                                "비밀번호 재설정"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/admin-accounts-content.tsx",
@@ -1822,7 +1822,7 @@ function AdminAccountsContent() {
                                                                                     lineNumber: 425,
                                                                                     columnNumber: 29
                                                                                 }, this),
-                                                                                "Reissue Secret Key"
+                                                                                "시크릿 키 재발급"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/admin-accounts-content.tsx",
@@ -1844,7 +1844,7 @@ function AdminAccountsContent() {
                                                                                     lineNumber: 433,
                                                                                     columnNumber: 29
                                                                                 }, this),
-                                                                                "Delete Admin"
+                                                                                "관리자 삭제"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/admin-accounts-content.tsx",
@@ -1915,7 +1915,7 @@ function AdminAccountsContent() {
                                         fontWeight: 600,
                                         color: "#1A1A1A"
                                     },
-                                    children: "Generate New Secret Key"
+                                    children: "새 시크릿 키 생성"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 451,
@@ -1926,7 +1926,7 @@ function AdminAccountsContent() {
                                         fontSize: "14px",
                                         color: "#6B7280"
                                     },
-                                    children: "This key will be used by an admin to sign up for the system."
+                                    children: "이 키는 관리자가 시스템에 가입할 때 사용됩니다."
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 460,
@@ -1949,7 +1949,7 @@ function AdminAccountsContent() {
                                         display: "block",
                                         marginBottom: "8px"
                                     },
-                                    children: "Secret Key"
+                                    children: "시크릿 키"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 470,
@@ -2008,7 +2008,7 @@ function AdminAccountsContent() {
                                         color: "#6B7280",
                                         marginTop: "8px"
                                     },
-                                    children: "This key will only be shown once. Store it safely."
+                                    children: "이 키는 한 번만 표시됩니다. 안전하게 보관하세요."
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 500,
@@ -2030,7 +2030,7 @@ function AdminAccountsContent() {
                                         fontSize: "14px",
                                         fontWeight: 500
                                     },
-                                    children: "Cancel"
+                                    children: "취소"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 511,
@@ -2044,7 +2044,7 @@ function AdminAccountsContent() {
                                         fontSize: "14px",
                                         fontWeight: 500
                                     },
-                                    children: "Create Key"
+                                    children: "키 생성"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 521,
@@ -2080,7 +2080,7 @@ function AdminAccountsContent() {
                                     fontWeight: 600,
                                     color: "#1A1A1A"
                                 },
-                                children: "Change Status"
+                                children: "상태 변경"
                             }, void 0, false, {
                                 fileName: "[project]/components/admin-accounts-content.tsx",
                                 lineNumber: 540,
@@ -2099,7 +2099,7 @@ function AdminAccountsContent() {
                                         fontSize: "14px",
                                         color: "#6B7280"
                                     },
-                                    children: "Do you want to change this admin's status?"
+                                    children: "이 관리자의 상태를 변경하시겠습니까?"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 551,
@@ -2131,7 +2131,7 @@ function AdminAccountsContent() {
                                         fontSize: "14px",
                                         fontWeight: 500
                                     },
-                                    children: "Cancel"
+                                    children: "취소"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 567,
@@ -2140,12 +2140,12 @@ function AdminAccountsContent() {
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                                     onClick: handleConfirmChangeStatus,
                                     style: {
-                                        backgroundColor: selectedAdmin?.status === "Active" ? "#DC2626" : "#16A34A",
+                                        backgroundColor: selectedAdmin?.status === "활성화" ? "#DC2626" : "#16A34A",
                                         color: "#FFFFFF",
                                         fontSize: "14px",
                                         fontWeight: 500
                                     },
-                                    children: selectedAdmin?.status === "Active" ? "Disable Admin" : "Enable Admin"
+                                    children: selectedAdmin?.status === "활성화" ? "관리자 비활성화" : "관리자 활성화"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 577,
@@ -2783,7 +2783,7 @@ function AdminAccountsContent() {
                                         fontWeight: 600,
                                         color: "#1A1A1A"
                                     },
-                                    children: "Admin Details"
+                                    children: "관리자 상세 정보"
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 822,
@@ -2795,7 +2795,7 @@ function AdminAccountsContent() {
                                         fontSize: "14px",
                                         color: "#6B7280"
                                     },
-                                    children: "View full information for this administrator."
+                                    children: "해당 관리자의 전체 정보를 확인하세요."
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
                                     lineNumber: 825,
@@ -2819,7 +2819,7 @@ function AdminAccountsContent() {
                                                 fontWeight: 600,
                                                 color: "#1A1A1A"
                                             },
-                                            children: "Basic Information"
+                                            children: "기본 정보"
                                         }, void 0, false, {
                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                             lineNumber: 834,
@@ -2833,7 +2833,7 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Admin Name"
+                                                            children: "관리자 이름"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 837,
@@ -2861,7 +2861,7 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Email"
+                                                            children: "이메일"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 843,
@@ -2889,19 +2889,19 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Status"
+                                                            children: "상태"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 849,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
-                                                            variant: selectedAdmin?.status === "Active" ? "default" : "secondary",
+                                                            variant: selectedAdmin?.status === "활성화" ? "default" : "secondary",
                                                             style: {
                                                                 fontSize: "12px",
                                                                 fontWeight: 500,
-                                                                backgroundColor: selectedAdmin?.status === "Active" ? "#DCFCE7" : "#F3F4F6",
-                                                                color: selectedAdmin?.status === "Active" ? "#166534" : "#6B7280",
+                                                                backgroundColor: selectedAdmin?.status === "활성화" ? "#DCFCE7" : "#F3F4F6",
+                                                                color: selectedAdmin?.status === "활성화" ? "#166534" : "#6B7280",
                                                                 border: "none"
                                                             },
                                                             children: selectedAdmin?.status
@@ -2921,7 +2921,7 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Last Login"
+                                                            children: "마지막 로그인"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 864,
@@ -2949,7 +2949,7 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Created At"
+                                                            children: "생성일"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 870,
@@ -2998,7 +2998,7 @@ function AdminAccountsContent() {
                                                 fontWeight: 600,
                                                 color: "#1A1A1A"
                                             },
-                                            children: "Security Settings"
+                                            children: "보안 설정"
                                         }, void 0, false, {
                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                             lineNumber: 882,
@@ -3012,7 +3012,7 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Password Status"
+                                                            children: "비밀번호 상태"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 885,
@@ -3023,7 +3023,7 @@ function AdminAccountsContent() {
                                                             style: {
                                                                 color: "#1A1A1A"
                                                             },
-                                                            children: "Password set"
+                                                            children: "비밀번호 설정됨"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 886,
@@ -3040,7 +3040,7 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Secret Key"
+                                                            children: "시크릿 키"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 891,
@@ -3123,7 +3123,7 @@ function AdminAccountsContent() {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                             className: "text-xs text-muted-foreground",
-                                                            children: "Last Secret Key Issued"
+                                                            children: "마지막 시크릿 키 발급일"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/admin-accounts-content.tsx",
                                                             lineNumber: 926,
@@ -3179,7 +3179,7 @@ function AdminAccountsContent() {
                                             lineNumber: 938,
                                             columnNumber: 15
                                         }, this),
-                                        "Change Status"
+                                        "상태 변경"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
@@ -3198,7 +3198,7 @@ function AdminAccountsContent() {
                                             lineNumber: 942,
                                             columnNumber: 15
                                         }, this),
-                                        "Reset Password"
+                                        "비밀번호 재설정"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",
@@ -3217,7 +3217,7 @@ function AdminAccountsContent() {
                                             lineNumber: 946,
                                             columnNumber: 15
                                         }, this),
-                                        "Delete Admin"
+                                        "관리자 삭제"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/admin-accounts-content.tsx",

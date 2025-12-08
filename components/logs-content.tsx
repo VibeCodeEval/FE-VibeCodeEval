@@ -238,7 +238,7 @@ export function LogsContent() {
 
                             {/* Entry Code */}
                             <div className="mb-1">
-                              <span className="text-sm text-gray-500">Entry Code: </span>
+                              <span className="text-sm text-gray-500">입장 코드: </span>
                               <span className="text-sm font-medium text-gray-900">{log.entryCode}</span>
                             </div>
 
@@ -252,7 +252,7 @@ export function LogsContent() {
                 ))}
 
                 {filteredLogs.length === 0 && (
-                  <div className="text-center py-12 text-gray-400">No logs found matching your criteria.</div>
+                  <div className="text-center py-12 text-gray-400">조건에 맞는 로그가 없습니다.</div>
                 )}
               </div>
             </div>

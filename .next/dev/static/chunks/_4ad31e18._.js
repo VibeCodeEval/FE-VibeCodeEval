@@ -382,7 +382,7 @@ function LogsContent() {
                                                                                     children: [
                                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                             className: "text-sm text-gray-500",
-                                                                                            children: "Entry Code: "
+                                                                                            children: "입장 코드: "
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/components/logs-content.tsx",
                                                                                             lineNumber: 241,
@@ -435,7 +435,7 @@ function LogsContent() {
                                                 }, this)),
                                             filteredLogs.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "text-center py-12 text-gray-400",
-                                                children: "No logs found matching your criteria."
+                                                children: "조건에 맞는 로그가 없습니다."
                                             }, void 0, false, {
                                                 fileName: "[project]/components/logs-content.tsx",
                                                 lineNumber: 255,
