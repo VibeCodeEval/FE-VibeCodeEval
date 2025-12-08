@@ -8,34 +8,34 @@ const recentActivity = [
   {
     id: 1,
     timestamp: "2024-01-15 14:32",
-    status: "Evaluation Completed",
-    message: "Participant Kim Minjun completed evaluation",
+    status: "채점 과정이 성공적으로 완료되었습니다.",
+    message: "참가자 김민준님의 채점이 완료되었습니다",
   },
-  { id: 2, timestamp: "2024-01-15 14:15", status: "Room Started", message: "Test session AIV-2024-001 started" },
+  { id: 2, timestamp: "2024-01-15 14:15", status: "시험 세션이 시작되었습니다.", message: "시험 세션 AIV-2024-001이 시작되었습니다" },
   {
     id: 3,
     timestamp: "2024-01-15 13:45",
-    status: "Entry Code Created",
-    message: "New entry code AIV-2024-005 generated",
+    status: "시험 방 생성됨",
+    message: "새 입장 코드 AIV-2024-005가 생성되었습니다",
   },
   {
     id: 4,
     timestamp: "2024-01-15 12:30",
-    status: "Evaluation Completed",
-    message: "Participant Park Jiyeon completed evaluation",
+    status: "채점 과정이 성공적으로 완료되었습니다.",
+    message: "참가자 박지연님의 채점이 완료되었습니다",
   },
-  { id: 5, timestamp: "2024-01-15 11:20", status: "Room Started", message: "Test session AIV-2024-002 started" },
+  { id: 5, timestamp: "2024-01-15 11:20", status: "시험 세션이 시작되었습니다.", message: "시험 세션 AIV-2024-002가 시작되었습니다" },
 ]
 
 function getStatusColor(status: string) {
   switch (status) {
-    case "Room Started":
+    case "시험 세션이 시작되었습니다.":
       return "bg-purple-500"
-    case "Evaluation Completed":
+    case "채점 과정이 성공적으로 완료되었습니다.":
       return "bg-green-500"
-    case "Entry Code Created":
+    case "시험 방 생성됨":
       return "bg-blue-500"
-    case "Room Ended":
+    case "시험 세션이 종료되었습니다.":
       return "bg-red-500"
     default:
       return "bg-gray-500"

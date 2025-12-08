@@ -26,7 +26,7 @@ const initialAdminUsers = [
     id: 1,
     name: "John Smith",
     email: "john.smith@company.com",
-    status: "Active",
+    status: "활성화",
     lastLogin: "2025-01-14 10:33 AM",
     createdAt: "Dec 15, 2024",
     secretKey: "sk_prod_abc123xyz789def456",
@@ -36,7 +36,7 @@ const initialAdminUsers = [
     id: 2,
     name: "Sarah Johnson",
     email: "sarah.j@company.com",
-    status: "Active",
+    status: "활성화",
     lastLogin: "2025-01-14 10:33 AM",
     createdAt: "Dec 20, 2024",
     secretKey: "sk_prod_def456abc789xyz123",
@@ -46,7 +46,7 @@ const initialAdminUsers = [
     id: 3,
     name: "Mike Davis",
     email: "mike.davis@company.com",
-    status: "Disabled",
+    status: "비활성화",
     lastLogin: "2025-01-10 11:05 AM",
     createdAt: "Nov 28, 2024",
     secretKey: "sk_prod_xyz789def456abc123",
@@ -135,7 +135,7 @@ export function AdminAccountsContent() {
 
     setAdminUsers((prevUsers) =>
       prevUsers.map((user) =>
-        user.id === selectedAdmin.id ? { ...user, status: user.status === "Active" ? "Disabled" : "Active" } : user,
+        user.id === selectedAdmin.id ? { ...user, status: user.status === "활성화" ? "비활성화" : "활성화" } : user,
       ),
     )
     setIsChangeStatusOpen(false)
@@ -243,7 +243,7 @@ export function AdminAccountsContent() {
             marginBottom: "4px",
           }}
         >
-          Admin Accounts
+          관리자 계정 관리
         </h1>
         <p
           style={{
@@ -251,7 +251,7 @@ export function AdminAccountsContent() {
             color: "#6B7280",
           }}
         >
-          Manage admin users and their access.
+          관리자 계정과 접근 권한을 관리합니다.
         </p>
       </div>
 
@@ -265,7 +265,7 @@ export function AdminAccountsContent() {
               color: "#1A1A1A",
             }}
           >
-            Admin Users
+            관리자 목록
           </CardTitle>
           <Button
             size="sm"
@@ -277,7 +277,7 @@ export function AdminAccountsContent() {
               fontWeight: 500,
             }}
           >
-            + Generate Key
+            + 인증키 생성
           </Button>
         </CardHeader>
         <CardContent className="px-0 pb-0 pt-0 flex-1 flex flex-col overflow-hidden">
@@ -294,7 +294,7 @@ export function AdminAccountsContent() {
                       paddingLeft: "24px",
                     }}
                   >
-                    Admin Name
+                    관리자 이름
                   </TableHead>
                   <TableHead
                     className="w-[320px]"
@@ -304,7 +304,7 @@ export function AdminAccountsContent() {
                       color: "#6B7280",
                     }}
                   >
-                    Email
+                    이메일
                   </TableHead>
                   <TableHead
                     className="w-[120px]"
@@ -314,7 +314,7 @@ export function AdminAccountsContent() {
                       color: "#6B7280",
                     }}
                   >
-                    Status
+                    상태
                   </TableHead>
                   <TableHead
                     className="w-[200px]"
@@ -324,7 +324,7 @@ export function AdminAccountsContent() {
                       color: "#6B7280",
                     }}
                   >
-                    Last Login
+                    최근 로그인
                   </TableHead>
                   <TableHead
                     className="w-[80px] text-right"
@@ -335,7 +335,7 @@ export function AdminAccountsContent() {
                       paddingRight: "24px",
                     }}
                   >
-                    Actions
+                    작업
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -364,12 +364,12 @@ export function AdminAccountsContent() {
                     </TableCell>
                     <TableCell className="w-[120px]">
                       <Badge
-                        variant={user.status === "Active" ? "default" : "secondary"}
+                        variant={user.status === "활성화" ? "default" : "secondary"}
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          backgroundColor: user.status === "Active" ? "#DCFCE7" : "#F3F4F6",
-                          color: user.status === "Active" ? "#166534" : "#6B7280",
+                          backgroundColor: user.status === "활성화" ? "#DCFCE7" : "#F3F4F6",
+                          color: user.status === "활성화" ? "#166534" : "#6B7280",
                           border: "none",
                         }}
                       >
@@ -399,7 +399,7 @@ export function AdminAccountsContent() {
                             onClick={() => handleOpenDetails(user)}
                           >
                             <Eye className="h-4 w-4" />
-                            View Details
+                            상세 보기
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
@@ -407,7 +407,7 @@ export function AdminAccountsContent() {
                             onClick={() => handleOpenChangeStatus(user)}
                           >
                             <Power className="h-4 w-4" />
-                            Change Status
+                            상태 변경
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
@@ -415,7 +415,7 @@ export function AdminAccountsContent() {
                             onClick={() => handleOpenResetPassword(user)}
                           >
                             <RotateCcw className="h-4 w-4" />
-                            Reset Password
+                            비밀번호 재설정
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
@@ -423,7 +423,7 @@ export function AdminAccountsContent() {
                             onClick={() => handleOpenReissueKey(user)}
                           >
                             <KeyRound className="h-4 w-4" />
-                            Reissue Secret Key
+                            시크릿 키 재발급
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
@@ -431,7 +431,7 @@ export function AdminAccountsContent() {
                             onClick={() => handleOpenDeleteAdmin(user)}
                           >
                             <Trash2 className="h-4 w-4" />
-                            Delete Admin
+                            관리자 삭제
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -455,7 +455,7 @@ export function AdminAccountsContent() {
                 color: "#1A1A1A",
               }}
             >
-              Generate New Secret Key
+              새 시크릿 키 생성
             </DialogTitle>
             <DialogDescription
               style={{
@@ -463,7 +463,7 @@ export function AdminAccountsContent() {
                 color: "#6B7280",
               }}
             >
-              This key will be used by an admin to sign up for the system.
+              이 키는 관리자가 시스템에 가입할 때 사용됩니다.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -476,7 +476,7 @@ export function AdminAccountsContent() {
                 marginBottom: "8px",
               }}
             >
-              Secret Key
+              시크릿 키
             </label>
             <div className="flex items-center gap-2">
               <Input
@@ -504,7 +504,7 @@ export function AdminAccountsContent() {
                 marginTop: "8px",
               }}
             >
-              This key will only be shown once. Store it safely.
+              이 키는 한 번만 표시됩니다. 안전하게 보관하세요.
             </p>
           </div>
           <DialogFooter className="gap-2">
@@ -516,7 +516,7 @@ export function AdminAccountsContent() {
                 fontWeight: 500,
               }}
             >
-              Cancel
+              취소
             </Button>
             <Button
               onClick={handleCreateKey}
@@ -527,7 +527,7 @@ export function AdminAccountsContent() {
                 fontWeight: 500,
               }}
             >
-              Create Key
+              키 생성
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -544,7 +544,7 @@ export function AdminAccountsContent() {
                 color: "#1A1A1A",
               }}
             >
-              Change Status
+              상태 변경
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
@@ -554,7 +554,7 @@ export function AdminAccountsContent() {
                 color: "#6B7280",
               }}
             >
-              Do you want to change this admin's status?
+              이 관리자의 상태를 변경하시겠습니까?
             </p>
             <div
               className="mt-4"
@@ -572,18 +572,18 @@ export function AdminAccountsContent() {
                 fontWeight: 500,
               }}
             >
-              Cancel
+              취소
             </Button>
             <Button
               onClick={handleConfirmChangeStatus}
               style={{
-                backgroundColor: selectedAdmin?.status === "Active" ? "#DC2626" : "#16A34A",
+                backgroundColor: selectedAdmin?.status === "활성화" ? "#DC2626" : "#16A34A",
                 color: "#FFFFFF",
                 fontSize: "14px",
                 fontWeight: 500,
               }}
             >
-              {selectedAdmin?.status === "Active" ? "Disable Admin" : "Enable Admin"}
+              {selectedAdmin?.status === "활성화" ? "관리자 비활성화" : "관리자 활성화"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -820,10 +820,10 @@ export function AdminAccountsContent() {
         <SheetContent side="right" className="w-[420px] max-w-full pl-4 pr-6 py-6 flex flex-col gap-6">
           <SheetHeader className="space-y-1 items-start p-0 mb-4">
             <SheetTitle className="text-left" style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>
-              Admin Details
+              관리자 상세 정보
             </SheetTitle>
             <SheetDescription className="text-left" style={{ fontSize: "14px", color: "#6B7280" }}>
-              View full information for this administrator.
+              해당 관리자의 전체 정보를 확인하세요.
             </SheetDescription>
           </SheetHeader>
 
@@ -831,29 +831,29 @@ export function AdminAccountsContent() {
           <div className="flex-1 overflow-y-auto space-y-6">
             {/* Basic Information Section */}
             <div className="space-y-4">
-              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>Basic Information</h3>
+              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>기본 정보</h3>
               <div className="grid gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Admin Name</p>
+                  <p className="text-xs text-muted-foreground">관리자 이름</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
                     {selectedAdmin?.name}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-xs text-muted-foreground">이메일</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
                     {selectedAdmin?.email}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Status</p>
+                  <p className="text-xs text-muted-foreground">상태</p>
                   <Badge
-                    variant={selectedAdmin?.status === "Active" ? "default" : "secondary"}
+                    variant={selectedAdmin?.status === "활성화" ? "default" : "secondary"}
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
-                      backgroundColor: selectedAdmin?.status === "Active" ? "#DCFCE7" : "#F3F4F6",
-                      color: selectedAdmin?.status === "Active" ? "#166534" : "#6B7280",
+                      backgroundColor: selectedAdmin?.status === "활성화" ? "#DCFCE7" : "#F3F4F6",
+                      color: selectedAdmin?.status === "활성화" ? "#166534" : "#6B7280",
                       border: "none",
                     }}
                   >
@@ -861,13 +861,13 @@ export function AdminAccountsContent() {
                   </Badge>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Last Login</p>
+                  <p className="text-xs text-muted-foreground">마지막 로그인</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
                     {selectedAdmin?.lastLogin}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Created At</p>
+                  <p className="text-xs text-muted-foreground">생성일</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
                     {selectedAdmin?.createdAt}
                   </p>
@@ -879,16 +879,16 @@ export function AdminAccountsContent() {
 
             {/* Security Settings Section */}
             <div className="space-y-4">
-              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>Security Settings</h3>
+              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>보안 설정</h3>
               <div className="grid gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Password Status</p>
+                  <p className="text-xs text-muted-foreground">비밀번호 상태</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
-                    Password set
+                    비밀번호 설정됨
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Secret Key</p>
+                  <p className="text-xs text-muted-foreground">시크릿 키</p>
                   <div className="flex items-center gap-2">
                     <div
                       className="flex-1 bg-[#F9FAFB] rounded-md px-3 py-2 font-mono text-sm"
@@ -923,7 +923,7 @@ export function AdminAccountsContent() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Last Secret Key Issued</p>
+                  <p className="text-xs text-muted-foreground">마지막 시크릿 키 발급일</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
                     {selectedAdmin?.lastKeyIssued}
                   </p>
@@ -936,15 +936,15 @@ export function AdminAccountsContent() {
           <div className="mt-6 pt-4 border-t flex flex-col gap-2">
             <Button variant="outline" className="w-full bg-transparent" onClick={handleChangeStatusFromPanel}>
               <Power className="h-4 w-4 mr-2" />
-              Change Status
+              상태 변경
             </Button>
             <Button variant="outline" className="w-full bg-transparent" onClick={handleResetPasswordFromPanel}>
               <RotateCcw className="h-4 w-4 mr-2" />
-              Reset Password
+              비밀번호 재설정
             </Button>
             <Button variant="destructive" className="w-full" onClick={handleDeleteAdminFromPanel}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete Admin
+              관리자 삭제
             </Button>
           </div>
         </SheetContent>
