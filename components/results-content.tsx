@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Search, Download, Eye, X, CheckCircle } from "lucide-react"
+import { Search, Download, Eye, X, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
 
 interface ResultEntry {
   id: string
@@ -53,6 +53,8 @@ export function ResultsContent() {
   const [results] = useState<ResultEntry[]>(initialResults)
   const [searchQuery, setSearchQuery] = useState("")
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
 
   const showToast = (title: string, description: string) => {
     const id = crypto.randomUUID()
@@ -75,6 +77,15 @@ export function ResultsContent() {
   }
 
   const filteredResults = results.filter((result) => result.entryCode.toLowerCase().includes(searchQuery.toLowerCase()))
+  
+  const totalPages = Math.ceil(filteredResults.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = currentPage * pageSize
+  const visibleResults = filteredResults.slice(startIndex, endIndex)
+
+  // Display values (1-based for UI)
+  const displayStart = filteredResults.length === 0 ? 0 : startIndex + 1
+  const displayEnd = Math.min(endIndex, filteredResults.length)
 
   return (
     <div className="flex h-full flex-1 flex-col">
@@ -87,7 +98,7 @@ export function ResultsContent() {
       </header>
 
       {/* Main Content Panel */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
+      <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden p-6">
         {/* Search Bar */}
         <div className="mb-4 shrink-0">
           <div className="relative">
@@ -96,18 +107,21 @@ export function ResultsContent() {
               type="text"
               placeholder="입장 코드를 검색하세요…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
               className="w-full rounded-lg border border-[#E5E5E5] bg-white py-2.5 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
             />
           </div>
         </div>
 
         {/* Card List */}
-        <div className="flex flex-col gap-3">
-          {filteredResults.map((result) => (
+        <div className="flex flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden">
+          {visibleResults.map((result) => (
             <div
               key={result.id}
-              className="flex items-center justify-between bg-white border border-[#E5E5E5] rounded-xl p-5 transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
+              className="flex items-center justify-between bg-white border border-[#E5E5E5] rounded-xl p-5 transition-all duration-200 hover:shadow-md"
               style={{
                 borderRadius: "12px",
               }}
@@ -240,10 +254,49 @@ export function ResultsContent() {
 
         {/* Pagination Footer */}
         {filteredResults.length > 0 && (
-          <div className="mt-4 shrink-0 border-t border-[#E5E7EB] pt-4">
+          <div className="mt-4 flex shrink-0 items-center justify-between border-t border-[#E5E7EB] pt-4">
+            {/* Left side: Showing X-Y of N */}
             <span className="text-sm text-[#6B7280]">
-              총 {filteredResults.length}개의 결과 중 1–{filteredResults.length} 표시
+              총 {filteredResults.length}개의 결과 중 {displayStart}–{displayEnd} 표시
             </span>
+
+            {/* Right side: Pagination controls */}
+            <div className="flex items-center gap-1">
+              {/* Prev button */}
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                이전
+              </button>
+
+              {/* Page number buttons */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors ${
+                    page === currentPage
+                      ? "border-[#3B82F6] bg-[#3B82F6] text-white"
+                      : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#E0EDFF]"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {/* Next button */}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+              >
+                다음
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
