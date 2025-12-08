@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/User/Desktop/ai-vibe-login-ui/app/admin/page.tsx"],"sourcesContent":["// app/admin/page.tsx\r\nimport { redirect } from \"next/navigation\";\r\n\r\nexport default function AdminIndexPage() {\r\n  redirect(\"/admin/dashboard\");\r\n}\r\n"],"names":[],"mappings":"AAAA,qBAAqB;;;;;AACrB;AAAA;;AAEe,SAAS;IACtB,IAAA,gUAAQ,EAAC;AACX"}}]
-}

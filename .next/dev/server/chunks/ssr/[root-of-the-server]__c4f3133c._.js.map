@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/User/Desktop/ai-vibe-login-ui/app/admin/analytics/page.tsx"],"sourcesContent":["// app/admin/analytics/page.tsx\n\nimport AnalyticsContent from \"@/components/ui/analytics-content\";\n\nexport default function AnalyticsPage() {\n  return <AnalyticsContent />;\n}\n"],"names":[],"mappings":"AAAA,+BAA+B;;;;;;;;;;;;;AAIhB,SAAS;IACtB,qBAAO,6WAAC;;;;;AACV"}}]
-}
