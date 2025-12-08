@@ -47,6 +47,14 @@ export function AiAssistantSidebar({ isOpen, onToggle }: AiAssistantSidebarProps
 
   return (
     <>
+      {/* Background Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 z-20 transition-opacity duration-300"
+          onClick={onToggle}
+        />
+      )}
+
       {/* Collapsed Tab */}
       <button
         onClick={onToggle}
@@ -64,7 +72,7 @@ export function AiAssistantSidebar({ isOpen, onToggle }: AiAssistantSidebarProps
 
       {/* Expanded Sidebar */}
       <aside
-        className={`fixed right-0 top-[73px] h-[calc(100vh-73px)] w-[400px] bg-white border-l border-[#D0D0D0] shadow-lg transition-transform duration-300 ease-in-out z-30 flex flex-col ${
+        className={`fixed right-0 top-[73px] h-[calc(100vh-73px)] w-[400px] bg-white border-l border-[#D0D0D0] shadow-2xl transition-transform duration-300 ease-in-out z-30 flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

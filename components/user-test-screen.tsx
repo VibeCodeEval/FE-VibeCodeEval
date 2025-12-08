@@ -63,7 +63,7 @@ export default function UserTestScreen() {
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
       {/* Top Header Bar */}
-      <header className="bg-white border-b border-[#D0D0D0]">
+      <header className="sticky top-0 z-50 bg-white border-b border-[#D0D0D0]">
         <div className="flex items-center justify-between px-6 py-4">
           {/* Left - Logo */}
           <span className="font-semibold text-[#1F2937] pl-2">Vibe Coding Evaluator</span>
@@ -95,12 +95,7 @@ export default function UserTestScreen() {
       {/* Main Content */}
       <div className="flex relative">
         {/* Main Workspace */}
-        <main
-          className="flex-1 p-6 transition-all duration-300 ease-in-out"
-          style={{
-            marginRight: isSidebarOpen ? "400px" : "48px",
-          }}
-        >
+        <main className="flex-1 p-6">
           <div className="flex flex-col gap-6">
             {/* Problem Section */}
             <ProblemSection />
@@ -143,8 +138,19 @@ export default function UserTestScreen() {
         </div>
       )}
       {/* 1) 시험 시간 종료 시 모달 */}
-      <Dialog open={showTimeOverModal} onOpenChange={setShowTimeOverModal}>
-        <DialogContent className="max-w-md">
+      <Dialog 
+        open={showTimeOverModal} 
+        onOpenChange={(open) => {
+          // 바깥쪽 클릭이나 ESC 키로 닫히는 것을 방지
+          // 오로지 모달 내부 버튼을 통해서만 닫을 수 있음
+          if (!open) {
+            // false로 변경 시도를 무시
+            return;
+          }
+          setShowTimeOverModal(open);
+        }}
+      >
+        <DialogContent className="max-w-md" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="text-center text-lg font-semibold">
               시험 시간이 종료되었습니다.

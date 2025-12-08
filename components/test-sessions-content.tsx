@@ -642,7 +642,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
             style={{ fontFamily: "Inter, system-ui, -apple-system, sans-serif" }}
           >
             <p className="text-[#6B7280]" style={{ fontSize: "14px", fontWeight: 400 }}>
-              {startIndex + 1}–{endIndex} / {totalSessions} 세션 표시 중
+              총 {totalSessions}개의 세션 중 {startIndex + 1}–{endIndex} 표시
             </p>
 
             <div className="flex items-center gap-1">
@@ -954,7 +954,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
               {totalParticipantPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-[#E5E5E5] bg-white">
                   <p className="text-[#6B7280]" style={{ fontSize: "14px", fontWeight: 400 }}>
-                    {participantStartIndex + 1}–{participantEndIndex} / {totalParticipants} 참가자 표시 중
+                    총 {totalParticipants}명의 참가자 중 {participantStartIndex + 1}–{participantEndIndex} 표시
                   </p>
                   <div className="flex items-center gap-1">
                     <Button

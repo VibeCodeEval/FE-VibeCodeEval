@@ -1,7 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   KeyRound,
@@ -13,7 +14,17 @@ import {
   Settings,
   BarChart3,
   User,
+  LogOut,
 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 const menuGroupA = [
   { icon: LayoutDashboard, label: "대시보드",   href: "/admin/dashboard" },
@@ -59,12 +70,23 @@ function MenuItem({
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/"
     }
     return pathname.startsWith(href)
+  }
+
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true)
+  }
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false)
+    router.push("/")
   }
 
   return (
@@ -81,14 +103,23 @@ export function AdminSidebar() {
       <div className="mx-4 border-t border-[#E5E5E5]" />
 
       {/* SECTION 2 — Profile Area */}
-      <div className="flex items-center gap-3 px-5 py-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F3E8FF]">
-          <User className="h-5 w-5 text-[#7C3AED]" strokeWidth={1.5} />
+      <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F3E8FF]">
+            <User className="h-5 w-5 text-[#7C3AED]" strokeWidth={1.5} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-[#1A1A1A]">Admin</span>
+            <span className="text-xs text-[#6B7280]">관리자</span>
+          </div>
         </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-[#1A1A1A]">Admin</span>
-          <span className="text-xs text-[#6B7280]">관리자</span>
-        </div>
+        <button
+          onClick={handleLogoutClick}
+          className="flex items-center justify-center rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#1A1A1A]"
+          title="로그아웃"
+        >
+          <LogOut className="h-4 w-4" strokeWidth={1.5} />
+        </button>
       </div>
 
       {/* Divider 2 */}
@@ -138,6 +169,35 @@ export function AdminSidebar() {
           />
         ))}
       </nav>
+
+      {/* Logout Confirmation Modal */}
+      <Dialog open={showLogoutModal} onOpenChange={setShowLogoutModal}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-[#1A1A1A]">
+              로그아웃 하시겠습니까?
+            </DialogTitle>
+            <DialogDescription className="text-[#6B7280] mt-2">
+              로그아웃하면 관리자 대시보드에서 나가게 됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row justify-end gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowLogoutModal(false)}
+              className="border-[#E5E5E5] text-[#374151]"
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleConfirmLogout}
+              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+            >
+              로그아웃
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </aside>
   )
 }

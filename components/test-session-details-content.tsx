@@ -325,7 +325,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <p className="text-sm text-gray-500">
-                {startIndex + 1}–{Math.min(endIndex, participants.length)} / {participants.length} 참가자 표시 중
+                총 {participants.length}명의 참가자 중 {startIndex + 1}–{Math.min(endIndex, participants.length)} 표시
               </p>
               <div className="flex items-center gap-1">
                 <Button

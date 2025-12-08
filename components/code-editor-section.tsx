@@ -5,20 +5,74 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const defaultCode = `# 언어를 선택하시고
+const defaultCodeTemplates: Record<string, string> = {
+  python: `# 언어를 선택하시고
 # 코드를 여기에 작성하세요.
 
 def compress_string(s):
     # 여기에 코드를 작성하세요
     pass
-`
+`,
+  java: `// 언어를 선택하시고
+// 코드를 여기에 작성하세요.
+
+public class Solution {
+    public String compressString(String s) {
+        // 여기에 코드를 작성하세요
+        return "";
+    }
+}
+`,
+  cpp: `// 언어를 선택하시고
+// 코드를 여기에 작성하세요.
+
+#include <string>
+using namespace std;
+
+string compressString(string s) {
+    // 여기에 코드를 작성하세요
+    return "";
+}
+`,
+  javascript: `// 언어를 선택하시고
+// 코드를 여기에 작성하세요.
+
+function compressString(s) {
+    // 여기에 코드를 작성하세요
+    return "";
+}
+`,
+}
 
 export function CodeEditorSection() {
   const [language, setLanguage] = useState("python")
-  const [code, setCode] = useState(defaultCode)
+  // 각 언어별로 작성한 코드를 저장
+  const [languageCodes, setLanguageCodes] = useState<Record<string, string>>({
+    python: defaultCodeTemplates.python,
+    java: defaultCodeTemplates.java,
+    cpp: defaultCodeTemplates.cpp,
+    javascript: defaultCodeTemplates.javascript,
+  })
+  const [code, setCode] = useState(defaultCodeTemplates.python)
   const [cursorPosition, setCursorPosition] = useState({ line: 1, col: 1 })
 
   const lineNumberRef = useRef<HTMLDivElement | null>(null);
+
+  const handleLanguageChange = (newLanguage: string) => {
+    // 현재 언어의 코드를 저장하고, 새 언어의 코드를 불러오기
+    setLanguageCodes((prev) => {
+      const updated = {
+        ...prev,
+        [language]: code,
+      }
+      // 새 언어의 저장된 코드를 불러오기 (없으면 기본 템플릿 사용)
+      const newCode = updated[newLanguage] || defaultCodeTemplates[newLanguage] || defaultCodeTemplates.python
+      setCode(newCode)
+      return updated
+    })
+    // 새 언어로 변경
+    setLanguage(newLanguage)
+  }
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCode(e.target.value)
@@ -51,7 +105,7 @@ export function CodeEditorSection() {
       {/* Editor Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB]">
         <span className="text-sm font-medium text-[#1F2937]">Code Editor</span>
-        <Select value={language} onValueChange={setLanguage}>
+        <Select value={language} onValueChange={handleLanguageChange}>
           <SelectTrigger className="w-[140px] h-8 text-sm">
             <SelectValue />
           </SelectTrigger>

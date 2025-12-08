@@ -154,8 +154,8 @@ export function EntryCodesContent() {
       </header>
 
       {/* Main Content Panel */}
-      <div className="flex min-h-0 flex-1 flex-col p-6">
-        <div className="flex-1 space-y-4 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
+        <div className="flex-1 space-y-4">
           {visibleEntryCodes.map((entry) => (
             <div
               key={entry.id}
