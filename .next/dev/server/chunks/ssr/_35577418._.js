@@ -1671,7 +1671,7 @@ function TestSessionsContent({ onViewDetails }) {
         if (status === "Active") {
             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
                 className: "bg-green-100 text-green-700 hover:bg-green-100",
-                children: "Active"
+                children: "진행 중"
             }, void 0, false, {
                 fileName: "[project]/components/test-sessions-content.tsx",
                 lineNumber: 408,
@@ -1680,7 +1680,7 @@ function TestSessionsContent({ onViewDetails }) {
         }
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
             className: "bg-gray-100 text-gray-700 hover:bg-gray-100",
-            children: "Completed"
+            children: "완료"
         }, void 0, false, {
             fileName: "[project]/components/test-sessions-content.tsx",
             lineNumber: 410,
@@ -1709,7 +1709,7 @@ function TestSessionsContent({ onViewDetails }) {
                             fontWeight: 600,
                             lineHeight: "32px"
                         },
-                        children: "Test Sessions"
+                        children: "테스트 세션"
                     }, void 0, false, {
                         fileName: "[project]/components/test-sessions-content.tsx",
                         lineNumber: 425,
@@ -1721,7 +1721,7 @@ function TestSessionsContent({ onViewDetails }) {
                             fontSize: "14px",
                             fontWeight: 400
                         },
-                        children: "Manage and monitor all test sessions across the platform."
+                        children: "플랫폼의 모든 테스트 세션을 관리하고 모니터링합니다."
                     }, void 0, false, {
                         fileName: "[project]/components/test-sessions-content.tsx",
                         lineNumber: 435,
@@ -1745,7 +1745,7 @@ function TestSessionsContent({ onViewDetails }) {
                                     fontWeight: 700,
                                     color: "#1A1A1A"
                                 },
-                                children: "All Test Sessions"
+                                children: "모든 테스트 세션"
                             }, void 0, false, {
                                 fileName: "[project]/components/test-sessions-content.tsx",
                                 lineNumber: 449,
@@ -1773,7 +1773,7 @@ function TestSessionsContent({ onViewDetails }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "All",
-                                                children: "All"
+                                                children: "전체"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-sessions-content.tsx",
                                                 lineNumber: 464,
@@ -1781,7 +1781,7 @@ function TestSessionsContent({ onViewDetails }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "Active",
-                                                children: "Active"
+                                                children: "진행 중"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-sessions-content.tsx",
                                                 lineNumber: 465,
@@ -1789,7 +1789,7 @@ function TestSessionsContent({ onViewDetails }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "Completed",
-                                                children: "Completed"
+                                                children: "완료"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-sessions-content.tsx",
                                                 lineNumber: 466,
@@ -1835,7 +1835,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             width: "160px",
                                                             fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                                         },
-                                                        children: "Session ID"
+                                                        children: "세션 ID"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 475,
@@ -1849,7 +1849,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             width: "200px",
                                                             fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                                         },
-                                                        children: "Created By"
+                                                        children: "생성자"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 486,
@@ -1863,7 +1863,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             width: "140px",
                                                             fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                                         },
-                                                        children: "Created At"
+                                                        children: "생성일"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 497,
@@ -1877,7 +1877,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             width: "120px",
                                                             fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                                         },
-                                                        children: "Status"
+                                                        children: "상태"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 508,
@@ -1891,7 +1891,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             width: "140px",
                                                             fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                                         },
-                                                        children: "Participants"
+                                                        children: "참가자"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 519,
@@ -1905,7 +1905,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             width: "80px",
                                                             fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                                         },
-                                                        children: "Actions"
+                                                        children: "작업"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 530,
@@ -1981,7 +1981,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                     fontWeight: 500,
                                                                     fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                                                 },
-                                                                children: session.status
+                                                                children: session.status === "Active" ? "진행 중" : session.status === "Completed" ? "완료" : session.status
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/test-sessions-content.tsx",
                                                                 lineNumber: 580,
@@ -2002,7 +2002,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             },
                                                             children: [
                                                                 session.participants,
-                                                                " participants"
+                                                                "명"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/test-sessions-content.tsx",
@@ -2054,7 +2054,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                                         lineNumber: 621,
                                                                                         columnNumber: 29
                                                                                     }, this),
-                                                                                    "View Details"
+                                                                                    "상세 보기"
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/components/test-sessions-content.tsx",
@@ -2072,7 +2072,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                                         lineNumber: 628,
                                                                                         columnNumber: 29
                                                                                     }, this),
-                                                                                    "Delete Session"
+                                                                                    "세션 삭제"
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/components/test-sessions-content.tsx",
@@ -2131,13 +2131,12 @@ function TestSessionsContent({ onViewDetails }) {
                                             fontWeight: 400
                                         },
                                         children: [
-                                            "Showing ",
                                             startIndex + 1,
                                             "–",
                                             endIndex,
-                                            " of ",
+                                            " / ",
                                             totalSessions,
-                                            " sessions"
+                                            " 세션 표시 중"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/test-sessions-content.tsx",
@@ -2237,7 +2236,7 @@ function TestSessionsContent({ onViewDetails }) {
                                         color: "#1A1A1A",
                                         fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                     },
-                                    children: "Delete Test Session"
+                                    children: "테스트 세션 삭제"
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-sessions-content.tsx",
                                     lineNumber: 693,
@@ -2250,13 +2249,13 @@ function TestSessionsContent({ onViewDetails }) {
                                         fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                     },
                                     children: [
-                                        "This action cannot be undone.",
+                                        "이 작업은 되돌릴 수 없습니다.",
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                             fileName: "[project]/components/test-sessions-content.tsx",
                                             lineNumber: 711,
                                             columnNumber: 15
                                         }, this),
-                                        "This will permanently delete the test session and all associated data."
+                                        "테스트 세션과 관련된 모든 데이터가 영구적으로 삭제됩니다."
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/test-sessions-content.tsx",
@@ -2295,11 +2294,11 @@ function TestSessionsContent({ onViewDetails }) {
                                             fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                         },
                                         children: [
-                                            "Created by ",
+                                            "생성자: ",
                                             selectedSession.createdBy,
                                             " • ",
                                             selectedSession.participants,
-                                            " participants"
+                                            "명"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/test-sessions-content.tsx",
@@ -2326,7 +2325,7 @@ function TestSessionsContent({ onViewDetails }) {
                                     style: {
                                         fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                     },
-                                    children: "Cancel"
+                                    children: "취소"
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-sessions-content.tsx",
                                     lineNumber: 742,
@@ -2338,7 +2337,7 @@ function TestSessionsContent({ onViewDetails }) {
                                     style: {
                                         fontFamily: "Inter, system-ui, -apple-system, sans-serif"
                                     },
-                                    children: "Delete Session"
+                                    children: "세션 삭제"
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-sessions-content.tsx",
                                     lineNumber: 751,
@@ -2380,7 +2379,7 @@ function TestSessionsContent({ onViewDetails }) {
                                         fontWeight: 600,
                                         color: "#1A1A1A"
                                     },
-                                    children: "Test Session Details"
+                                    children: "테스트 세션 상세 정보"
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-sessions-content.tsx",
                                     lineNumber: 771,
@@ -2391,7 +2390,7 @@ function TestSessionsContent({ onViewDetails }) {
                                         fontSize: "14px",
                                         color: "#6B7280"
                                     },
-                                    children: "View full information and live progress for this test session."
+                                    children: "이 테스트 세션의 전체 정보와 실시간 진행 상황을 확인하세요."
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-sessions-content.tsx",
                                     lineNumber: 774,
@@ -2419,7 +2418,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         style: {
                                                             fontWeight: 500
                                                         },
-                                                        children: "Session ID"
+                                                        children: "세션 ID"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 783,
@@ -2451,7 +2450,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         style: {
                                                             fontWeight: 500
                                                         },
-                                                        children: "Created By"
+                                                        children: "생성자"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 791,
@@ -2483,7 +2482,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         style: {
                                                             fontWeight: 500
                                                         },
-                                                        children: "Created At"
+                                                        children: "생성일"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 799,
@@ -2518,7 +2517,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         style: {
                                                             fontWeight: 500
                                                         },
-                                                        children: "Status"
+                                                        children: "상태"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 807,
@@ -2531,7 +2530,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                             fontSize: "12px",
                                                             fontWeight: 500
                                                         },
-                                                        children: detailsSession?.status
+                                                        children: detailsSession?.status === "Active" ? "진행 중" : detailsSession?.status === "Completed" ? "완료" : detailsSession?.status
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 810,
@@ -2560,7 +2559,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         style: {
                                                             fontWeight: 500
                                                         },
-                                                        children: "Participants"
+                                                        children: "참가자"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 825,
@@ -2574,7 +2573,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         },
                                                         children: [
                                                             detailsSession?.participants,
-                                                            " participants"
+                                                            "명"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
@@ -2595,7 +2594,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         style: {
                                                             fontWeight: 500
                                                         },
-                                                        children: "Submissions"
+                                                        children: "제출"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 833,
@@ -2631,7 +2630,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         style: {
                                                             fontWeight: 500
                                                         },
-                                                        children: "Avg Token Usage"
+                                                        children: "평균 토큰 사용량"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
                                                         lineNumber: 841,
@@ -2645,7 +2644,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                         },
                                                         children: [
                                                             avgTokenUsage.toLocaleString(),
-                                                            " tokens"
+                                                            " 토큰"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/test-sessions-content.tsx",
@@ -2685,7 +2684,7 @@ function TestSessionsContent({ onViewDetails }) {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                                     className: "text-sm font-semibold text-[#1A1A1A] mb-3",
-                                    children: "Participants"
+                                    children: "참가자"
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-sessions-content.tsx",
                                     lineNumber: 854,
@@ -2713,7 +2712,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                         fontWeight: 500,
                                                                         width: "150px"
                                                                     },
-                                                                    children: "Name"
+                                                                    children: "이름"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/test-sessions-content.tsx",
                                                                     lineNumber: 860,
@@ -2726,7 +2725,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                         fontWeight: 500,
                                                                         width: "150px"
                                                                     },
-                                                                    children: "Phone Number"
+                                                                    children: "전화번호"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/test-sessions-content.tsx",
                                                                     lineNumber: 866,
@@ -2739,7 +2738,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                         fontWeight: 500,
                                                                         width: "130px"
                                                                     },
-                                                                    children: "Connection Status"
+                                                                    children: "연결 상태"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/test-sessions-content.tsx",
                                                                     lineNumber: 872,
@@ -2752,7 +2751,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                         fontWeight: 500,
                                                                         width: "130px"
                                                                     },
-                                                                    children: "Submission Status"
+                                                                    children: "제출 상태"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/test-sessions-content.tsx",
                                                                     lineNumber: 878,
@@ -2765,7 +2764,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                         fontWeight: 500,
                                                                         width: "100px"
                                                                     },
-                                                                    children: "Token Usage"
+                                                                    children: "토큰 사용량"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/test-sessions-content.tsx",
                                                                     lineNumber: 884,
@@ -2778,7 +2777,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                         fontWeight: 500,
                                                                         width: "80px"
                                                                     },
-                                                                    children: "Action"
+                                                                    children: "작업"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/test-sessions-content.tsx",
                                                                     lineNumber: 890,
@@ -2831,7 +2830,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                                 fontSize: "12px",
                                                                                 fontWeight: 500
                                                                             },
-                                                                            children: participant.connectionStatus
+                                                                            children: participant.connectionStatus === "Connected" ? "연결됨" : "연결 끊김"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/test-sessions-content.tsx",
                                                                             lineNumber: 908,
@@ -2850,7 +2849,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                                 fontSize: "12px",
                                                                                 fontWeight: 500
                                                                             },
-                                                                            children: participant.submissionStatus
+                                                                            children: participant.submissionStatus === "Submitted" ? "제출됨" : participant.submissionStatus === "In Progress" ? "진행 중" : "시작 안 함"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/test-sessions-content.tsx",
                                                                             lineNumber: 921,
@@ -2882,7 +2881,7 @@ function TestSessionsContent({ onViewDetails }) {
                                                                                 fontSize: "13px",
                                                                                 fontWeight: 500
                                                                             },
-                                                                            children: "View Detail"
+                                                                            children: "상세 보기"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/test-sessions-content.tsx",
                                                                             lineNumber: 939,
@@ -2925,13 +2924,12 @@ function TestSessionsContent({ onViewDetails }) {
                                                         fontWeight: 400
                                                     },
                                                     children: [
-                                                        "Showing ",
                                                         participantStartIndex + 1,
                                                         "–",
                                                         participantEndIndex,
-                                                        " of ",
+                                                        " / ",
                                                         totalParticipants,
-                                                        " participants"
+                                                        " 참가자 표시 중"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/test-sessions-content.tsx",

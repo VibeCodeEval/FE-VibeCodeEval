@@ -1,4 +1,8 @@
-export function TopNavBar() {
+type TopNavBarProps = {
+  title?: string
+}
+
+export function TopNavBar({ title = "마스터 대시보드" }: TopNavBarProps) {
   return (
     <header
       className="sticky top-0 z-30 flex items-center justify-between px-6"
@@ -19,7 +23,7 @@ export function TopNavBar() {
           color: "#1A1A1A",
         }}
       >
-        Master Dashboard
+        {title}
       </h1>
 
       {/* Right side - Profile Cluster */}

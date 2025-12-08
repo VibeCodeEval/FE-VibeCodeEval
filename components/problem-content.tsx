@@ -10,7 +10,7 @@ const initialProblems = [
     id: 1,
     title: "문제 1. 문자열 압축하기",
     createdBy: "John Smith",
-    lastUpdated: "2 days ago",
+    lastUpdated: "2일 전",
     usedInSessions: 12,
     description:
       "주어진 문자열에서 연속으로 반복되는 문자를 압축하여 표현하세요. 연속으로 반복되는 문자는 해당 문자와 반복 횟수로 표현합니다. 반복 횟수가 1인 경우에는 숫자를 생략합니다.",
@@ -22,7 +22,7 @@ const initialProblems = [
     id: 2,
     title: "문제 2. 이진 탐색 구현",
     createdBy: "Sarah Johnson",
-    lastUpdated: "5 days ago",
+    lastUpdated: "5일 전",
     usedInSessions: 8,
     description:
       "정렬된 배열에서 특정 값의 위치를 이진 탐색 알고리즘을 사용하여 찾으세요. 값이 존재하면 해당 인덱스를, 존재하지 않으면 -1을 반환합니다.",
@@ -34,7 +34,7 @@ const initialProblems = [
     id: 3,
     title: "문제 3. 연결 리스트 뒤집기",
     createdBy: "Mike Davis",
-    lastUpdated: "1 week ago",
+    lastUpdated: "1주 전",
     usedInSessions: 15,
     description:
       "단일 연결 리스트가 주어졌을 때, 리스트의 순서를 뒤집어서 반환하세요. 리스트의 각 노드는 정수 값을 가지고 있습니다.",
@@ -46,7 +46,7 @@ const initialProblems = [
     id: 4,
     title: "문제 4. 배낭 문제 (동적 프로그래밍)",
     createdBy: "John Smith",
-    lastUpdated: "3 days ago",
+    lastUpdated: "3일 전",
     usedInSessions: 6,
     description:
       "무게 제한이 있는 배낭에 최대 가치를 담을 수 있도록 물건을 선택하세요. 각 물건은 무게와 가치를 가지며, 같은 물건을 여러 번 선택할 수 없습니다.",
@@ -103,7 +103,7 @@ export function ProblemContent() {
             letterSpacing: "-0.01em",
           }}
         >
-          Problem
+          문제 관리
         </h1>
         <p
           style={{
@@ -113,7 +113,7 @@ export function ProblemContent() {
             lineHeight: "20px",
           }}
         >
-          Review and supervise all problems used across the platform.
+          플랫폼에서 사용되는 모든 문제를 검토하고 관리합니다.
         </p>
       </div>
 
@@ -122,7 +122,7 @@ export function ProblemContent() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
         <Input
           type="text"
-          placeholder="Search"
+          placeholder="검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10 h-11 rounded-lg border-[#E5E5E5] bg-white"
@@ -171,7 +171,7 @@ export function ProblemContent() {
                     lineHeight: "16px",
                   }}
                 >
-                  Created By
+                  생성자
                 </span>
                 <span
                   style={{
@@ -195,7 +195,7 @@ export function ProblemContent() {
                     lineHeight: "16px",
                   }}
                 >
-                  Last Updated
+                  마지막 업데이트
                 </span>
                 <span
                   style={{
@@ -219,7 +219,7 @@ export function ProblemContent() {
                     lineHeight: "16px",
                   }}
                 >
-                  Used In Sessions
+                  사용된 세션
                 </span>
                 <span
                   style={{
@@ -229,7 +229,7 @@ export function ProblemContent() {
                     lineHeight: "20px",
                   }}
                 >
-                  {problem.usedInSessions} sessions
+                  {problem.usedInSessions}개
                 </span>
               </div>
             </div>
@@ -247,7 +247,7 @@ export function ProblemContent() {
               }}
             >
               <Eye size={18} />
-              <span>View Detail</span>
+              <span>상세 보기</span>
             </button>
           </div>
         ))}
@@ -255,7 +255,7 @@ export function ProblemContent() {
         {/* Empty State */}
         {filteredProblems.length === 0 && (
           <div className="flex items-center justify-center py-12 text-gray-500">
-            <p style={{ fontSize: "14px" }}>No problems found matching your search.</p>
+            <p style={{ fontSize: "14px" }}>검색 결과가 없습니다.</p>
           </div>
         )}
       </div>
@@ -294,7 +294,7 @@ export function ProblemContent() {
                     lineHeight: "20px",
                   }}
                 >
-                  Created by {selectedProblem.createdBy} · Last updated {selectedProblem.lastUpdated}
+                  생성자: {selectedProblem.createdBy} · 마지막 업데이트: {selectedProblem.lastUpdated}
                 </p>
               </DialogHeader>
 
@@ -315,7 +315,7 @@ export function ProblemContent() {
                     letterSpacing: "0.05em",
                   }}
                 >
-                  Problem Description
+                  문제 설명
                 </h4>
                 <p
                   style={{

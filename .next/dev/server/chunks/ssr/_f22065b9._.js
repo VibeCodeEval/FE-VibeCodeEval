@@ -27,8 +27,8 @@ const participantsData = [
         name: "Sarah Johnson",
         entryCode: "AIV-2024-001",
         avgScore: 94,
-        status: "Completed",
-        trend: "High",
+        status: "완료",
+        trend: "높음",
         sparklineData: [
             65,
             72,
@@ -46,8 +46,8 @@ const participantsData = [
         name: "Michael Chen",
         entryCode: "AIV-2024-001",
         avgScore: 91,
-        status: "Completed",
-        trend: "High",
+        status: "완료",
+        trend: "높음",
         sparklineData: [
             70,
             75,
@@ -65,8 +65,8 @@ const participantsData = [
         name: "Emily Davis",
         entryCode: "AIV-2024-002",
         avgScore: 88,
-        status: "Completed",
-        trend: "High",
+        status: "완료",
+        trend: "높음",
         sparklineData: [
             60,
             68,
@@ -84,8 +84,8 @@ const participantsData = [
         name: "David Wilson",
         entryCode: "AIV-2024-001",
         avgScore: 86,
-        status: "Completed",
-        trend: "High",
+        status: "완료",
+        trend: "높음",
         sparklineData: [
             72,
             78,
@@ -103,8 +103,8 @@ const participantsData = [
         name: "Jessica Lee",
         entryCode: "AIV-2024-003",
         avgScore: 82,
-        status: "Completed",
-        trend: "Average",
+        status: "완료",
+        trend: "보통",
         sparklineData: [
             78,
             80,
@@ -122,8 +122,8 @@ const participantsData = [
         name: "Chris Martinez",
         entryCode: "AIV-2024-002",
         avgScore: 78,
-        status: "Completed",
-        trend: "Average",
+        status: "완료",
+        trend: "보통",
         sparklineData: [
             75,
             76,
@@ -141,8 +141,8 @@ const participantsData = [
         name: "Amanda Brown",
         entryCode: "AIV-2024-001",
         avgScore: 75,
-        status: "In Progress",
-        trend: "Average",
+        status: "진행 중",
+        trend: "보통",
         sparklineData: [
             68,
             70,
@@ -160,8 +160,8 @@ const participantsData = [
         name: "Ryan Taylor",
         entryCode: "AIV-2024-003",
         avgScore: 72,
-        status: "Completed",
-        trend: "Average",
+        status: "완료",
+        trend: "보통",
         sparklineData: [
             70,
             71,
@@ -179,8 +179,8 @@ const participantsData = [
         name: "Nicole Garcia",
         entryCode: "AIV-2024-002",
         avgScore: 68,
-        status: "Completed",
-        trend: "Average",
+        status: "완료",
+        trend: "보통",
         sparklineData: [
             65,
             66,
@@ -198,8 +198,8 @@ const participantsData = [
         name: "Kevin Robinson",
         entryCode: "AIV-2024-001",
         avgScore: 55,
-        status: "Completed",
-        trend: "Low",
+        status: "완료",
+        trend: "낮음",
         sparklineData: [
             62,
             58,
@@ -217,8 +217,8 @@ const participantsData = [
         name: "Laura Thompson",
         entryCode: "AIV-2024-003",
         avgScore: 48,
-        status: "In Progress",
-        trend: "Low",
+        status: "진행 중",
+        trend: "낮음",
         sparklineData: [
             55,
             52,
@@ -236,8 +236,8 @@ const participantsData = [
         name: "James Anderson",
         entryCode: "AIV-2024-002",
         avgScore: 42,
-        status: "Completed",
-        trend: "Low",
+        status: "완료",
+        trend: "낮음",
         sparklineData: [
             50,
             48,
@@ -263,7 +263,7 @@ function Sparkline({ data, trend }) {
         const y = height - padding - (value - min) / range * (height - padding * 2);
         return `${x},${y}`;
     }).join(" ");
-    const lineColor = trend === "High" ? "#4AA785" : trend === "Low" ? "#D6455D" : "#9CA3AF";
+    const lineColor = trend === "높음" ? "#4AA785" : trend === "낮음" ? "#D6455D" : "#9CA3AF";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
         width: width,
         height: height,
@@ -287,7 +287,7 @@ function Sparkline({ data, trend }) {
     }, this);
 }
 function TrendIcon({ trend }) {
-    if (trend === "High") {
+    if (trend === "높음") {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$1$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trending$2d$up$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__TrendingUp$3e$__["TrendingUp"], {
             className: "h-4 w-4 text-[#4AA785]",
             strokeWidth: 2
@@ -296,7 +296,7 @@ function TrendIcon({ trend }) {
             lineNumber: 224,
             columnNumber: 12
         }, this);
-    } else if (trend === "Low") {
+    } else if (trend === "낮음") {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$1$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trending$2d$down$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__TrendingDown$3e$__["TrendingDown"], {
             className: "h-4 w-4 text-[#D6455D]",
             strokeWidth: 2
@@ -316,7 +316,7 @@ function TrendIcon({ trend }) {
     }, this);
 }
 function StatusBadge({ status }) {
-    const styles = status === "Completed" ? "bg-[#DCFCE7] text-[#16A34A]" : "bg-[#E0E7FF] text-[#6366F1]";
+    const styles = status === "완료" ? "bg-[#DCFCE7] text-[#16A34A]" : "bg-[#E0E7FF] text-[#6366F1]";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
         className: `rounded-full px-2.5 py-0.5 text-xs font-medium ${styles}`,
         children: status
@@ -328,9 +328,9 @@ function StatusBadge({ status }) {
 }
 function TrendBadge({ trend }) {
     const styles = {
-        High: "bg-[#DCFCE7] text-[#16A34A]",
-        Average: "bg-[#F3F4F6] text-[#6B7280]",
-        Low: "bg-[#FEE2E2] text-[#DC2626]"
+        "높음": "bg-[#DCFCE7] text-[#16A34A]",
+        "보통": "bg-[#F3F4F6] text-[#6B7280]",
+        "낮음": "bg-[#FEE2E2] text-[#DC2626]"
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
         className: `rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`,
@@ -448,7 +448,7 @@ function ParticipantCard({ participant }) {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-sm text-[#6B7280]",
-                                    children: "Avg Score"
+                                    children: "평균 점수"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-content.tsx",
                                     lineNumber: 276,
@@ -516,7 +516,7 @@ function ParticipantCard({ participant }) {
                         }
                     },
                     className: "text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]",
-                    children: "View Detail →"
+                    children: "상세 보기 →"
                 }, void 0, false, {
                     fileName: "[project]/components/analytics-content.tsx",
                     lineNumber: 288,
@@ -535,8 +535,8 @@ function ParticipantCard({ participant }) {
     }, this);
 }
 function AnalyticsContent() {
-    const [timeRange, setTimeRange] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("All time");
-    const [testSession, setTestSession] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("All Sessions");
+    const [timeRange, setTimeRange] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("전체 기간");
+    const [testSession, setTestSession] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("모든 세션");
     const [toasts, setToasts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const showToast = (title, description)=>{
         const id = crypto.randomUUID();
@@ -556,7 +556,7 @@ function AnalyticsContent() {
         setToasts((prev)=>prev.filter((t)=>t.id !== id));
     };
     const handleExport = ()=>{
-        const csvContent = "Name,Entry Code,Avg Score,Status,Trend,Prompt Score,Performance Score,Correctness Score\n" + participantsData.map((p)=>`${p.name},${p.entryCode},${p.avgScore},${p.status},${p.trend},${p.promptScore},${p.performanceScore},${p.correctnessScore}`).join("\n");
+        const csvContent = "이름,입장 코드,평균 점수,상태,성과 수준,프롬프트 점수,성능 점수,정답률 점수\n" + participantsData.map((p)=>`${p.name},${p.entryCode},${p.avgScore},${p.status},${p.trend},${p.promptScore},${p.performanceScore},${p.correctnessScore}`).join("\n");
         const blob = new Blob([
             csvContent
         ], {
@@ -570,22 +570,22 @@ function AnalyticsContent() {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        showToast("Export started", "Analytics results are being downloaded as a CSV file.");
+        showToast("내보내기 시작", "통계 분석 결과가 CSV 파일로 다운로드되고 있습니다.");
     };
     const filteredParticipants = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
         const now = new Date();
         let dateThreshold = null;
         switch(timeRange){
-            case "Last 7 days":
+            case "최근 7일":
                 dateThreshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                 break;
-            case "Last 14 days":
+            case "최근 14일":
                 dateThreshold = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
                 break;
-            case "Last 30 days":
+            case "최근 30일":
                 dateThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                 break;
-            case "Last 90 days":
+            case "최근 90일":
                 dateThreshold = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
                 break;
             default:
@@ -593,7 +593,7 @@ function AnalyticsContent() {
         }
         return participantsData.filter((p)=>{
             const passesTimeFilter = dateThreshold === null || p.testDate >= dateThreshold;
-            const passesSessionFilter = testSession === "All Sessions" || p.entryCode === testSession;
+            const passesSessionFilter = testSession === "모든 세션" || p.entryCode === testSession;
             return passesTimeFilter && passesSessionFilter;
         });
     }, [
@@ -676,35 +676,35 @@ function AnalyticsContent() {
                                                 className: "appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                        children: "Last 7 days"
+                                                        children: "최근 7일"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-content.tsx",
                                                         lineNumber: 416,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                        children: "Last 14 days"
+                                                        children: "최근 14일"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-content.tsx",
                                                         lineNumber: 417,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                        children: "Last 30 days"
+                                                        children: "최근 30일"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-content.tsx",
                                                         lineNumber: 418,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                        children: "Last 90 days"
+                                                        children: "최근 90일"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-content.tsx",
                                                         lineNumber: 419,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                        children: "All time"
+                                                        children: "전체 기간"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-content.tsx",
                                                         lineNumber: 420,
@@ -738,7 +738,7 @@ function AnalyticsContent() {
                                                 className: "appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                        children: "All Sessions"
+                                                        children: "모든 세션"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-content.tsx",
                                                         lineNumber: 431,

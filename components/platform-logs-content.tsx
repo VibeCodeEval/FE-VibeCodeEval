@@ -211,6 +211,63 @@ const getBadgeStyle = (badge: BadgeType) => {
   }
 }
 
+const getBadgeText = (badge: BadgeType): string => {
+  switch (badge) {
+    case "Admin Change":
+      return "관리자 변경"
+    case "System Updated":
+      return "시스템 업데이트"
+    case "Error":
+      return "오류"
+    case "Evaluation Completed":
+      return "평가 완료"
+    case "Room Started":
+      return "세션 시작"
+    default:
+      return badge
+  }
+}
+
+const getLogTitle = (title: string): string => {
+  const titleMap: { [key: string]: string } = {
+    "Evaluation batch completed.": "평가 배치 완료",
+    "New test room started.": "새 테스트 세션 시작",
+    "Daily backup completed.": "일일 백업 완료",
+    "Platform settings updated.": "플랫폼 설정 업데이트",
+    "System maintenance completed.": "시스템 유지보수 완료",
+    "Data retention policy updated.": "데이터 보관 정책 업데이트",
+    "Database connection error.": "데이터베이스 연결 오류",
+    "New evaluation model deployed.": "새 평가 모델 배포",
+    "Scheduled maintenance completed.": "예약된 유지보수 완료",
+    "API rate limit exceeded.": "API 요청 한도 초과",
+    "Global token limit updated.": "전역 토큰 제한 업데이트",
+    "Master account created for new organization.": "새 조직의 마스터 계정 생성",
+  }
+  return titleMap[title] || title
+}
+
+const getLogDescription = (description: string): string => {
+  const descMap: { [key: string]: string } = {
+    "Automated scoring completed for 24 submissions in session TS-2025-0892.": "세션 TS-2025-0892에서 24건의 제출물에 대한 자동 채점이 완료되었습니다.",
+    "Test session TS-2025-0893 initiated by admin.master@example.com with 18 participants.": "admin.master@example.com이 18명의 참가자로 테스트 세션 TS-2025-0893을 시작했습니다.",
+    "Automated daily backup of all test sessions and user data completed successfully.": "모든 테스트 세션 및 사용자 데이터의 자동 일일 백업이 성공적으로 완료되었습니다.",
+    "Updated session timeout configuration for all active test sessions.": "모든 활성 테스트 세션의 세션 타임아웃 설정이 업데이트되었습니다.",
+    "Automated cleanup of expired test sessions completed successfully.": "만료된 테스트 세션의 자동 정리가 성공적으로 완료되었습니다.",
+    "Log retention set to 30 days and submission storage set to 90 days.": "로그 보관 기간이 30일로, 제출물 저장 기간이 90일로 설정되었습니다.",
+    "Automated scoring completed for 32 submissions in session TS-2025-0891.": "세션 TS-2025-0891에서 32건의 제출물에 대한 자동 채점이 완료되었습니다.",
+    "Backup service temporarily failed to connect. Retry scheduled.": "백업 서비스 연결이 일시적으로 실패했습니다. 재시도가 예약되었습니다.",
+    "Updated AI scoring model for coding tests across all sessions.": "모든 세션의 코딩 테스트용 AI 채점 모델이 업데이트되었습니다.",
+    "Test session TS-2025-0890 initiated by admin.kim@example.com with 25 participants.": "admin.kim@example.com이 25명의 참가자로 테스트 세션 TS-2025-0890을 시작했습니다.",
+    "New enterprise tenant onboarded with default global settings.": "기본 전역 설정으로 새 엔터프라이즈 테넌트가 온보딩되었습니다.",
+    "Database optimization and index rebuild completed successfully.": "데이터베이스 최적화 및 인덱스 재구성이 성공적으로 완료되었습니다.",
+    "External evaluation API temporarily unavailable due to rate limiting. Auto-retry enabled.": "요청 한도로 인해 외부 평가 API가 일시적으로 사용 불가능합니다. 자동 재시도가 활성화되었습니다.",
+    "Automated scoring completed for 45 submissions in session TS-2025-0889.": "세션 TS-2025-0889에서 45건의 제출물에 대한 자동 채점이 완료되었습니다.",
+    "Default token limit changed from 50,000 to 75,000 tokens per session.": "세션당 기본 토큰 제한이 50,000에서 75,000으로 변경되었습니다.",
+    "Test session TS-2025-0889 initiated by admin.park@example.com with 30 participants.": "admin.park@example.com이 30명의 참가자로 테스트 세션 TS-2025-0889을 시작했습니다.",
+  }
+  return descMap[description] || description
+}
+
 // Group logs by date
 const groupLogsByDate = (logs: LogEntry[]) => {
   const grouped: { [key: string]: LogEntry[] } = {}
@@ -228,6 +285,11 @@ export function PlatformLogsContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [timeRange, setTimeRange] = useState("24h")
+
+  const formatDate = (dateString: string): string => {
+    const [year, month, day] = dateString.split("-")
+    return `${year}년 ${parseInt(month, 10)}월 ${parseInt(day, 10)}일`
+  }
 
   const filteredLogs = logs.filter((log) => {
     // Type filter
@@ -260,7 +322,7 @@ export function PlatformLogsContent() {
             letterSpacing: "-0.01em",
           }}
         >
-          Platform Logs
+          플랫폼 로그
         </h1>
         <p
           style={{
@@ -270,7 +332,7 @@ export function PlatformLogsContent() {
             lineHeight: "20px",
           }}
         >
-          View and monitor system-wide activity logs across the platform.
+          플랫폼 전역의 시스템 활동 로그를 확인하고 모니터링합니다.
         </p>
       </div>
 
@@ -280,7 +342,7 @@ export function PlatformLogsContent() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <Input
-            placeholder="Search logs..."
+            placeholder="로그 검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -306,13 +368,13 @@ export function PlatformLogsContent() {
                 fontSize: "14px",
               }}
             >
-              <SelectValue placeholder="All Types" />
+              <SelectValue placeholder="전체 유형" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="admin">Admin Activity</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
+              <SelectItem value="all">전체 유형</SelectItem>
+              <SelectItem value="admin">관리자 활동</SelectItem>
+              <SelectItem value="system">시스템</SelectItem>
+              <SelectItem value="error">오류</SelectItem>
             </SelectContent>
           </Select>
 
@@ -326,13 +388,13 @@ export function PlatformLogsContent() {
                 fontSize: "14px",
               }}
             >
-              <SelectValue placeholder="Last 24 hours" />
+              <SelectValue placeholder="최근 24시간" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="24h">Last 24 hours</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="all">All time</SelectItem>
+              <SelectItem value="24h">최근 24시간</SelectItem>
+              <SelectItem value="7d">최근 7일</SelectItem>
+              <SelectItem value="30d">최근 30일</SelectItem>
+              <SelectItem value="all">전체 기간</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -352,7 +414,7 @@ export function PlatformLogsContent() {
                 letterSpacing: "-0.01em",
               }}
             >
-              {date}
+              {formatDate(date)}
             </div>
 
             {/* Timeline Events for this date */}
@@ -432,7 +494,7 @@ export function PlatformLogsContent() {
                             lineHeight: "16px",
                           }}
                         >
-                          {log.badge}
+                          {getBadgeText(log.badge)}
                         </span>
                       </div>
 
@@ -446,7 +508,7 @@ export function PlatformLogsContent() {
                             lineHeight: "20px",
                           }}
                         >
-                          {log.title}
+                          {getLogTitle(log.title)}
                         </span>
                       </div>
 
@@ -460,7 +522,7 @@ export function PlatformLogsContent() {
                             lineHeight: "20px",
                           }}
                         >
-                          {log.description}
+                          {getLogDescription(log.description)}
                         </span>
                       </div>
                     </div>
@@ -488,7 +550,7 @@ export function PlatformLogsContent() {
                 color: "#9CA3AF",
               }}
             >
-              No logs found for the selected filters.
+              선택한 필터에 해당하는 로그가 없습니다.
             </span>
           </div>
         )}

@@ -512,7 +512,7 @@ function TestSessionDetailsContent({ session, onBack }) {
         if (status === "Active") {
             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
                 className: "bg-green-100 text-green-700 hover:bg-green-100",
-                children: "Active"
+                children: "진행 중"
             }, void 0, false, {
                 fileName: "[project]/components/test-session-details-content.tsx",
                 lineNumber: 118,
@@ -521,7 +521,7 @@ function TestSessionDetailsContent({ session, onBack }) {
         }
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
             className: "bg-gray-100 text-gray-700 hover:bg-gray-100",
-            children: "Completed"
+            children: "완료"
         }, void 0, false, {
             fileName: "[project]/components/test-session-details-content.tsx",
             lineNumber: 120,
@@ -532,7 +532,7 @@ function TestSessionDetailsContent({ session, onBack }) {
         if (status === "Connected") {
             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
                 className: "bg-green-100 text-green-700 hover:bg-green-100",
-                children: "Connected"
+                children: "연결됨"
             }, void 0, false, {
                 fileName: "[project]/components/test-session-details-content.tsx",
                 lineNumber: 125,
@@ -541,7 +541,7 @@ function TestSessionDetailsContent({ session, onBack }) {
         }
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
             className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
-            children: "Pending"
+            children: "대기 중"
         }, void 0, false, {
             fileName: "[project]/components/test-session-details-content.tsx",
             lineNumber: 127,
@@ -552,7 +552,7 @@ function TestSessionDetailsContent({ session, onBack }) {
         if (status === "Submitted") {
             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
                 className: "bg-green-100 text-green-700 hover:bg-green-100",
-                children: "Submitted"
+                children: "제출됨"
             }, void 0, false, {
                 fileName: "[project]/components/test-session-details-content.tsx",
                 lineNumber: 132,
@@ -562,7 +562,7 @@ function TestSessionDetailsContent({ session, onBack }) {
         if (status === "In Progress") {
             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
                 className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
-                children: "In Progress"
+                children: "진행 중"
             }, void 0, false, {
                 fileName: "[project]/components/test-session-details-content.tsx",
                 lineNumber: 135,
@@ -571,7 +571,7 @@ function TestSessionDetailsContent({ session, onBack }) {
         }
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
             className: "bg-gray-100 text-gray-700 hover:bg-gray-100",
-            children: "Not Started"
+            children: "시작 안 함"
         }, void 0, false, {
             fileName: "[project]/components/test-session-details-content.tsx",
             lineNumber: 137,
@@ -606,7 +606,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                 lineNumber: 159,
                                 columnNumber: 11
                             }, this),
-                            "Back to Test Sessions"
+                            "테스트 세션으로 돌아가기"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/test-session-details-content.tsx",
@@ -623,7 +623,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                     fontWeight: 600,
                                     lineHeight: "32px"
                                 },
-                                children: "Test Session Details"
+                                children: "테스트 세션 상세 정보"
                             }, void 0, false, {
                                 fileName: "[project]/components/test-session-details-content.tsx",
                                 lineNumber: 165,
@@ -635,7 +635,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                     fontSize: "14px",
                                     fontWeight: 400
                                 },
-                                children: "View full information and live progress for this test session."
+                                children: "이 테스트 세션의 전체 정보와 실시간 진행 상황을 확인하세요."
                             }, void 0, false, {
                                 fileName: "[project]/components/test-session-details-content.tsx",
                                 lineNumber: 175,
@@ -664,7 +664,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                 fontWeight: 600,
                                 color: "#1A1A1A"
                             },
-                            children: "Session Overview"
+                            children: "세션 개요"
                         }, void 0, false, {
                             fileName: "[project]/components/test-session-details-content.tsx",
                             lineNumber: 190,
@@ -685,7 +685,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-gray-500 mb-1",
-                                                children: "Session ID"
+                                                children: "세션 ID"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
                                                 lineNumber: 204,
@@ -709,7 +709,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-gray-500 mb-1",
-                                                children: "Created By"
+                                                children: "생성자"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
                                                 lineNumber: 208,
@@ -733,7 +733,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-gray-500 mb-1",
-                                                children: "Created At"
+                                                children: "생성일"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
                                                 lineNumber: 212,
@@ -757,7 +757,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-gray-500 mb-1",
-                                                children: "Status"
+                                                children: "상태"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
                                                 lineNumber: 216,
@@ -790,7 +790,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-gray-500 mb-1",
-                                                children: "Participants"
+                                                children: "참가자"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
                                                 lineNumber: 224,
@@ -800,7 +800,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                 className: "text-sm font-medium text-gray-900",
                                                 children: [
                                                     session.participants,
-                                                    " participants"
+                                                    "명"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
@@ -817,7 +817,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-gray-500 mb-1",
-                                                children: "Submissions"
+                                                children: "제출"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
                                                 lineNumber: 228,
@@ -845,7 +845,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-sm text-gray-500 mb-1",
-                                                children: "Avg Token Usage"
+                                                children: "평균 토큰 사용량"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
                                                 lineNumber: 234,
@@ -855,7 +855,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                 className: "text-sm font-medium text-gray-900",
                                                 children: [
                                                     avgTokenUsage.toLocaleString(),
-                                                    " tokens"
+                                                    " 토큰"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/test-session-details-content.tsx",
@@ -904,7 +904,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                         fontWeight: 600,
                                         color: "#1A1A1A"
                                     },
-                                    children: "Participants"
+                                    children: "참가자"
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-session-details-content.tsx",
                                     lineNumber: 246,
@@ -912,7 +912,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-sm text-gray-500 mt-1",
-                                    children: "All participants registered for this test session."
+                                    children: "이 테스트 세션에 등록된 모든 참가자입니다."
                                 }, void 0, false, {
                                     fileName: "[project]/components/test-session-details-content.tsx",
                                     lineNumber: 255,
@@ -944,7 +944,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                         style: {
                                                             width: "180px"
                                                         },
-                                                        children: "Name"
+                                                        children: "이름"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-session-details-content.tsx",
                                                         lineNumber: 264,
@@ -954,7 +954,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                         style: {
                                                             width: "160px"
                                                         },
-                                                        children: "Phone Number"
+                                                        children: "전화번호"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-session-details-content.tsx",
                                                         lineNumber: 265,
@@ -965,7 +965,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                             width: "140px"
                                                         },
                                                         className: "text-center",
-                                                        children: "Connection Status"
+                                                        children: "연결 상태"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-session-details-content.tsx",
                                                         lineNumber: 266,
@@ -976,7 +976,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                             width: "140px"
                                                         },
                                                         className: "text-center",
-                                                        children: "Submission Status"
+                                                        children: "제출 상태"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-session-details-content.tsx",
                                                         lineNumber: 269,
@@ -987,7 +987,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                             width: "120px"
                                                         },
                                                         className: "text-center",
-                                                        children: "Token Usage"
+                                                        children: "토큰 사용량"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-session-details-content.tsx",
                                                         lineNumber: 272,
@@ -998,7 +998,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                             width: "100px"
                                                         },
                                                         className: "text-right",
-                                                        children: "Action"
+                                                        children: "작업"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/test-session-details-content.tsx",
                                                         lineNumber: 275,
@@ -1099,7 +1099,7 @@ function TestSessionDetailsContent({ session, onBack }) {
                                                                         fontSize: "14px",
                                                                         fontWeight: 500
                                                                     },
-                                                                    children: "View Detail"
+                                                                    children: "상세 보기"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/test-session-details-content.tsx",
                                                                     lineNumber: 308,
@@ -1143,13 +1143,12 @@ function TestSessionDetailsContent({ session, onBack }) {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         className: "text-sm text-gray-500",
                                         children: [
-                                            "Showing ",
                                             startIndex + 1,
                                             "–",
                                             Math.min(endIndex, participants.length),
-                                            " of ",
+                                            " / ",
                                             participants.length,
-                                            " participants"
+                                            " 참가자 표시 중"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/test-session-details-content.tsx",

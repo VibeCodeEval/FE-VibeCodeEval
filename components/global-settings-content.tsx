@@ -61,8 +61,8 @@ export function GlobalSettingsContent() {
 
     if (isNaN(duration) || duration <= 0) {
       toast({
-        title: "Invalid Duration",
-        description: "Test duration must be a positive number.",
+        title: "유효하지 않은 시간",
+        description: "테스트 시간은 양수여야 합니다.",
         variant: "destructive",
       })
       return
@@ -70,8 +70,8 @@ export function GlobalSettingsContent() {
 
     if (isNaN(tokenLimit) || tokenLimit <= 0) {
       toast({
-        title: "Invalid Token Limit",
-        description: "Token limit must be a positive number.",
+        title: "유효하지 않은 토큰 제한",
+        description: "토큰 제한은 양수여야 합니다.",
         variant: "destructive",
       })
       return
@@ -87,8 +87,8 @@ export function GlobalSettingsContent() {
     setSavedSettings(updatedSettings)
 
     toast({
-      title: "Settings saved",
-      description: "Your changes have been saved successfully.",
+      title: "설정 저장됨",
+      description: "변경 사항이 성공적으로 저장되었습니다.",
     })
   }
 
@@ -99,14 +99,15 @@ export function GlobalSettingsContent() {
   const formatLastUpdated = (isoString?: string) => {
     if (!isoString) return null
     const date = new Date(isoString)
-    return date.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    const ampm = hours >= 12 ? "오후" : "오전"
+    const displayHours = hours % 12 || 12
+    const displayMinutes = minutes.toString().padStart(2, "0")
+    return `${year}년 ${month}월 ${day}일 ${ampm} ${displayHours}:${displayMinutes}`
   }
 
   // Don't render until localStorage is loaded to prevent hydration mismatch
@@ -127,7 +128,7 @@ export function GlobalSettingsContent() {
             lineHeight: "32px",
           }}
         >
-          Global Settings
+          전역 설정
         </h1>
         <p
           style={{
@@ -137,7 +138,7 @@ export function GlobalSettingsContent() {
             marginTop: "4px",
           }}
         >
-          Manage platform-wide configuration and system security policies
+          플랫폼 전역 설정 및 시스템 보안 정책을 관리합니다
         </p>
       </div>
 
@@ -154,7 +155,7 @@ export function GlobalSettingsContent() {
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              Test Configuration
+              테스트 설정
             </CardTitle>
             <CardDescription
               style={{
@@ -163,7 +164,7 @@ export function GlobalSettingsContent() {
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              Configure default test parameters for all evaluations.
+              모든 평가에 대한 기본 테스트 매개변수를 설정합니다.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 pb-6 pt-2">
@@ -179,7 +180,7 @@ export function GlobalSettingsContent() {
                     fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                   }}
                 >
-                  Default Test Duration
+                  기본 테스트 시간
                 </Label>
                 <div className="flex items-center gap-3">
                   <Input
@@ -201,7 +202,7 @@ export function GlobalSettingsContent() {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    Minutes
+                    분
                   </span>
                 </div>
               </div>
@@ -217,7 +218,7 @@ export function GlobalSettingsContent() {
                     fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                   }}
                 >
-                  Default Token Limit
+                  기본 토큰 제한
                 </Label>
                 <Input
                   id="token-limit"
@@ -245,7 +246,7 @@ export function GlobalSettingsContent() {
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              Data Retention
+              데이터 보관
             </CardTitle>
             <CardDescription
               style={{
@@ -254,7 +255,7 @@ export function GlobalSettingsContent() {
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              Manage how long platform records are stored.
+              플랫폼 기록이 저장되는 기간을 관리합니다.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 pb-6 pt-2">
@@ -272,7 +273,7 @@ export function GlobalSettingsContent() {
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Log Retention Period
+                    로그 보관 기간
                   </Label>
                   <Select
                     value={settings.logRetentionPeriod}
@@ -286,13 +287,13 @@ export function GlobalSettingsContent() {
                         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                       }}
                     >
-                      <SelectValue placeholder="Select period" />
+                      <SelectValue placeholder="기간 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="30 days">30 days</SelectItem>
-                      <SelectItem value="90 days">90 days</SelectItem>
-                      <SelectItem value="6 months">6 months</SelectItem>
-                      <SelectItem value="1 year">1 year</SelectItem>
+                      <SelectItem value="30 days">30일</SelectItem>
+                      <SelectItem value="90 days">90일</SelectItem>
+                      <SelectItem value="6 months">6개월</SelectItem>
+                      <SelectItem value="1 year">1년</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -308,7 +309,7 @@ export function GlobalSettingsContent() {
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Submission Storage Period
+                    제출물 보관 기간
                   </Label>
                   <Select
                     value={settings.submissionStoragePeriod}
@@ -322,13 +323,13 @@ export function GlobalSettingsContent() {
                         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                       }}
                     >
-                      <SelectValue placeholder="Select period" />
+                      <SelectValue placeholder="기간 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="30 days">30 days</SelectItem>
-                      <SelectItem value="90 days">90 days</SelectItem>
-                      <SelectItem value="6 months">6 months</SelectItem>
-                      <SelectItem value="1 year">1 year</SelectItem>
+                      <SelectItem value="30 days">30일</SelectItem>
+                      <SelectItem value="90 days">90일</SelectItem>
+                      <SelectItem value="6 months">6개월</SelectItem>
+                      <SelectItem value="1 year">1년</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -346,7 +347,7 @@ export function GlobalSettingsContent() {
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Auto-Delete Expired Data
+                    만료된 데이터 자동 삭제
                   </Label>
                   <span
                     style={{
@@ -355,7 +356,7 @@ export function GlobalSettingsContent() {
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Automatically remove data after retention period.
+                    보관 기간 후 데이터를 자동으로 삭제합니다.
                   </span>
                 </div>
                 <Switch
@@ -384,7 +385,7 @@ export function GlobalSettingsContent() {
               paddingRight: "24px",
             }}
           >
-            Cancel
+            취소
           </Button>
           <Button
             onClick={handleSave}
@@ -399,7 +400,7 @@ export function GlobalSettingsContent() {
             }}
             className={isDirty ? "hover:bg-[#6D28D9]" : ""}
           >
-            Save Changes
+            변경 사항 저장
           </Button>
         </div>
         {savedSettings.lastUpdated && (
@@ -410,7 +411,7 @@ export function GlobalSettingsContent() {
               fontFamily: "Inter, system-ui, -apple-system, sans-serif",
             }}
           >
-            Last saved: {formatLastUpdated(savedSettings.lastUpdated)}
+            마지막 저장: {formatLastUpdated(savedSettings.lastUpdated)}
           </span>
         )}
       </div>

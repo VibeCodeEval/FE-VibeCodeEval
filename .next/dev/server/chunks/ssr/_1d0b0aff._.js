@@ -245,7 +245,7 @@ const initialProblems = [
         id: 1,
         title: "문제 1. 문자열 압축하기",
         createdBy: "John Smith",
-        lastUpdated: "2 days ago",
+        lastUpdated: "2일 전",
         usedInSessions: 12,
         description: "주어진 문자열에서 연속으로 반복되는 문자를 압축하여 표현하세요. 연속으로 반복되는 문자는 해당 문자와 반복 횟수로 표현합니다. 반복 횟수가 1인 경우에는 숫자를 생략합니다.",
         example: "aabbaccc → 2a2ba3c",
@@ -256,7 +256,7 @@ const initialProblems = [
         id: 2,
         title: "문제 2. 이진 탐색 구현",
         createdBy: "Sarah Johnson",
-        lastUpdated: "5 days ago",
+        lastUpdated: "5일 전",
         usedInSessions: 8,
         description: "정렬된 배열에서 특정 값의 위치를 이진 탐색 알고리즘을 사용하여 찾으세요. 값이 존재하면 해당 인덱스를, 존재하지 않으면 -1을 반환합니다.",
         example: "[1, 3, 5, 7, 9], target=5 → 2",
@@ -267,7 +267,7 @@ const initialProblems = [
         id: 3,
         title: "문제 3. 연결 리스트 뒤집기",
         createdBy: "Mike Davis",
-        lastUpdated: "1 week ago",
+        lastUpdated: "1주 전",
         usedInSessions: 15,
         description: "단일 연결 리스트가 주어졌을 때, 리스트의 순서를 뒤집어서 반환하세요. 리스트의 각 노드는 정수 값을 가지고 있습니다.",
         example: "1 → 2 → 3 → 4 → 5 를 5 → 4 → 3 → 2 → 1 로 변환",
@@ -278,7 +278,7 @@ const initialProblems = [
         id: 4,
         title: "문제 4. 배낭 문제 (동적 프로그래밍)",
         createdBy: "John Smith",
-        lastUpdated: "3 days ago",
+        lastUpdated: "3일 전",
         usedInSessions: 6,
         description: "무게 제한이 있는 배낭에 최대 가치를 담을 수 있도록 물건을 선택하세요. 각 물건은 무게와 가치를 가지며, 같은 물건을 여러 번 선택할 수 없습니다.",
         example: "배낭 용량 10, 물건들: [(5, 10), (4, 40), (6, 30), (3, 50)] → 최대 가치: 90",
@@ -317,7 +317,7 @@ function ProblemContent() {
                             lineHeight: "32px",
                             letterSpacing: "-0.01em"
                         },
-                        children: "Problem"
+                        children: "문제 관리"
                     }, void 0, false, {
                         fileName: "[project]/components/problem-content.tsx",
                         lineNumber: 97,
@@ -330,7 +330,7 @@ function ProblemContent() {
                             color: "#6B7280",
                             lineHeight: "20px"
                         },
-                        children: "Review and supervise all problems used across the platform."
+                        children: "플랫폼에서 사용되는 모든 문제를 검토하고 관리합니다."
                     }, void 0, false, {
                         fileName: "[project]/components/problem-content.tsx",
                         lineNumber: 108,
@@ -355,7 +355,7 @@ function ProblemContent() {
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
                         type: "text",
-                        placeholder: "Search",
+                        placeholder: "검색",
                         value: searchQuery,
                         onChange: (e)=>setSearchQuery(e.target.value),
                         className: "pl-10 h-11 rounded-lg border-[#E5E5E5] bg-white",
@@ -418,7 +418,7 @@ function ProblemContent() {
                                                         color: "#9CA3AF",
                                                         lineHeight: "16px"
                                                     },
-                                                    children: "Created By"
+                                                    children: "생성자"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/problem-content.tsx",
                                                     lineNumber: 166,
@@ -453,7 +453,7 @@ function ProblemContent() {
                                                         color: "#9CA3AF",
                                                         lineHeight: "16px"
                                                     },
-                                                    children: "Last Updated"
+                                                    children: "마지막 업데이트"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/problem-content.tsx",
                                                     lineNumber: 190,
@@ -488,7 +488,7 @@ function ProblemContent() {
                                                         color: "#9CA3AF",
                                                         lineHeight: "16px"
                                                     },
-                                                    children: "Used In Sessions"
+                                                    children: "사용된 세션"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/problem-content.tsx",
                                                     lineNumber: 214,
@@ -503,7 +503,7 @@ function ProblemContent() {
                                                     },
                                                     children: [
                                                         problem.usedInSessions,
-                                                        " sessions"
+                                                        "개"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/problem-content.tsx",
@@ -541,7 +541,7 @@ function ProblemContent() {
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            children: "View Detail"
+                                            children: "상세 보기"
                                         }, void 0, false, {
                                             fileName: "[project]/components/problem-content.tsx",
                                             lineNumber: 250,
@@ -565,7 +565,7 @@ function ProblemContent() {
                             style: {
                                 fontSize: "14px"
                             },
-                            children: "No problems found matching your search."
+                            children: "검색 결과가 없습니다."
                         }, void 0, false, {
                             fileName: "[project]/components/problem-content.tsx",
                             lineNumber: 258,
@@ -622,9 +622,9 @@ function ProblemContent() {
                                             lineHeight: "20px"
                                         },
                                         children: [
-                                            "Created by ",
+                                            "생성자: ",
                                             selectedProblem.createdBy,
-                                            " · Last updated ",
+                                            " · 마지막 업데이트: ",
                                             selectedProblem.lastUpdated
                                         ]
                                     }, void 0, true, {
@@ -653,7 +653,7 @@ function ProblemContent() {
                                             textTransform: "uppercase",
                                             letterSpacing: "0.05em"
                                         },
-                                        children: "Problem Description"
+                                        children: "문제 설명"
                                     }, void 0, false, {
                                         fileName: "[project]/components/problem-content.tsx",
                                         lineNumber: 308,
