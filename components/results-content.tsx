@@ -87,7 +87,7 @@ export function ResultsContent() {
       </header>
 
       {/* Main Content Panel */}
-      <div className="flex min-h-0 flex-1 flex-col p-6">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
         {/* Search Bar */}
         <div className="mb-4 shrink-0">
           <div className="relative">
@@ -102,50 +102,140 @@ export function ResultsContent() {
           </div>
         </div>
 
-        {/* Table Container */}
-        <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-[#E5E5E5] bg-white px-12 shadow-sm">
-          {/* Table Header */}
-          <div className="grid shrink-0 grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-6 py-3 -mx-12">
-            <span className="pl-12 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">입장 코드</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">총 인원</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">완료 인원</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">다운로드</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">상세 보기</span>
-          </div>
-
-          {/* Table Body */}
-          <div className="flex-1 overflow-y-auto">
-            {filteredResults.map((result, index) => (
-              <div
-                key={result.id}
-                className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr] items-center gap-4 px-6 py-4 -mx-12 ${
-                  index !== filteredResults.length - 1 ? "border-b border-[#E5E5E5]" : ""
-                }`}
-              >
-                <span className="pl-12 text-sm font-medium text-[#1A1A1A]">{result.entryCode}</span>
-                <span className="text-center text-sm text-[#6B7280]">{result.total}</span>
-                <span className="text-center text-sm text-[#6B7280]">{result.completed}</span>
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => handleDownload(result.entryCode)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#3B82F6] px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
+        {/* Card List */}
+        <div className="flex flex-col gap-3">
+          {filteredResults.map((result) => (
+            <div
+              key={result.id}
+              className="flex items-center justify-between bg-white border border-[#E5E5E5] rounded-xl p-5 transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
+              style={{
+                borderRadius: "12px",
+              }}
+            >
+              {/* Left Side - Result Info */}
+              <div className="flex items-center gap-12">
+                {/* Entry Code */}
+                <div className="min-w-[200px]">
+                  <h3
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      color: "#1A1A1A",
+                      lineHeight: "24px",
+                      letterSpacing: "-0.01em",
+                    }}
                   >
-                    <Download className="h-3.5 w-3.5" strokeWidth={2} />
-                    다운로드
-                  </button>
+                    {result.entryCode}
+                  </h3>
                 </div>
-                <div className="flex justify-center">
-                  <Link
-                    href={`/admin/results/${encodeURIComponent(result.entryCode)}`}
-                    className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#3B82F6]"
+
+                {/* Total Participants */}
+                <div className="flex flex-col gap-0.5 min-w-[120px]">
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 400,
+                      color: "#9CA3AF",
+                      lineHeight: "16px",
+                    }}
                   >
-                    <Eye className="h-4 w-4" strokeWidth={1.5} />
-                    상세 보기
-                  </Link>
+                    총 인원
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#1A1A1A",
+                      lineHeight: "20px",
+                    }}
+                  >
+                    {result.total}명
+                  </span>
+                </div>
+
+                {/* Completed Participants */}
+                <div className="flex flex-col gap-0.5 min-w-[120px]">
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 400,
+                      color: "#9CA3AF",
+                      lineHeight: "16px",
+                    }}
+                  >
+                    완료 인원
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#1A1A1A",
+                      lineHeight: "20px",
+                    }}
+                  >
+                    {result.completed}명
+                  </span>
+                </div>
+
+                {/* Completion Rate */}
+                <div className="flex flex-col gap-0.5 min-w-[120px]">
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 400,
+                      color: "#9CA3AF",
+                      lineHeight: "16px",
+                    }}
+                  >
+                    완료율
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#1A1A1A",
+                      lineHeight: "20px",
+                    }}
+                  >
+                    {result.total > 0 ? Math.round((result.completed / result.total) * 100) : 0}%
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
+
+              {/* Right Side - Action Buttons */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleDownload(result.entryCode)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3B82F6] text-white hover:bg-[#2563EB] transition-colors"
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <Download size={18} />
+                  <span>다운로드</span>
+                </button>
+                <Link
+                  href={`/admin/results/${encodeURIComponent(result.entryCode)}`}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <Eye size={18} />
+                  <span>상세 보기</span>
+                </Link>
+              </div>
+            </div>
+          ))}
+
+          {/* Empty State */}
+          {filteredResults.length === 0 && (
+            <div className="flex items-center justify-center py-12 text-gray-500">
+              <p style={{ fontSize: "14px" }}>검색 결과가 없습니다.</p>
+            </div>
+          )}
         </div>
 
         {/* Pagination Footer */}

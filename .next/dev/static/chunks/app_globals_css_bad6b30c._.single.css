@@ -1419,6 +1419,10 @@
     min-width: 180px;
   }
 
+  .min-w-\[200px\] {
+    min-width: 200px;
+  }
+
   .min-w-\[280px\] {
     min-width: 280px;
   }

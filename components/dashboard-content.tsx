@@ -44,14 +44,14 @@ function getStatusColor(status: string) {
 
 export function DashboardContent() {
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex h-full flex-1 flex-col">
       {/* Section 2: Top Header Bar - distinct horizontal section */}
-      <header className="flex h-[88px] items-center border-b border-[#E5E5E5] bg-white px-8">
+      <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
         <h1 className="text-2xl font-semibold text-[#1A1A1A]">관리자 대시보드</h1>
       </header>
 
       {/* Section 3: Main Content Panel - separate content area */}
-      <main className="flex flex-1 flex-col gap-6 overflow-y-auto p-6">
+      <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
         {/* 1) Metric Summary Cards */}
         <div className="grid grid-cols-4 gap-4">
           {/* Total Participants */}
