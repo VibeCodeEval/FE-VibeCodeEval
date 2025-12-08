@@ -405,9 +405,9 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
 
   const getStatusBadge = (status: string) => {
     if (status === "Active") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Active</Badge>
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">진행 중</Badge>
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Completed</Badge>
+    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">완료</Badge>
   }
 
   const getPageNumbers = () => {
@@ -430,7 +430,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
             lineHeight: "32px",
           }}
         >
-          Test Sessions
+          테스트 세션
         </h1>
         <p
           className="text-gray-500 mt-1"
@@ -439,7 +439,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
             fontWeight: 400,
           }}
         >
-          Manage and monitor all test sessions across the platform.
+          플랫폼의 모든 테스트 세션을 관리하고 모니터링합니다.
         </p>
       </div>
 
@@ -453,7 +453,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
               color: "#1A1A1A",
             }}
           >
-            All Test Sessions
+            모든 테스트 세션
           </CardTitle>
           {/* Filter Dropdown */}
           <Select value={statusFilter} onValueChange={handleFilterChange}>
@@ -461,9 +461,9 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="All">전체</SelectItem>
+              <SelectItem value="Active">진행 중</SelectItem>
+              <SelectItem value="Completed">완료</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -481,7 +481,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Session ID
+                    세션 ID
                   </TableHead>
                   <TableHead
                     className="text-[#6B7280]"
@@ -492,7 +492,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Created By
+                    생성자
                   </TableHead>
                   <TableHead
                     className="text-[#6B7280] text-center"
@@ -503,7 +503,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Created At
+                    생성일
                   </TableHead>
                   <TableHead
                     className="text-[#6B7280] text-center"
@@ -514,7 +514,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Status
+                    상태
                   </TableHead>
                   <TableHead
                     className="text-[#6B7280] text-center"
@@ -525,7 +525,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Participants
+                    참가자
                   </TableHead>
                   <TableHead
                     className="text-[#6B7280] text-center"
@@ -536,7 +536,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    Actions
+                    작업
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -592,7 +592,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                           fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                         }}
                       >
-                        {session.status}
+                        {session.status === "Active" ? "진행 중" : session.status === "Completed" ? "완료" : session.status}
                       </Badge>
                     </TableCell>
                     <TableCell
@@ -604,7 +604,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                       }}
                     >
-                      {session.participants} participants
+                      {session.participants}명
                     </TableCell>
                     <TableCell className="text-center" style={{ width: "80px" }}>
                       <DropdownMenu>
@@ -619,14 +619,14 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                             onClick={() => handleViewDetails(session)}
                           >
                             <Eye className="h-4 w-4" />
-                            View Details
+                            상세 보기
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600"
                             onClick={() => handleOpenDeleteSession(session)}
                           >
                             <Trash2 className="h-4 w-4" />
-                            Delete Session
+                            세션 삭제
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -642,7 +642,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
             style={{ fontFamily: "Inter, system-ui, -apple-system, sans-serif" }}
           >
             <p className="text-[#6B7280]" style={{ fontSize: "14px", fontWeight: 400 }}>
-              Showing {startIndex + 1}–{endIndex} of {totalSessions} sessions
+              {startIndex + 1}–{endIndex} / {totalSessions} 세션 표시 중
             </p>
 
             <div className="flex items-center gap-1">
@@ -698,7 +698,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              Delete Test Session
+              테스트 세션 삭제
             </DialogTitle>
             <DialogDescription
               style={{
@@ -707,9 +707,9 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              This action cannot be undone.
+              이 작업은 되돌릴 수 없습니다.
               <br />
-              This will permanently delete the test session and all associated data.
+              테스트 세션과 관련된 모든 데이터가 영구적으로 삭제됩니다.
             </DialogDescription>
           </DialogHeader>
           {selectedSession && (
@@ -733,7 +733,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                     fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                   }}
                 >
-                  Created by {selectedSession.createdBy} • {selectedSession.participants} participants
+                  생성자: {selectedSession.createdBy} • {selectedSession.participants}명
                 </p>
               </div>
             </div>
@@ -746,7 +746,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              Cancel
+              취소
             </Button>
             <Button
               onClick={handleConfirmDeleteSession}
@@ -755,7 +755,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               }}
             >
-              Delete Session
+              세션 삭제
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -769,10 +769,10 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
         >
           <SheetHeader className="space-y-1 items-start p-0 mb-6 text-left">
             <SheetTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>
-              Test Session Details
+              테스트 세션 상세 정보
             </SheetTitle>
             <SheetDescription style={{ fontSize: "14px", color: "#6B7280" }}>
-              View full information and live progress for this test session.
+              이 테스트 세션의 전체 정보와 실시간 진행 상황을 확인하세요.
             </SheetDescription>
           </SheetHeader>
 
@@ -781,7 +781,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
               <div className="grid grid-cols-4 gap-6 mb-5">
                 <div className="space-y-1">
                   <p className="text-xs text-[#6B7280]" style={{ fontWeight: 500 }}>
-                    Session ID
+                    세션 ID
                   </p>
                   <p className="text-sm" style={{ fontWeight: 500, color: "#1A1A1A" }}>
                     {detailsSession?.sessionId}
@@ -789,7 +789,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-[#6B7280]" style={{ fontWeight: 500 }}>
-                    Created By
+                    생성자
                   </p>
                   <p className="text-sm" style={{ fontWeight: 400, color: "#1A1A1A" }}>
                     {detailsSession?.createdBy}
@@ -797,7 +797,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-[#6B7280]" style={{ fontWeight: 500 }}>
-                    Created At
+                    생성일
                   </p>
                   <p className="text-sm" style={{ fontWeight: 400, color: "#1A1A1A" }}>
                     {detailsSession?.createdAt} 14:30:00
@@ -805,7 +805,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-[#6B7280]" style={{ fontWeight: 500 }}>
-                    Status
+                    상태
                   </p>
                   <Badge
                     variant="secondary"
@@ -816,22 +816,22 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                     }
                     style={{ fontSize: "12px", fontWeight: 500 }}
                   >
-                    {detailsSession?.status}
+                    {detailsSession?.status === "Active" ? "진행 중" : detailsSession?.status === "Completed" ? "완료" : detailsSession?.status}
                   </Badge>
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-6">
                 <div className="space-y-1">
                   <p className="text-xs text-[#6B7280]" style={{ fontWeight: 500 }}>
-                    Participants
+                    참가자
                   </p>
                   <p className="text-sm" style={{ fontWeight: 400, color: "#1A1A1A" }}>
-                    {detailsSession?.participants} participants
+                    {detailsSession?.participants}명
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-[#6B7280]" style={{ fontWeight: 500 }}>
-                    Submissions
+                    제출
                   </p>
                   <p className="text-sm" style={{ fontWeight: 400, color: "#1A1A1A" }}>
                     {submittedCount}/{totalParticipants}
@@ -839,10 +839,10 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-[#6B7280]" style={{ fontWeight: 500 }}>
-                    Avg Token Usage
+                    평균 토큰 사용량
                   </p>
                   <p className="text-sm" style={{ fontWeight: 400, color: "#1A1A1A" }}>
-                    {avgTokenUsage.toLocaleString()} tokens
+                    {avgTokenUsage.toLocaleString()} 토큰
                   </p>
                 </div>
                 <div></div>
@@ -851,7 +851,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
           </Card>
 
           <div className="flex-1 flex flex-col min-h-0">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] mb-3">Participants</h3>
+            <h3 className="text-sm font-semibold text-[#1A1A1A] mb-3">참가자</h3>
             <div className="flex-1 border border-[#E5E5E5] rounded-lg overflow-hidden flex flex-col">
               <ScrollArea className="flex-1" style={{ maxHeight: "340px" }}>
                 <Table className="w-full">
@@ -861,37 +861,37 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                         className="text-[#6B7280]"
                         style={{ fontSize: "13px", fontWeight: 500, width: "150px" }}
                       >
-                        Name
+                        이름
                       </TableHead>
                       <TableHead
                         className="text-[#6B7280]"
                         style={{ fontSize: "13px", fontWeight: 500, width: "150px" }}
                       >
-                        Phone Number
+                        전화번호
                       </TableHead>
                       <TableHead
                         className="text-[#6B7280]"
                         style={{ fontSize: "13px", fontWeight: 500, width: "130px" }}
                       >
-                        Connection Status
+                        연결 상태
                       </TableHead>
                       <TableHead
                         className="text-[#6B7280]"
                         style={{ fontSize: "13px", fontWeight: 500, width: "130px" }}
                       >
-                        Submission Status
+                        제출 상태
                       </TableHead>
                       <TableHead
                         className="text-[#6B7280]"
                         style={{ fontSize: "13px", fontWeight: 500, width: "100px" }}
                       >
-                        Token Usage
+                        토큰 사용량
                       </TableHead>
                       <TableHead
                         className="text-[#6B7280]"
                         style={{ fontSize: "13px", fontWeight: 500, width: "80px" }}
                       >
-                        Action
+                        작업
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -914,7 +914,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                             }
                             style={{ fontSize: "12px", fontWeight: 500 }}
                           >
-                            {participant.connectionStatus}
+                            {participant.connectionStatus === "Connected" ? "연결됨" : "연결 끊김"}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -929,7 +929,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                             }
                             style={{ fontSize: "12px", fontWeight: 500 }}
                           >
-                            {participant.submissionStatus}
+                            {participant.submissionStatus === "Submitted" ? "제출됨" : participant.submissionStatus === "In Progress" ? "진행 중" : "시작 안 함"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-[#6B7280]" style={{ fontSize: "14px", fontWeight: 400 }}>
@@ -942,7 +942,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                             className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2"
                             style={{ fontSize: "13px", fontWeight: 500 }}
                           >
-                            View Detail
+                            상세 보기
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -954,7 +954,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
               {totalParticipantPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-[#E5E5E5] bg-white">
                   <p className="text-[#6B7280]" style={{ fontSize: "14px", fontWeight: 400 }}>
-                    Showing {participantStartIndex + 1}–{participantEndIndex} of {totalParticipants} participants
+                    {participantStartIndex + 1}–{participantEndIndex} / {totalParticipants} 참가자 표시 중
                   </p>
                   <div className="flex items-center gap-1">
                     <Button

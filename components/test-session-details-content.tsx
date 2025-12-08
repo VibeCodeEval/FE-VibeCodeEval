@@ -115,26 +115,26 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
 
   const getStatusBadge = (status: string) => {
     if (status === "Active") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Active</Badge>
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">진행 중</Badge>
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Completed</Badge>
+    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">완료</Badge>
   }
 
   const getConnectionBadge = (status: string) => {
     if (status === "Connected") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Connected</Badge>
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">연결됨</Badge>
     }
-    return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">Pending</Badge>
+    return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">대기 중</Badge>
   }
 
   const getSubmissionBadge = (status: string) => {
     if (status === "Submitted") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Submitted</Badge>
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">제출됨</Badge>
     }
     if (status === "In Progress") {
-      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">In Progress</Badge>
+      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">진행 중</Badge>
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Not Started</Badge>
+    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">시작 안 함</Badge>
   }
 
   // Generate page numbers for pagination
@@ -157,7 +157,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
           style={{ fontWeight: 500 }}
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Test Sessions
+          테스트 세션으로 돌아가기
         </button>
 
         {/* Title and Subtitle */}
@@ -170,7 +170,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
               lineHeight: "32px",
             }}
           >
-            Test Session Details
+            테스트 세션 상세 정보
           </h1>
           <p
             className="text-gray-500 mt-1"
@@ -179,7 +179,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
               fontWeight: 400,
             }}
           >
-            View full information and live progress for this test session.
+            이 테스트 세션의 전체 정보와 실시간 진행 상황을 확인하세요.
           </p>
         </div>
       </div>
@@ -194,26 +194,26 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
               color: "#1A1A1A",
             }}
           >
-            Session Overview
+            세션 개요
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0">
           {/* Row 1 */}
           <div className="grid grid-cols-4 gap-6 mb-6">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Session ID</p>
+              <p className="text-sm text-gray-500 mb-1">세션 ID</p>
               <p className="text-sm font-medium text-gray-900">{session.sessionId}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Created By</p>
+              <p className="text-sm text-gray-500 mb-1">생성자</p>
               <p className="text-sm font-medium text-gray-900">{session.createdBy}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Created At</p>
+              <p className="text-sm text-gray-500 mb-1">생성일</p>
               <p className="text-sm font-medium text-gray-900">{session.createdAt}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Status</p>
+              <p className="text-sm text-gray-500 mb-1">상태</p>
               <div className="mt-0.5">{getStatusBadge(session.status)}</div>
             </div>
           </div>
@@ -221,18 +221,18 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
           {/* Row 2 */}
           <div className="grid grid-cols-4 gap-6">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Participants</p>
-              <p className="text-sm font-medium text-gray-900">{session.participants} participants</p>
+              <p className="text-sm text-gray-500 mb-1">참가자</p>
+              <p className="text-sm font-medium text-gray-900">{session.participants}명</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Submissions</p>
+              <p className="text-sm text-gray-500 mb-1">제출</p>
               <p className="text-sm font-medium text-gray-900">
                 {submissions}/{session.participants}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Avg Token Usage</p>
-              <p className="text-sm font-medium text-gray-900">{avgTokenUsage.toLocaleString()} tokens</p>
+              <p className="text-sm text-gray-500 mb-1">평균 토큰 사용량</p>
+              <p className="text-sm font-medium text-gray-900">{avgTokenUsage.toLocaleString()} 토큰</p>
             </div>
             <div></div>
           </div>
@@ -250,9 +250,9 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
                 color: "#1A1A1A",
               }}
             >
-              Participants
+              참가자
             </CardTitle>
-            <p className="text-sm text-gray-500 mt-1">All participants registered for this test session.</p>
+            <p className="text-sm text-gray-500 mt-1">이 테스트 세션에 등록된 모든 참가자입니다.</p>
           </div>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0 flex-1 flex flex-col">
@@ -261,19 +261,19 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
             <Table className="table-fixed w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead style={{ width: "180px" }}>Name</TableHead>
-                  <TableHead style={{ width: "160px" }}>Phone Number</TableHead>
+                  <TableHead style={{ width: "180px" }}>이름</TableHead>
+                  <TableHead style={{ width: "160px" }}>전화번호</TableHead>
                   <TableHead style={{ width: "140px" }} className="text-center">
-                    Connection Status
+                    연결 상태
                   </TableHead>
                   <TableHead style={{ width: "140px" }} className="text-center">
-                    Submission Status
+                    제출 상태
                   </TableHead>
                   <TableHead style={{ width: "120px" }} className="text-center">
-                    Token Usage
+                    토큰 사용량
                   </TableHead>
                   <TableHead style={{ width: "100px" }} className="text-right">
-                    Action
+                    작업
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -311,7 +311,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
                           className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 h-8"
                           style={{ fontSize: "14px", fontWeight: 500 }}
                         >
-                          View Detail
+                          상세 보기
                         </Button>
                       </Link>
                     </TableCell>
@@ -325,7 +325,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <p className="text-sm text-gray-500">
-                Showing {startIndex + 1}–{Math.min(endIndex, participants.length)} of {participants.length} participants
+                {startIndex + 1}–{Math.min(endIndex, participants.length)} / {participants.length} 참가자 표시 중
               </p>
               <div className="flex items-center gap-1">
                 <Button

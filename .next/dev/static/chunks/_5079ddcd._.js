@@ -359,12 +359,17 @@ function TrendBadge({ trend }) {
         Average: "bg-[#FEF3C7] text-[#D97706]",
         Low: "bg-[#FEE2E2] text-[#DC2626]"
     };
+    const trendText = {
+        High: "높음",
+        Average: "보통",
+        Low: "낮음"
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
         className: `rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`,
-        children: trend
+        children: trendText[trend]
     }, void 0, false, {
         fileName: "[project]/components/participant-list-content.tsx",
-        lineNumber: 92,
+        lineNumber: 98,
         columnNumber: 10
     }, this);
 }
@@ -377,7 +382,7 @@ function ParticipantListContent({ entryCode }) {
     const displayEntryCode = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
         "ParticipantListContent.useMemo[displayEntryCode]": ()=>{
             if (!pathname) {
-                return entryCode || summaryData.totalParticipants.toString(); // <- fallback은 아래에서 다시 정리
+                return entryCode || summaryData.entryCode;
             }
             const segments = pathname.split("/");
             const fromPath = decodeURIComponent(segments[segments.length - 1] || "");
@@ -415,7 +420,7 @@ function ParticipantListContent({ entryCode }) {
                             children: "참가자 목록 (입장 코드 요약)"
                         }, void 0, false, {
                             fileName: "[project]/components/participant-list-content.tsx",
-                            lineNumber: 136,
+                            lineNumber: 142,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -423,18 +428,18 @@ function ParticipantListContent({ entryCode }) {
                             children: "해당 입장 코드의 참가자 점수 및 성과를 확인합니다."
                         }, void 0, false, {
                             fileName: "[project]/components/participant-list-content.tsx",
-                            lineNumber: 137,
+                            lineNumber: 143,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/participant-list-content.tsx",
-                    lineNumber: 135,
+                    lineNumber: 141,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/participant-list-content.tsx",
-                lineNumber: 134,
+                lineNumber: 140,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -451,19 +456,19 @@ function ParticipantListContent({ entryCode }) {
                                     strokeWidth: 1.5
                                 }, void 0, false, {
                                     fileName: "[project]/components/participant-list-content.tsx",
-                                    lineNumber: 149,
+                                    lineNumber: 155,
                                     columnNumber: 13
                                 }, this),
                                 "평가 결과로 돌아가기"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/participant-list-content.tsx",
-                            lineNumber: 145,
+                            lineNumber: 151,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/participant-list-content.tsx",
-                        lineNumber: 144,
+                        lineNumber: 150,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -479,37 +484,12 @@ function ParticipantListContent({ entryCode }) {
                                             children: "입장 코드"
                                         }, void 0, false, {
                                             fileName: "[project]/components/participant-list-content.tsx",
-                                            lineNumber: 159,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-lg font-semibold text-[#1A1A1A]",
-                                            children: displayEntryCode
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/participant-list-content.tsx",
-                                            lineNumber: 160,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/components/participant-list-content.tsx",
-                                    lineNumber: 158,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex flex-col gap-1",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                            children: "총 참가자 수"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/participant-list-content.tsx",
                                             lineNumber: 165,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-lg font-semibold text-[#1A1A1A]",
-                                            children: summaryData.totalParticipants
+                                            children: displayEntryCode
                                         }, void 0, false, {
                                             fileName: "[project]/components/participant-list-content.tsx",
                                             lineNumber: 166,
@@ -526,7 +506,7 @@ function ParticipantListContent({ entryCode }) {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                            children: "완료 인원"
+                                            children: "총 참가자 수"
                                         }, void 0, false, {
                                             fileName: "[project]/components/participant-list-content.tsx",
                                             lineNumber: 171,
@@ -534,7 +514,7 @@ function ParticipantListContent({ entryCode }) {
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-lg font-semibold text-[#1A1A1A]",
-                                            children: summaryData.completed
+                                            children: summaryData.totalParticipants
                                         }, void 0, false, {
                                             fileName: "[project]/components/participant-list-content.tsx",
                                             lineNumber: 172,
@@ -545,16 +525,41 @@ function ParticipantListContent({ entryCode }) {
                                     fileName: "[project]/components/participant-list-content.tsx",
                                     lineNumber: 170,
                                     columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex flex-col gap-1",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
+                                            children: "완료 인원"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/participant-list-content.tsx",
+                                            lineNumber: 177,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-lg font-semibold text-[#1A1A1A]",
+                                            children: summaryData.completed
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/participant-list-content.tsx",
+                                            lineNumber: 178,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/participant-list-content.tsx",
+                                    lineNumber: 176,
+                                    columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/participant-list-content.tsx",
-                            lineNumber: 156,
+                            lineNumber: 162,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/participant-list-content.tsx",
-                        lineNumber: 155,
+                        lineNumber: 161,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -568,7 +573,7 @@ function ParticipantListContent({ entryCode }) {
                                         children: "참가자"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-list-content.tsx",
-                                        lineNumber: 181,
+                                        lineNumber: 187,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -576,15 +581,15 @@ function ParticipantListContent({ entryCode }) {
                                         children: "평균 점수"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-list-content.tsx",
-                                        lineNumber: 182,
+                                        lineNumber: 188,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]",
-                                        children: "성과 추이"
+                                        children: "성과 수준"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-list-content.tsx",
-                                        lineNumber: 183,
+                                        lineNumber: 189,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -592,13 +597,13 @@ function ParticipantListContent({ entryCode }) {
                                         children: "상세 보기"
                                     }, void 0, false, {
                                         fileName: "[project]/components/participant-list-content.tsx",
-                                        lineNumber: 184,
+                                        lineNumber: 190,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/participant-list-content.tsx",
-                                lineNumber: 180,
+                                lineNumber: 186,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -611,7 +616,7 @@ function ParticipantListContent({ entryCode }) {
                                                 children: participant.name
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-list-content.tsx",
-                                                lineNumber: 196,
+                                                lineNumber: 202,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -622,7 +627,7 @@ function ParticipantListContent({ entryCode }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/participant-list-content.tsx",
-                                                lineNumber: 197,
+                                                lineNumber: 203,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -631,23 +636,23 @@ function ParticipantListContent({ entryCode }) {
                                                     trend: participant.trend
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/participant-list-content.tsx",
-                                                    lineNumber: 199,
+                                                    lineNumber: 205,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-list-content.tsx",
-                                                lineNumber: 198,
+                                                lineNumber: 204,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "flex justify-center",
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
                                                     href: {
-                                                        // 참가자 상세 페이지 경로 (id 사용)
-                                                        pathname: `/admin/results/participants/${encodeURIComponent(participant.id)}`,
+                                                        // 참가자 상세 페이지 경로: /admin/results/[entryCode]/[participantId]
+                                                        pathname: `/admin/results/${encodeURIComponent(displayEntryCode)}/${encodeURIComponent(participant.id)}`,
                                                         // 여기에 우리가 넘기고 싶은 값들 추가
                                                         query: {
-                                                            entryCode: entryCode,
+                                                            entryCode: displayEntryCode,
                                                             participantName: participant.name,
                                                             from: "results"
                                                         }
@@ -659,30 +664,30 @@ function ParticipantListContent({ entryCode }) {
                                                             strokeWidth: 1.5
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/participant-list-content.tsx",
-                                                            lineNumber: 215,
+                                                            lineNumber: 221,
                                                             columnNumber: 21
                                                         }, this),
                                                         "상세 보기"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/participant-list-content.tsx",
-                                                    lineNumber: 202,
+                                                    lineNumber: 208,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/participant-list-content.tsx",
-                                                lineNumber: 201,
+                                                lineNumber: 207,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, participant.id, true, {
                                         fileName: "[project]/components/participant-list-content.tsx",
-                                        lineNumber: 190,
+                                        lineNumber: 196,
                                         columnNumber: 15
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/components/participant-list-content.tsx",
-                                lineNumber: 188,
+                                lineNumber: 194,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -701,7 +706,7 @@ function ParticipantListContent({ entryCode }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/participant-list-content.tsx",
-                                        lineNumber: 224,
+                                        lineNumber: 230,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -717,14 +722,14 @@ function ParticipantListContent({ entryCode }) {
                                                         strokeWidth: 1.5
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/participant-list-content.tsx",
-                                                        lineNumber: 237,
+                                                        lineNumber: 243,
                                                         columnNumber: 17
                                                     }, this),
                                                     "이전"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/participant-list-content.tsx",
-                                                lineNumber: 228,
+                                                lineNumber: 234,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -737,7 +742,7 @@ function ParticipantListContent({ entryCode }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/participant-list-content.tsx",
-                                                lineNumber: 240,
+                                                lineNumber: 246,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -751,43 +756,43 @@ function ParticipantListContent({ entryCode }) {
                                                         strokeWidth: 1.5
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/participant-list-content.tsx",
-                                                        lineNumber: 253,
+                                                        lineNumber: 259,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/participant-list-content.tsx",
-                                                lineNumber: 243,
+                                                lineNumber: 249,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/participant-list-content.tsx",
-                                        lineNumber: 227,
+                                        lineNumber: 233,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/participant-list-content.tsx",
-                                lineNumber: 223,
+                                lineNumber: 229,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/participant-list-content.tsx",
-                        lineNumber: 178,
+                        lineNumber: 184,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/participant-list-content.tsx",
-                lineNumber: 142,
+                lineNumber: 148,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/participant-list-content.tsx",
-        lineNumber: 132,
+        lineNumber: 138,
         columnNumber: 5
     }, this);
 }

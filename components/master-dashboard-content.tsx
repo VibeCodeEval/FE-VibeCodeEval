@@ -7,16 +7,16 @@ import { Users, UserCheck, CheckCircle2, CalendarClock, FileCode, ScrollText, Ar
 import Link from "next/link";
 
 const recentSessions = [
-  { id: 1, sessionId: "SESSION-2025-001", status: "Active", createdAt: "Jan 14, 2025", participants: 18 },
-  { id: 2, sessionId: "SESSION-2025-002", status: "Completed", createdAt: "Jan 13, 2025", participants: 25 },
-  { id: 3, sessionId: "SESSION-2025-003", status: "Active", createdAt: "Jan 12, 2025", participants: 12 },
-  { id: 4, sessionId: "SESSION-2025-004", status: "Completed", createdAt: "Jan 11, 2025", participants: 30 },
+  { id: 1, sessionId: "SESSION-2025-001", status: "진행 중", createdAt: "2025년 1월 14일", participants: 18 },
+  { id: 2, sessionId: "SESSION-2025-002", status: "완료", createdAt: "2025년 1월 13일", participants: 25 },
+  { id: 3, sessionId: "SESSION-2025-003", status: "진행 중", createdAt: "2025년 1월 12일", participants: 12 },
+  { id: 4, sessionId: "SESSION-2025-004", status: "완료", createdAt: "2025년 1월 11일", participants: 30 },
 ]
 
 const recentLogs = [
-  { id: 1, timestamp: "10:33 AM", type: "Admin", description: "Admin 'john.smith' updated platform settings" },
-  { id: 2, timestamp: "09:15 AM", type: "System", description: "Scheduled maintenance completed successfully" },
-  { id: 3, timestamp: "08:45 AM", type: "Error", description: "Failed to connect to evaluation service (retried)" },
+  { id: 1, timestamp: "오전 10:33", type: "관리자", description: "관리자 'john.smith'가 플랫폼 설정을 업데이트했습니다" },
+  { id: 2, timestamp: "오전 09:15", type: "시스템", description: "예정된 유지보수가 성공적으로 완료되었습니다" },
+  { id: 3, timestamp: "오전 08:45", type: "오류", description: "평가 서비스 연결 실패 (재시도됨)" },
 ]
 
 type DashboardContentProps = {
@@ -29,9 +29,9 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
       {/* Page Header */}
       <div className="flex flex-col gap-1">
         <h1 style={{ fontSize: "24px", fontWeight: 600, color: "#1A1A1A", letterSpacing: "-0.01em" }}>
-          Master Dashboard
+          마스터 대시보드
         </h1>
-        <p style={{ fontSize: "14px", color: "#6B7280" }}>Overview of platform activity and coding test operations.</p>
+        <p style={{ fontSize: "14px", color: "#6B7280" }}>플랫폼 활동 및 코딩 테스트 운영 개요.</p>
       </div>
 
       {/* Section 1: KPI Summary Cards */}
@@ -42,7 +42,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <span style={{ fontSize: "32px", fontWeight: 700, color: "#1A1A1A" }}>12</span>
-                <span style={{ fontSize: "14px", color: "#6B7280" }}>Active Sessions</span>
+                <span style={{ fontSize: "14px", color: "#6B7280" }}>진행 중인 세션</span>
               </div>
               <div
                 className="flex items-center justify-center"
@@ -65,7 +65,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <span style={{ fontSize: "32px", fontWeight: 700, color: "#1A1A1A" }}>148</span>
-                <span style={{ fontSize: "14px", color: "#6B7280" }}>Participants Today</span>
+                <span style={{ fontSize: "14px", color: "#6B7280" }}>오늘의 참가자</span>
               </div>
               <div
                 className="flex items-center justify-center"
@@ -87,8 +87,8 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
-                <span style={{ fontSize: "18px", fontWeight: 600, color: "#22C55E" }}>Operational</span>
-                <span style={{ fontSize: "14px", color: "#6B7280" }}>System Status</span>
+                <span style={{ fontSize: "32px", fontWeight: 700, color: "#22C55E" }}>운영 중</span>
+                <span style={{ fontSize: "14px", color: "#6B7280" }}>시스템 상태</span>
               </div>
               <div
                 className="flex items-center justify-center"
@@ -114,7 +114,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           style={{ borderRadius: "12px", border: "1px solid #E5E5E5", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
         >
           <CardHeader className="pb-3">
-            <CardTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>Recent Sessions</CardTitle>
+            <CardTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>최근 세션</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex flex-col flex-1">
             <div className="flex flex-col gap-3 flex-1 mb-5">
@@ -131,13 +131,13 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                   <div className="flex flex-col gap-0.5">
                     <span style={{ fontSize: "14px", fontWeight: 500, color: "#1A1A1A" }}>{session.sessionId}</span>
                     <span style={{ fontSize: "12px", color: "#6B7280" }}>
-                      {session.createdAt} · {session.participants} participants
+                      {session.createdAt} · 참가자 {session.participants}명
                     </span>
                   </div>
                   <Badge
                     style={{
-                      backgroundColor: session.status === "Active" ? "#DCFCE7" : "#F3F4F6",
-                      color: session.status === "Active" ? "#22C55E" : "#6B7280",
+                      backgroundColor: session.status === "진행 중" ? "#DCFCE7" : "#F3F4F6",
+                      color: session.status === "진행 중" ? "#22C55E" : "#6B7280",
                       fontWeight: 500,
                       fontSize: "12px",
                       border: "none",
@@ -156,7 +156,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                 style={{ color: "#3B82F6", fontSize: "14px", fontWeight: 500 }}
               >
                 <Link href="/master/test-sessions">
-                  View All Sessions
+                  모든 세션 보기
                   <ArrowRight size={16} />
                 </Link>
               </Button>
@@ -170,7 +170,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           style={{ borderRadius: "12px", border: "1px solid #E5E5E5", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
         >
           <CardHeader className="pb-3">
-            <CardTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>Recent Logs</CardTitle>
+            <CardTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>최근 로그</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex flex-col flex-1">
             <div className="flex flex-col gap-3 flex-1 mb-5">
@@ -190,7 +190,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      backgroundColor: log.type === "Admin" ? "#3B82F6" : log.type === "System" ? "#6B7280" : "#EF4444",
+                      backgroundColor: log.type === "관리자" ? "#3B82F6" : log.type === "시스템" ? "#6B7280" : "#EF4444",
                       flexShrink: 0,
                     }}
                   />
@@ -200,8 +200,8 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                       <Badge
                         style={{
                           backgroundColor:
-                            log.type === "Admin" ? "#DBEAFE" : log.type === "System" ? "#F3F4F6" : "#FEE2E2",
-                          color: log.type === "Admin" ? "#3B82F6" : log.type === "System" ? "#6B7280" : "#EF4444",
+                            log.type === "관리자" ? "#DBEAFE" : log.type === "시스템" ? "#F3F4F6" : "#FEE2E2",
+                          color: log.type === "관리자" ? "#3B82F6" : log.type === "시스템" ? "#6B7280" : "#EF4444",
                           fontWeight: 500,
                           fontSize: "10px",
                           padding: "2px 6px",
@@ -226,7 +226,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                 style={{ color: "#3B82F6", fontSize: "14px", fontWeight: 500 }}
               >
                 <Link href="/master/platform-logs">
-                  View All Logs
+                  모든 로그 보기
                   <ArrowRight size={16} />
                 </Link>
               </Button>
@@ -237,7 +237,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
 
       {/* Section 3: Quick Access */}
       <div>
-        <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A", marginBottom: "16px" }}>Quick Access</h2>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A", marginBottom: "16px" }}>빠른 접근</h2>
         <div className="grid grid-cols-3 gap-4">
           {/* Manage Test Sessions */}
           <Link href="/master/test-sessions" className="block">
@@ -263,8 +263,8 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                     <CalendarClock size={24} style={{ color: "#3B82F6" }} />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Manage Test Sessions</span>
-                    <span style={{ fontSize: "13px", color: "#6B7280" }}>View and manage all coding test sessions</span>
+                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>테스트 세션 관리</span>
+                    <span style={{ fontSize: "13px", color: "#6B7280" }}>모든 코딩 테스트 세션 보기 및 관리</span>
                   </div>
                 </div>
               </CardContent>
@@ -295,8 +295,8 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                     <FileCode size={24} style={{ color: "#7C3AED" }} />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Manage Problems</span>
-                    <span style={{ fontSize: "13px", color: "#6B7280" }}>Browse and manage coding problems</span>
+                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>문제 관리</span>
+                    <span style={{ fontSize: "13px", color: "#6B7280" }}>코딩 문제 탐색 및 관리</span>
                   </div>
                 </div>
               </CardContent>
@@ -327,8 +327,8 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                     <ScrollText size={24} style={{ color: "#6B7280" }} />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Open Platform Logs</span>
-                    <span style={{ fontSize: "13px", color: "#6B7280" }}>View system activity and audit logs</span>
+                    <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>플랫폼 로그 열기</span>
+                    <span style={{ fontSize: "13px", color: "#6B7280" }}>시스템 활동 및 감사 로그 보기</span>
                   </div>
                 </div>
               </CardContent>

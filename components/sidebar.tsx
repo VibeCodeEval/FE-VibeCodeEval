@@ -27,12 +27,12 @@ const textStyle = {
 
 const menuGroupA: MenuItem[] = [
   {
-    label: "Dashboard",
+    label: "대시보드",
     icon: <LayoutDashboard className="h-5 w-5" strokeWidth={1.5} />,
     href: "/master",
   },
   {
-    label: "Admin Accounts",
+    label: "관리자 계정",
     icon: <Users className="h-5 w-5" strokeWidth={1.5} />,
     href: "/master/admin-accounts",
   },
@@ -40,22 +40,22 @@ const menuGroupA: MenuItem[] = [
 
 const menuGroupB: MenuItem[] = [
   {
-    label: "Test Sessions",
+    label: "테스트 세션",
     icon: <CalendarClock className="h-5 w-5" strokeWidth={1.5} />,
     href: "/master/test-sessions",
   },
   {
-    label: "Global Settings",
+    label: "전역 설정",
     icon: <Settings className="h-5 w-5" strokeWidth={1.5} />,
     href: "/master/global-settings",
   },
   {
-    label: "Problem",
+    label: "문제 관리",
     icon: <FileCode className="h-5 w-5" strokeWidth={1.5} />,
     href: "/master/problem",
   },
   {
-    label: "Platform Logs",
+    label: "플랫폼 로그",
     icon: <List className="h-5 w-5" strokeWidth={1.5} />,
     href: "/master/platform-logs",
   },
@@ -109,7 +109,7 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
         {/* Profile Text */}
         <div className="flex flex-col">
           <span style={{ ...textStyle, color: "#1A1A1A", fontWeight: 500 }}>Master</span>
-          <span style={{ ...textStyle, color: "#6B7280", fontWeight: 400, fontSize: "12px" }}>Administrator</span>
+          <span style={{ ...textStyle, color: "#6B7280", fontWeight: 400, fontSize: "12px" }}>마스터 관리자</span>
         </div>
       </div>
 

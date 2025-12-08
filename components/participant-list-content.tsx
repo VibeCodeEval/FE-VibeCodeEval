@@ -89,7 +89,13 @@ function TrendBadge({ trend }: { trend: TrendLevel }) {
     Low: "bg-[#FEE2E2] text-[#DC2626]",
   }
 
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`}>{trend}</span>
+  const trendText: Record<TrendLevel, string> = {
+    High: "높음",
+    Average: "보통",
+    Low: "낮음",
+  }
+
+  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`}>{trendText[trend]}</span>
 }
 
 export function ParticipantListContent({ entryCode }: ParticipantListContentProps) {
@@ -99,7 +105,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
   // URL (/admin/results/AIV-2024-001) 에서 마지막 세그먼트를 추출
   const displayEntryCode = useMemo(() => {
     if (!pathname) {
-      return entryCode || summaryData.totalParticipants.toString(); // <- fallback은 아래에서 다시 정리
+      return entryCode || summaryData.entryCode;
     }
 
     const segments = pathname.split("/");
@@ -180,7 +186,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
           <div className="grid shrink-0 grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-12 py-3">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">참가자</span>
             <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">평균 점수</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 추이</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 수준</span>
             <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">상세 보기</span>
           </div>
 
@@ -201,11 +207,11 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
                 <div className="flex justify-center">
                   <Link
                     href={{
-                      // 참가자 상세 페이지 경로 (id 사용)
-                      pathname: `/admin/results/participants/${encodeURIComponent(participant.id)}`,
+                      // 참가자 상세 페이지 경로: /admin/results/[entryCode]/[participantId]
+                      pathname: `/admin/results/${encodeURIComponent(displayEntryCode)}/${encodeURIComponent(participant.id)}`,
                       // 여기에 우리가 넘기고 싶은 값들 추가
                       query: {
-                        entryCode: entryCode,              // 상단 카드에 보여줄 Entry Code
+                        entryCode: displayEntryCode,       // 상단 카드에 보여줄 Entry Code
                         participantName: participant.name, // 상단 카드에 보여줄 이름
                         from: "results",                   // 기존에 쓰던 from 값 유지하고 싶으면 같이 전달
                       },

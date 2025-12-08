@@ -61,25 +61,25 @@ class DataProcessor:
 
 const feedbackData = {
   strengths: [
-    "Clean and readable code structure",
-    "Efficient use of hash map for O(n) time complexity",
-    "Good documentation with docstrings",
-    "Proper type hints throughout the code",
+    "깔끔하고 읽기 쉬운 코드 구조",
+    "O(n) 시간 복잡도를 위한 해시 맵의 효율적인 사용",
+    "독스트링을 통한 좋은 문서화",
+    "코드 전반에 걸친 적절한 타입 힌트",
   ],
   weaknesses: [
-    "Missing edge case handling for empty input",
-    "No input validation for data types",
-    "Cache invalidation strategy not implemented",
+    "빈 입력에 대한 엣지 케이스 처리 누락",
+    "데이터 타입에 대한 입력 검증 없음",
+    "캐시 무효화 전략이 구현되지 않음",
   ],
   suggestions: [
-    "Add unit tests for edge cases",
-    "Consider using functools.lru_cache for memoization",
-    "Implement proper error handling with custom exceptions",
+    "엣지 케이스를 위한 단위 테스트 추가",
+    "메모이제이션을 위해 functools.lru_cache 사용 고려",
+    "커스텀 예외를 사용한 적절한 오류 처리 구현",
   ],
   performanceNotes: [
-    "Hash map approach is optimal for this problem",
-    "Memory usage could be reduced with generators",
-    "Consider lazy evaluation for large datasets",
+    "해시 맵 접근 방식이 이 문제에 최적입니다",
+    "제너레이터를 사용하면 메모리 사용량을 줄일 수 있습니다",
+    "대용량 데이터셋에 대해 지연 평가 고려",
   ],
 }
 
@@ -152,7 +152,12 @@ function StatusBadge({ status }: { status: "Submitted" | "In Progress" | "Not St
     "In Progress": "bg-[#E0EDFF] text-[#3B82F6] font-semibold",
     "Not Started": "bg-[#F3F4F6] text-[#6B7280]",
   }
-  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[status]}>{status}</span>
+  const statusText: Record<string, string> = {
+    Submitted: "제출됨",
+    "In Progress": "진행 중",
+    "Not Started": "시작 안 함",
+  }
+  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[status]}>{statusText[status]}</span>
 }
 
 function TrendBadge({ trend }: { trend: "High" | "Average" | "Low" }) {
@@ -161,7 +166,12 @@ function TrendBadge({ trend }: { trend: "High" | "Average" | "Low" }) {
     Average: "bg-[#FEF3C7] text-[#D97706]",
     Low: "bg-[#FEE2E2] text-[#DC2626]",
   }
-  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[trend]}>{trend}</span>
+  const trendText: Record<string, string> = {
+    High: "높음",
+    Average: "보통",
+    Low: "낮음",
+  }
+  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[trend]}>{trendText[trend]}</span>
 }
 
 function LanguageBadge({ language }: { language: string }) {
@@ -173,7 +183,11 @@ function TestResultBadge({ result }: { result: "Passed" | "Failed" }) {
     Passed: "bg-[#DCFCE7] text-[#16A34A]",
     Failed: "bg-[#FEE2E2] text-[#DC2626]",
   }
-  return <span className={"rounded-full px-2.5 py-0.5 text-xs font-medium " + badgeStyles[result]}>{result}</span>
+  const resultText: Record<string, string> = {
+    Passed: "통과",
+    Failed: "실패",
+  }
+  return <span className={"rounded-full px-2.5 py-0.5 text-xs font-medium " + badgeStyles[result]}>{resultText[result]}</span>
 }
 
 function generateParticipantCSV(): string {
@@ -291,11 +305,19 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">시험 일시 및 소요 시간</span>
             <p className="mt-3 text-base font-semibold text-[#1A1A1A]">
-              {participantData.testDate} · {participantData.duration}
+              {(() => {
+                const dateParts = participantData.testDate.split("-")
+                const year = dateParts[0]
+                const month = parseInt(dateParts[1], 10)
+                const day = parseInt(dateParts[2], 10)
+                const durationMatch = participantData.duration.match(/(\d+)\s*minutes?/i)
+                const minutes = durationMatch ? durationMatch[1] : participantData.duration
+                return `${year}년 ${month}월 ${day}일 · ${minutes}분`
+              })()}
             </p>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">추세</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 수준</span>
             <div className="mt-3">
               <TrendBadge trend={participantData.trend} />
             </div>

@@ -517,6 +517,60 @@ const getBadgeStyle = (badge)=>{
             };
     }
 };
+const getBadgeText = (badge)=>{
+    switch(badge){
+        case "Admin Change":
+            return "관리자 변경";
+        case "System Updated":
+            return "시스템 업데이트";
+        case "Error":
+            return "오류";
+        case "Evaluation Completed":
+            return "평가 완료";
+        case "Room Started":
+            return "세션 시작";
+        default:
+            return badge;
+    }
+};
+const getLogTitle = (title)=>{
+    const titleMap = {
+        "Evaluation batch completed.": "평가 배치 완료",
+        "New test room started.": "새 테스트 세션 시작",
+        "Daily backup completed.": "일일 백업 완료",
+        "Platform settings updated.": "플랫폼 설정 업데이트",
+        "System maintenance completed.": "시스템 유지보수 완료",
+        "Data retention policy updated.": "데이터 보관 정책 업데이트",
+        "Database connection error.": "데이터베이스 연결 오류",
+        "New evaluation model deployed.": "새 평가 모델 배포",
+        "Scheduled maintenance completed.": "예약된 유지보수 완료",
+        "API rate limit exceeded.": "API 요청 한도 초과",
+        "Global token limit updated.": "전역 토큰 제한 업데이트",
+        "Master account created for new organization.": "새 조직의 마스터 계정 생성"
+    };
+    return titleMap[title] || title;
+};
+const getLogDescription = (description)=>{
+    const descMap = {
+        "Automated scoring completed for 24 submissions in session TS-2025-0892.": "세션 TS-2025-0892에서 24건의 제출물에 대한 자동 채점이 완료되었습니다.",
+        "Test session TS-2025-0893 initiated by admin.master@example.com with 18 participants.": "admin.master@example.com이 18명의 참가자로 테스트 세션 TS-2025-0893을 시작했습니다.",
+        "Automated daily backup of all test sessions and user data completed successfully.": "모든 테스트 세션 및 사용자 데이터의 자동 일일 백업이 성공적으로 완료되었습니다.",
+        "Updated session timeout configuration for all active test sessions.": "모든 활성 테스트 세션의 세션 타임아웃 설정이 업데이트되었습니다.",
+        "Automated cleanup of expired test sessions completed successfully.": "만료된 테스트 세션의 자동 정리가 성공적으로 완료되었습니다.",
+        "Log retention set to 30 days and submission storage set to 90 days.": "로그 보관 기간이 30일로, 제출물 저장 기간이 90일로 설정되었습니다.",
+        "Automated scoring completed for 32 submissions in session TS-2025-0891.": "세션 TS-2025-0891에서 32건의 제출물에 대한 자동 채점이 완료되었습니다.",
+        "Backup service temporarily failed to connect. Retry scheduled.": "백업 서비스 연결이 일시적으로 실패했습니다. 재시도가 예약되었습니다.",
+        "Updated AI scoring model for coding tests across all sessions.": "모든 세션의 코딩 테스트용 AI 채점 모델이 업데이트되었습니다.",
+        "Test session TS-2025-0890 initiated by admin.kim@example.com with 25 participants.": "admin.kim@example.com이 25명의 참가자로 테스트 세션 TS-2025-0890을 시작했습니다.",
+        "New enterprise tenant onboarded with default global settings.": "기본 전역 설정으로 새 엔터프라이즈 테넌트가 온보딩되었습니다.",
+        "Database optimization and index rebuild completed successfully.": "데이터베이스 최적화 및 인덱스 재구성이 성공적으로 완료되었습니다.",
+        "External evaluation API temporarily unavailable due to rate limiting. Auto-retry enabled.": "요청 한도로 인해 외부 평가 API가 일시적으로 사용 불가능합니다. 자동 재시도가 활성화되었습니다.",
+        "Automated scoring completed for 45 submissions in session TS-2025-0889.": "세션 TS-2025-0889에서 45건의 제출물에 대한 자동 채점이 완료되었습니다.",
+        "Default token limit changed from 50,000 to 75,000 tokens per session.": "세션당 기본 토큰 제한이 50,000에서 75,000으로 변경되었습니다.",
+        "Test session TS-2025-0889 initiated by admin.park@example.com with 30 participants.": "admin.park@example.com이 30명의 참가자로 테스트 세션 TS-2025-0889을 시작했습니다."
+    };
+    return descMap[description] || description;
+};
 // Group logs by date
 const groupLogsByDate = (logs)=>{
     const grouped = {};
@@ -534,6 +588,10 @@ function PlatformLogsContent() {
     const [searchQuery, setSearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [typeFilter, setTypeFilter] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("all");
     const [timeRange, setTimeRange] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("24h");
+    const formatDate = (dateString)=>{
+        const [year, month, day] = dateString.split("-");
+        return `${year}년 ${parseInt(month, 10)}월 ${parseInt(day, 10)}일`;
+    };
     const filteredLogs = logs.filter((log)=>{
         // Type filter
         if (typeFilter !== "all") {
@@ -567,10 +625,10 @@ function PlatformLogsContent() {
                             lineHeight: "32px",
                             letterSpacing: "-0.01em"
                         },
-                        children: "Platform Logs"
+                        children: "플랫폼 로그"
                     }, void 0, false, {
                         fileName: "[project]/components/platform-logs-content.tsx",
-                        lineNumber: 254,
+                        lineNumber: 316,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -580,16 +638,16 @@ function PlatformLogsContent() {
                             color: "#6B7280",
                             lineHeight: "20px"
                         },
-                        children: "View and monitor system-wide activity logs across the platform."
+                        children: "플랫폼 전역의 시스템 활동 로그를 확인하고 모니터링합니다."
                     }, void 0, false, {
                         fileName: "[project]/components/platform-logs-content.tsx",
-                        lineNumber: 265,
+                        lineNumber: 327,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/platform-logs-content.tsx",
-                lineNumber: 253,
+                lineNumber: 315,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -603,11 +661,11 @@ function PlatformLogsContent() {
                                 size: 18
                             }, void 0, false, {
                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                lineNumber: 281,
+                                lineNumber: 343,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                placeholder: "Search logs...",
+                                placeholder: "로그 검색...",
                                 value: searchQuery,
                                 onChange: (e)=>setSearchQuery(e.target.value),
                                 className: "pl-10",
@@ -620,13 +678,13 @@ function PlatformLogsContent() {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                lineNumber: 282,
+                                lineNumber: 344,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/platform-logs-content.tsx",
-                        lineNumber: 280,
+                        lineNumber: 342,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -645,61 +703,61 @@ function PlatformLogsContent() {
                                             fontSize: "14px"
                                         },
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectValue"], {
-                                            placeholder: "All Types"
+                                            placeholder: "전체 유형"
                                         }, void 0, false, {
                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                            lineNumber: 309,
+                                            lineNumber: 371,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/platform-logs-content.tsx",
-                                        lineNumber: 300,
+                                        lineNumber: 362,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "all",
-                                                children: "All Types"
+                                                children: "전체 유형"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 312,
+                                                lineNumber: 374,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "admin",
-                                                children: "Admin Activity"
+                                                children: "관리자 활동"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 313,
+                                                lineNumber: 375,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "system",
-                                                children: "System"
+                                                children: "시스템"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 314,
+                                                lineNumber: 376,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "error",
-                                                children: "Error"
+                                                children: "오류"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 315,
+                                                lineNumber: 377,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/platform-logs-content.tsx",
-                                        lineNumber: 311,
+                                        lineNumber: 373,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                lineNumber: 299,
+                                lineNumber: 361,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
@@ -715,73 +773,73 @@ function PlatformLogsContent() {
                                             fontSize: "14px"
                                         },
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectValue"], {
-                                            placeholder: "Last 24 hours"
+                                            placeholder: "최근 24시간"
                                         }, void 0, false, {
                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                            lineNumber: 329,
+                                            lineNumber: 391,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/platform-logs-content.tsx",
-                                        lineNumber: 320,
+                                        lineNumber: 382,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "24h",
-                                                children: "Last 24 hours"
+                                                children: "최근 24시간"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 332,
+                                                lineNumber: 394,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "7d",
-                                                children: "Last 7 days"
+                                                children: "최근 7일"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 333,
+                                                lineNumber: 395,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "30d",
-                                                children: "Last 30 days"
+                                                children: "최근 30일"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 334,
+                                                lineNumber: 396,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "all",
-                                                children: "All time"
+                                                children: "전체 기간"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                lineNumber: 335,
+                                                lineNumber: 397,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/platform-logs-content.tsx",
-                                        lineNumber: 331,
+                                        lineNumber: 393,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                lineNumber: 319,
+                                lineNumber: 381,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/platform-logs-content.tsx",
-                        lineNumber: 298,
+                        lineNumber: 360,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/platform-logs-content.tsx",
-                lineNumber: 278,
+                lineNumber: 340,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -798,10 +856,10 @@ function PlatformLogsContent() {
                                         color: "#1A1A1A",
                                         letterSpacing: "-0.01em"
                                     },
-                                    children: date
+                                    children: formatDate(date)
                                 }, void 0, false, {
                                     fileName: "[project]/components/platform-logs-content.tsx",
-                                    lineNumber: 346,
+                                    lineNumber: 408,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -818,7 +876,7 @@ function PlatformLogsContent() {
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                            lineNumber: 361,
+                                            lineNumber: 423,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -844,12 +902,12 @@ function PlatformLogsContent() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/platform-logs-content.tsx",
-                                                                lineNumber: 385,
+                                                                lineNumber: 447,
                                                                 columnNumber: 23
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                                            lineNumber: 377,
+                                                            lineNumber: 439,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -880,7 +938,7 @@ function PlatformLogsContent() {
                                                                             children: log.timestamp
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                                                            lineNumber: 415,
+                                                                            lineNumber: 477,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -892,16 +950,16 @@ function PlatformLogsContent() {
                                                                                 borderRadius: "9999px",
                                                                                 lineHeight: "16px"
                                                                             },
-                                                                            children: log.badge
+                                                                            children: getBadgeText(log.badge)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                                                            lineNumber: 425,
+                                                                            lineNumber: 487,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/platform-logs-content.tsx",
-                                                                    lineNumber: 414,
+                                                                    lineNumber: 476,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -913,15 +971,15 @@ function PlatformLogsContent() {
                                                                             color: "#1A1A1A",
                                                                             lineHeight: "20px"
                                                                         },
-                                                                        children: log.title
+                                                                        children: getLogTitle(log.title)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/platform-logs-content.tsx",
-                                                                        lineNumber: 441,
+                                                                        lineNumber: 503,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/platform-logs-content.tsx",
-                                                                    lineNumber: 440,
+                                                                    lineNumber: 502,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -932,44 +990,44 @@ function PlatformLogsContent() {
                                                                             color: "#6B7280",
                                                                             lineHeight: "20px"
                                                                         },
-                                                                        children: log.description
+                                                                        children: getLogDescription(log.description)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/platform-logs-content.tsx",
-                                                                        lineNumber: 455,
+                                                                        lineNumber: 517,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/platform-logs-content.tsx",
-                                                                    lineNumber: 454,
+                                                                    lineNumber: 516,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                                            lineNumber: 398,
+                                                            lineNumber: 460,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, log.id, true, {
                                                     fileName: "[project]/components/platform-logs-content.tsx",
-                                                    lineNumber: 375,
+                                                    lineNumber: 437,
                                                     columnNumber: 19
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/components/platform-logs-content.tsx",
-                                            lineNumber: 373,
+                                            lineNumber: 435,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/platform-logs-content.tsx",
-                                    lineNumber: 359,
+                                    lineNumber: 421,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, date, true, {
                             fileName: "[project]/components/platform-logs-content.tsx",
-                            lineNumber: 344,
+                            lineNumber: 406,
                             columnNumber: 11
                         }, this)),
                     filteredLogs.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -986,27 +1044,27 @@ function PlatformLogsContent() {
                                 fontWeight: 400,
                                 color: "#9CA3AF"
                             },
-                            children: "No logs found for the selected filters."
+                            children: "선택한 필터에 해당하는 로그가 없습니다."
                         }, void 0, false, {
                             fileName: "[project]/components/platform-logs-content.tsx",
-                            lineNumber: 484,
+                            lineNumber: 546,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/platform-logs-content.tsx",
-                        lineNumber: 475,
+                        lineNumber: 537,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/platform-logs-content.tsx",
-                lineNumber: 342,
+                lineNumber: 404,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/platform-logs-content.tsx",
-        lineNumber: 251,
+        lineNumber: 313,
         columnNumber: 5
     }, this);
 }

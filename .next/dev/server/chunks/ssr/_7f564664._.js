@@ -251,50 +251,50 @@ const recentSessions = [
     {
         id: 1,
         sessionId: "SESSION-2025-001",
-        status: "Active",
-        createdAt: "Jan 14, 2025",
+        status: "진행 중",
+        createdAt: "2025년 1월 14일",
         participants: 18
     },
     {
         id: 2,
         sessionId: "SESSION-2025-002",
-        status: "Completed",
-        createdAt: "Jan 13, 2025",
+        status: "완료",
+        createdAt: "2025년 1월 13일",
         participants: 25
     },
     {
         id: 3,
         sessionId: "SESSION-2025-003",
-        status: "Active",
-        createdAt: "Jan 12, 2025",
+        status: "진행 중",
+        createdAt: "2025년 1월 12일",
         participants: 12
     },
     {
         id: 4,
         sessionId: "SESSION-2025-004",
-        status: "Completed",
-        createdAt: "Jan 11, 2025",
+        status: "완료",
+        createdAt: "2025년 1월 11일",
         participants: 30
     }
 ];
 const recentLogs = [
     {
         id: 1,
-        timestamp: "10:33 AM",
-        type: "Admin",
-        description: "Admin 'john.smith' updated platform settings"
+        timestamp: "오전 10:33",
+        type: "관리자",
+        description: "관리자 'john.smith'가 플랫폼 설정을 업데이트했습니다"
     },
     {
         id: 2,
-        timestamp: "09:15 AM",
-        type: "System",
-        description: "Scheduled maintenance completed successfully"
+        timestamp: "오전 09:15",
+        type: "시스템",
+        description: "예정된 유지보수가 성공적으로 완료되었습니다"
     },
     {
         id: 3,
-        timestamp: "08:45 AM",
-        type: "Error",
-        description: "Failed to connect to evaluation service (retried)"
+        timestamp: "오전 08:45",
+        type: "오류",
+        description: "평가 서비스 연결 실패 (재시도됨)"
     }
 ];
 function MasterDashboardContent({ onNavigate }) {
@@ -314,7 +314,7 @@ function MasterDashboardContent({ onNavigate }) {
                             color: "#1A1A1A",
                             letterSpacing: "-0.01em"
                         },
-                        children: "Master Dashboard"
+                        children: "마스터 대시보드"
                     }, void 0, false, {
                         fileName: "[project]/components/master-dashboard-content.tsx",
                         lineNumber: 31,
@@ -325,7 +325,7 @@ function MasterDashboardContent({ onNavigate }) {
                             fontSize: "14px",
                             color: "#6B7280"
                         },
-                        children: "Overview of platform activity and coding test operations."
+                        children: "플랫폼 활동 및 코딩 테스트 운영 개요."
                     }, void 0, false, {
                         fileName: "[project]/components/master-dashboard-content.tsx",
                         lineNumber: 34,
@@ -371,7 +371,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                     fontSize: "14px",
                                                     color: "#6B7280"
                                                 },
-                                                children: "Active Sessions"
+                                                children: "진행 중인 세션"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/master-dashboard-content.tsx",
                                                 lineNumber: 45,
@@ -453,7 +453,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                     fontSize: "14px",
                                                     color: "#6B7280"
                                                 },
-                                                children: "Participants Today"
+                                                children: "오늘의 참가자"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/master-dashboard-content.tsx",
                                                 lineNumber: 68,
@@ -520,11 +520,11 @@ function MasterDashboardContent({ onNavigate }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 style: {
-                                                    fontSize: "18px",
-                                                    fontWeight: 600,
+                                                    fontSize: "32px",
+                                                    fontWeight: 700,
                                                     color: "#22C55E"
                                                 },
-                                                children: "Operational"
+                                                children: "운영 중"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/master-dashboard-content.tsx",
                                                 lineNumber: 90,
@@ -535,7 +535,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                     fontSize: "14px",
                                                     color: "#6B7280"
                                                 },
-                                                children: "System Status"
+                                                children: "시스템 상태"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/master-dashboard-content.tsx",
                                                 lineNumber: 91,
@@ -611,7 +611,7 @@ function MasterDashboardContent({ onNavigate }) {
                                         fontWeight: 600,
                                         color: "#1A1A1A"
                                     },
-                                    children: "Recent Sessions"
+                                    children: "최근 세션"
                                 }, void 0, false, {
                                     fileName: "[project]/components/master-dashboard-content.tsx",
                                     lineNumber: 117,
@@ -657,9 +657,9 @@ function MasterDashboardContent({ onNavigate }) {
                                                                 },
                                                                 children: [
                                                                     session.createdAt,
-                                                                    " · ",
+                                                                    " · 참가자 ",
                                                                     session.participants,
-                                                                    " participants"
+                                                                    "명"
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/master-dashboard-content.tsx",
@@ -674,8 +674,8 @@ function MasterDashboardContent({ onNavigate }) {
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
                                                         style: {
-                                                            backgroundColor: session.status === "Active" ? "#DCFCE7" : "#F3F4F6",
-                                                            color: session.status === "Active" ? "#22C55E" : "#6B7280",
+                                                            backgroundColor: session.status === "진행 중" ? "#DCFCE7" : "#F3F4F6",
+                                                            color: session.status === "진행 중" ? "#22C55E" : "#6B7280",
                                                             fontWeight: 500,
                                                             fontSize: "12px",
                                                             border: "none"
@@ -714,7 +714,7 @@ function MasterDashboardContent({ onNavigate }) {
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                                                 href: "/master/test-sessions",
                                                 children: [
-                                                    "View All Sessions",
+                                                    "모든 세션 보기",
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$1$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
                                                         size: 16
                                                     }, void 0, false, {
@@ -766,7 +766,7 @@ function MasterDashboardContent({ onNavigate }) {
                                         fontWeight: 600,
                                         color: "#1A1A1A"
                                     },
-                                    children: "Recent Logs"
+                                    children: "최근 로그"
                                 }, void 0, false, {
                                     fileName: "[project]/components/master-dashboard-content.tsx",
                                     lineNumber: 173,
@@ -796,7 +796,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                             width: "8px",
                                                             height: "8px",
                                                             borderRadius: "50%",
-                                                            backgroundColor: log.type === "Admin" ? "#3B82F6" : log.type === "System" ? "#6B7280" : "#EF4444",
+                                                            backgroundColor: log.type === "관리자" ? "#3B82F6" : log.type === "시스템" ? "#6B7280" : "#EF4444",
                                                             flexShrink: 0
                                                         }
                                                     }, void 0, false, {
@@ -823,8 +823,8 @@ function MasterDashboardContent({ onNavigate }) {
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
                                                                         style: {
-                                                                            backgroundColor: log.type === "Admin" ? "#DBEAFE" : log.type === "System" ? "#F3F4F6" : "#FEE2E2",
-                                                                            color: log.type === "Admin" ? "#3B82F6" : log.type === "System" ? "#6B7280" : "#EF4444",
+                                                                            backgroundColor: log.type === "관리자" ? "#DBEAFE" : log.type === "시스템" ? "#F3F4F6" : "#FEE2E2",
+                                                                            color: log.type === "관리자" ? "#3B82F6" : log.type === "시스템" ? "#6B7280" : "#EF4444",
                                                                             fontWeight: 500,
                                                                             fontSize: "10px",
                                                                             padding: "2px 6px",
@@ -889,7 +889,7 @@ function MasterDashboardContent({ onNavigate }) {
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                                                 href: "/master/platform-logs",
                                                 children: [
-                                                    "View All Logs",
+                                                    "모든 로그 보기",
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$1$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
                                                         size: 16
                                                     }, void 0, false, {
@@ -940,7 +940,7 @@ function MasterDashboardContent({ onNavigate }) {
                             color: "#1A1A1A",
                             marginBottom: "16px"
                         },
-                        children: "Quick Access"
+                        children: "빠른 접근"
                     }, void 0, false, {
                         fileName: "[project]/components/master-dashboard-content.tsx",
                         lineNumber: 240,
@@ -996,7 +996,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                                 fontWeight: 600,
                                                                 color: "#1A1A1A"
                                                             },
-                                                            children: "Manage Test Sessions"
+                                                            children: "테스트 세션 관리"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/master-dashboard-content.tsx",
                                                             lineNumber: 266,
@@ -1007,7 +1007,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                                 fontSize: "13px",
                                                                 color: "#6B7280"
                                                             },
-                                                            children: "View and manage all coding test sessions"
+                                                            children: "모든 코딩 테스트 세션 보기 및 관리"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/master-dashboard-content.tsx",
                                                             lineNumber: 267,
@@ -1087,7 +1087,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                                 fontWeight: 600,
                                                                 color: "#1A1A1A"
                                                             },
-                                                            children: "Manage Problems"
+                                                            children: "문제 관리"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/master-dashboard-content.tsx",
                                                             lineNumber: 298,
@@ -1098,7 +1098,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                                 fontSize: "13px",
                                                                 color: "#6B7280"
                                                             },
-                                                            children: "Browse and manage coding problems"
+                                                            children: "코딩 문제 탐색 및 관리"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/master-dashboard-content.tsx",
                                                             lineNumber: 299,
@@ -1178,7 +1178,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                                 fontWeight: 600,
                                                                 color: "#1A1A1A"
                                                             },
-                                                            children: "Open Platform Logs"
+                                                            children: "플랫폼 로그 열기"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/master-dashboard-content.tsx",
                                                             lineNumber: 330,
@@ -1189,7 +1189,7 @@ function MasterDashboardContent({ onNavigate }) {
                                                                 fontSize: "13px",
                                                                 color: "#6B7280"
                                                             },
-                                                            children: "View system activity and audit logs"
+                                                            children: "시스템 활동 및 감사 로그 보기"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/master-dashboard-content.tsx",
                                                             lineNumber: 331,

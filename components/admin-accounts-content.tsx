@@ -30,7 +30,7 @@ const initialAdminUsers = [
     lastLogin: "2025-01-14 10:33 AM",
     createdAt: "Dec 15, 2024",
     secretKey: "sk_prod_abc123xyz789def456",
-    lastKeyIssued: "Jan 10, 2025 at 09:15 AM",
+    lastKeyIssued: "2025년 1월 10일 오전 09:15",
   },
   {
     id: 2,
@@ -40,7 +40,7 @@ const initialAdminUsers = [
     lastLogin: "2025-01-14 10:33 AM",
     createdAt: "Dec 20, 2024",
     secretKey: "sk_prod_def456abc789xyz123",
-    lastKeyIssued: "Jan 12, 2025 at 02:30 PM",
+    lastKeyIssued: "2025년 1월 12일 오후 02:30",
   },
   {
     id: 3,
@@ -50,7 +50,7 @@ const initialAdminUsers = [
     lastLogin: "2025-01-10 11:05 AM",
     createdAt: "Nov 28, 2024",
     secretKey: "sk_prod_xyz789def456abc123",
-    lastKeyIssued: "Dec 05, 2024 at 11:45 AM",
+    lastKeyIssued: "2024년 12월 5일 오전 11:45",
   },
 ]
 
@@ -158,7 +158,7 @@ export function AdminAccountsContent() {
     await navigator.clipboard.writeText(tempPassword)
     setTempPasswordCopied(true)
     toast({
-      description: "Temporary password copied to clipboard.",
+      description: "임시 비밀번호가 클립보드에 복사되었습니다.",
     })
     setTimeout(() => setTempPasswordCopied(false), 2000)
   }
@@ -168,9 +168,42 @@ export function AdminAccountsContent() {
     setIsReissueKeyOpen(true)
   }
 
+  const formatDateToKorean = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    const ampm = hours >= 12 ? "오후" : "오전"
+    const displayHours = hours % 12 || 12
+    const displayMinutes = minutes.toString().padStart(2, "0")
+    return `${year}년 ${month}월 ${day}일 ${ampm} ${displayHours}:${displayMinutes}`
+  }
+
   const handleConfirmReissueKey = () => {
     const randomStr = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 11)
-    setReissuedSecretKey(`sk_prod_${randomStr}`)
+    const newKey = `sk_prod_${randomStr}`
+    setReissuedSecretKey(newKey)
+    
+    // Update the admin user's secret key and lastKeyIssued date
+    if (selectedAdmin) {
+      const now = new Date()
+      const koreanDate = formatDateToKorean(now)
+      setAdminUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === selectedAdmin.id
+            ? { ...user, secretKey: newKey, lastKeyIssued: koreanDate }
+            : user
+        )
+      )
+      // Update selectedAdmin to reflect the changes
+      setSelectedAdmin({
+        ...selectedAdmin,
+        secretKey: newKey,
+        lastKeyIssued: koreanDate,
+      })
+    }
+    
     setIsReissueKeyOpen(false)
     setIsReissueKeyResultOpen(true)
     setReissuedKeyCopied(false)
@@ -600,7 +633,7 @@ export function AdminAccountsContent() {
                 color: "#1A1A1A",
               }}
             >
-              Reset Password
+              비밀번호 재설정
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
@@ -611,7 +644,7 @@ export function AdminAccountsContent() {
                 marginBottom: "12px",
               }}
             >
-              This will generate a temporary password for the admin's next login.
+              관리자의 다음 로그인을 위해 임시 비밀번호가 생성됩니다.
             </p>
             <p
               style={{
@@ -620,7 +653,7 @@ export function AdminAccountsContent() {
                 color: "#1A1A1A",
               }}
             >
-              Are you sure you want to reset this admin's password?
+              이 관리자의 비밀번호를 재설정하시겠습니까?
             </p>
           </div>
           <DialogFooter className="gap-2">
@@ -632,7 +665,7 @@ export function AdminAccountsContent() {
                 fontWeight: 500,
               }}
             >
-              Cancel
+              취소
             </Button>
             <Button
               onClick={handleConfirmResetPassword}
@@ -643,7 +676,7 @@ export function AdminAccountsContent() {
                 fontWeight: 500,
               }}
             >
-              Reset Password
+              비밀번호 재설정
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -660,7 +693,7 @@ export function AdminAccountsContent() {
                 color: "#1A1A1A",
               }}
             >
-              Temporary password generated
+              임시 비밀번호 생성 완료
             </DialogTitle>
             <DialogDescription
               style={{
@@ -668,7 +701,7 @@ export function AdminAccountsContent() {
                 color: "#6B7280",
               }}
             >
-              Please copy and share this password securely with the admin.
+              이 비밀번호를 복사하여 관리자에게 안전하게 전달해주세요.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -681,7 +714,7 @@ export function AdminAccountsContent() {
                 marginBottom: "8px",
               }}
             >
-              Temporary Password
+              임시 비밀번호
             </label>
             <div className="flex items-center gap-2">
               <Input
@@ -717,7 +750,7 @@ export function AdminAccountsContent() {
                 fontWeight: 500,
               }}
             >
-              Close
+              닫기
             </Button>
           </DialogFooter>
         </DialogContent>

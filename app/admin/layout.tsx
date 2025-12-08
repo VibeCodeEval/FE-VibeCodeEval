@@ -11,14 +11,19 @@ export const metadata: Metadata = {
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-[#F5F5F5]">
-      {/* 왼쪽 사이드바 */}
-      <AdminSidebar />
+    <div className="flex h-screen w-full overflow-hidden" style={{ maxWidth: "1920px" }}>
+      {/* 왼쪽 고정 사이드바 */}
+      <div className="fixed left-0 top-0 h-screen z-30" style={{ width: "240px" }}>
+        <AdminSidebar />
+      </div>
 
       {/* 오른쪽 메인 영역 */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col h-screen ml-[240px]" style={{ backgroundColor: "#F9FAFB" }}>
+        {/* 메인 컨텐츠 영역 */}
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

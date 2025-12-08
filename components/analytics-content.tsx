@@ -4,8 +4,8 @@ import { useState, useMemo } from "react"
 import Link from "next/link"
 import { Download, TrendingUp, TrendingDown, Minus, ChevronDown, X, CheckCircle } from "lucide-react"
 
-type Trend = "High" | "Average" | "Low"
-type Status = "Completed" | "In Progress"
+type Trend = "높음" | "보통" | "낮음"
+type Status = "완료" | "진행 중"
 
 interface Participant {
   id: string
@@ -33,8 +33,8 @@ const participantsData: Participant[] = [
     name: "Sarah Johnson",
     entryCode: "AIV-2024-001",
     avgScore: 94,
-    status: "Completed",
-    trend: "High",
+    status: "완료",
+    trend: "높음",
     sparklineData: [65, 72, 80, 88, 94],
     testDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     promptScore: 96,
@@ -46,8 +46,8 @@ const participantsData: Participant[] = [
     name: "Michael Chen",
     entryCode: "AIV-2024-001",
     avgScore: 91,
-    status: "Completed",
-    trend: "High",
+    status: "완료",
+    trend: "높음",
     sparklineData: [70, 75, 82, 87, 91],
     testDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
     promptScore: 90,
@@ -59,8 +59,8 @@ const participantsData: Participant[] = [
     name: "Emily Davis",
     entryCode: "AIV-2024-002",
     avgScore: 88,
-    status: "Completed",
-    trend: "High",
+    status: "완료",
+    trend: "높음",
     sparklineData: [60, 68, 75, 82, 88],
     testDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
     promptScore: 85,
@@ -72,8 +72,8 @@ const participantsData: Participant[] = [
     name: "David Wilson",
     entryCode: "AIV-2024-001",
     avgScore: 86,
-    status: "Completed",
-    trend: "High",
+    status: "완료",
+    trend: "높음",
     sparklineData: [72, 78, 80, 84, 86],
     testDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
     promptScore: 88,
@@ -85,8 +85,8 @@ const participantsData: Participant[] = [
     name: "Jessica Lee",
     entryCode: "AIV-2024-003",
     avgScore: 82,
-    status: "Completed",
-    trend: "Average",
+    status: "완료",
+    trend: "보통",
     sparklineData: [78, 80, 79, 81, 82],
     testDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 days ago
     promptScore: 80,
@@ -98,8 +98,8 @@ const participantsData: Participant[] = [
     name: "Chris Martinez",
     entryCode: "AIV-2024-002",
     avgScore: 78,
-    status: "Completed",
-    trend: "Average",
+    status: "완료",
+    trend: "보통",
     sparklineData: [75, 76, 78, 77, 78],
     testDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
     promptScore: 76,
@@ -111,8 +111,8 @@ const participantsData: Participant[] = [
     name: "Amanda Brown",
     entryCode: "AIV-2024-001",
     avgScore: 75,
-    status: "In Progress",
-    trend: "Average",
+    status: "진행 중",
+    trend: "보통",
     sparklineData: [68, 70, 72, 74, 75],
     testDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
     promptScore: 74,
@@ -124,8 +124,8 @@ const participantsData: Participant[] = [
     name: "Ryan Taylor",
     entryCode: "AIV-2024-003",
     avgScore: 72,
-    status: "Completed",
-    trend: "Average",
+    status: "완료",
+    trend: "보통",
     sparklineData: [70, 71, 72, 71, 72],
     testDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
     promptScore: 70,
@@ -137,8 +137,8 @@ const participantsData: Participant[] = [
     name: "Nicole Garcia",
     entryCode: "AIV-2024-002",
     avgScore: 68,
-    status: "Completed",
-    trend: "Average",
+    status: "완료",
+    trend: "보통",
     sparklineData: [65, 66, 67, 68, 68],
     testDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
     promptScore: 66,
@@ -150,8 +150,8 @@ const participantsData: Participant[] = [
     name: "Kevin Robinson",
     entryCode: "AIV-2024-001",
     avgScore: 55,
-    status: "Completed",
-    trend: "Low",
+    status: "완료",
+    trend: "낮음",
     sparklineData: [62, 58, 55, 54, 55],
     testDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
     promptScore: 52,
@@ -163,8 +163,8 @@ const participantsData: Participant[] = [
     name: "Laura Thompson",
     entryCode: "AIV-2024-003",
     avgScore: 48,
-    status: "In Progress",
-    trend: "Low",
+    status: "진행 중",
+    trend: "낮음",
     sparklineData: [55, 52, 50, 49, 48],
     testDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days ago
     promptScore: 45,
@@ -176,8 +176,8 @@ const participantsData: Participant[] = [
     name: "James Anderson",
     entryCode: "AIV-2024-002",
     avgScore: 42,
-    status: "Completed",
-    trend: "Low",
+    status: "완료",
+    trend: "낮음",
     sparklineData: [50, 48, 45, 43, 42],
     testDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000), // 25 days ago
     promptScore: 40,
@@ -203,7 +203,7 @@ function Sparkline({ data, trend }: { data: number[]; trend: Trend }) {
     })
     .join(" ")
 
-  const lineColor = trend === "High" ? "#4AA785" : trend === "Low" ? "#D6455D" : "#9CA3AF"
+  const lineColor = trend === "높음" ? "#4AA785" : trend === "낮음" ? "#D6455D" : "#9CA3AF"
 
   return (
     <svg width={width} height={height} className="shrink-0">
@@ -220,25 +220,25 @@ function Sparkline({ data, trend }: { data: number[]; trend: Trend }) {
 }
 
 function TrendIcon({ trend }: { trend: Trend }) {
-  if (trend === "High") {
+  if (trend === "높음") {
     return <TrendingUp className="h-4 w-4 text-[#4AA785]" strokeWidth={2} />
-  } else if (trend === "Low") {
+  } else if (trend === "낮음") {
     return <TrendingDown className="h-4 w-4 text-[#D6455D]" strokeWidth={2} />
   }
   return <Minus className="h-4 w-4 text-[#9CA3AF]" strokeWidth={2} />
 }
 
 function StatusBadge({ status }: { status: Status }) {
-  const styles = status === "Completed" ? "bg-[#DCFCE7] text-[#16A34A]" : "bg-[#E0E7FF] text-[#6366F1]"
+  const styles = status === "완료" ? "bg-[#DCFCE7] text-[#16A34A]" : "bg-[#E0E7FF] text-[#6366F1]"
 
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles}`}>{status}</span>
 }
 
 function TrendBadge({ trend }: { trend: Trend }) {
   const styles = {
-    High: "bg-[#DCFCE7] text-[#16A34A]",
-    Average: "bg-[#F3F4F6] text-[#6B7280]",
-    Low: "bg-[#FEE2E2] text-[#DC2626]",
+    "높음": "bg-[#DCFCE7] text-[#16A34A]",
+    "보통": "bg-[#F3F4F6] text-[#6B7280]",
+    "낮음": "bg-[#FEE2E2] text-[#DC2626]",
   }
 
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`}>{trend}</span>
@@ -273,7 +273,7 @@ function ParticipantCard({ participant }: { participant: Participant }) {
       <div className="mt-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div>
-            <p className="text-sm text-[#6B7280]">Avg Score</p>
+            <p className="text-sm text-[#6B7280]">평균 점수</p>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold text-[#1A1A1A]">{participant.avgScore}%</span>
               <TrendIcon trend={participant.trend} />
@@ -292,7 +292,7 @@ function ParticipantCard({ participant }: { participant: Participant }) {
           }}
           className="text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]"
         >
-          View Detail →
+          상세 보기 →
         </Link>
       </div>
     </div>
@@ -300,8 +300,8 @@ function ParticipantCard({ participant }: { participant: Participant }) {
 }
 
 export function AnalyticsContent() {
-  const [timeRange, setTimeRange] = useState("All time")
-  const [testSession, setTestSession] = useState("All Sessions")
+  const [timeRange, setTimeRange] = useState("전체 기간")
+  const [testSession, setTestSession] = useState("모든 세션")
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const showToast = (title: string, description: string) => {
@@ -318,7 +318,7 @@ export function AnalyticsContent() {
 
   const handleExport = () => {
     const csvContent =
-      "Name,Entry Code,Avg Score,Status,Trend,Prompt Score,Performance Score,Correctness Score\n" +
+      "이름,입장 코드,평균 점수,상태,성과 수준,프롬프트 점수,성능 점수,정답률 점수\n" +
       participantsData
         .map(
           (p) =>
@@ -334,7 +334,7 @@ export function AnalyticsContent() {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-    showToast("Export started", "Analytics results are being downloaded as a CSV file.")
+    showToast("내보내기 시작", "통계 분석 결과가 CSV 파일로 다운로드되고 있습니다.")
   }
 
   const filteredParticipants = useMemo(() => {
@@ -342,16 +342,16 @@ export function AnalyticsContent() {
 
     let dateThreshold: Date | null = null
     switch (timeRange) {
-      case "Last 7 days":
+      case "최근 7일":
         dateThreshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
         break
-      case "Last 14 days":
+      case "최근 14일":
         dateThreshold = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
         break
-      case "Last 30 days":
+      case "최근 30일":
         dateThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
         break
-      case "Last 90 days":
+      case "최근 90일":
         dateThreshold = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
         break
       default:
@@ -360,7 +360,7 @@ export function AnalyticsContent() {
 
     return participantsData.filter((p) => {
       const passesTimeFilter = dateThreshold === null || p.testDate >= dateThreshold
-      const passesSessionFilter = testSession === "All Sessions" || p.entryCode === testSession
+      const passesSessionFilter = testSession === "모든 세션" || p.entryCode === testSession
       return passesTimeFilter && passesSessionFilter
     })
   }, [timeRange, testSession])
@@ -413,11 +413,11 @@ export function AnalyticsContent() {
                 onChange={(e) => setTimeRange(e.target.value)}
                 className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
               >
-                <option>Last 7 days</option>
-                <option>Last 14 days</option>
-                <option>Last 30 days</option>
-                <option>Last 90 days</option>
-                <option>All time</option>
+                <option>최근 7일</option>
+                <option>최근 14일</option>
+                <option>최근 30일</option>
+                <option>최근 90일</option>
+                <option>전체 기간</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
             </div>
@@ -428,7 +428,7 @@ export function AnalyticsContent() {
                 onChange={(e) => setTestSession(e.target.value)}
                 className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
               >
-                <option>All Sessions</option>
+                <option>모든 세션</option>
                 <option>AIV-2024-001</option>
                 <option>AIV-2024-002</option>
                 <option>AIV-2024-003</option>
