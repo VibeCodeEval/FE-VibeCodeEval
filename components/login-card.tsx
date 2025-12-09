@@ -5,7 +5,8 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
+import { adminLogin } from "@/lib/api/admin"
 
 type TabType = "user" | "admin"
 
@@ -19,38 +20,68 @@ export default function LoginCard() {
 
   const [adminNumber, setAdminNumber] = useState<string>("");
   const [adminPassword, setAdminPassword] = useState<string>("");
+  const [adminError, setAdminError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  const MASTER_KEY = "master";
+  const MASTER_IDENTIFIER = "MASTER-0001";
+  const MASTER_PASSWORD = "master-pass";
 
 
-  const handleClick = () => {
-  if (activeTab === "user") {
-    // ✅ User 탭: 입력값 검증 후 대기 화면으로 이동
-    if (
-      entryCode.trim() === "" ||
-      userName.trim() === "" ||
-      phoneNumber.trim() === ""
-    ) {
-      alert("Entry Code, Name, Phone Number를 모두 입력해 주세요.");
-      return;
-    }
+  const handleClick = async () => {
+    if (activeTab === "user") {
+      // ✅ User 탭: 입력값 검증 후 대기 화면으로 이동
+      if (
+        entryCode.trim() === "" ||
+        userName.trim() === "" ||
+        phoneNumber.trim() === ""
+      ) {
+        alert("Entry Code, Name, Phone Number를 모두 입력해 주세요.");
+        return;
+      }
 
-    // TODO: 나중에 여기서 실제 API 호출을 붙이면 됨
-    // 예: await startUserSession({ entryCode, userName, phoneNumber });
+      // TODO: 나중에 여기서 실제 API 호출을 붙이면 됨
+      // 예: await startUserSession({ entryCode, userName, phoneNumber });
 
-    router.push("/waiting");
-  } else {
-    // ✅ Admin 탭: 입력값에 따라 분기
-    if (adminNumber.trim().toLowerCase() === MASTER_KEY) {
-      // Admin Number 가 "master" 일 때 -> Master Dashboard
-      router.push("/master");
+      router.push("/waiting");
     } else {
-      // 그 외의 기존 Admin Dashboard
-      router.push("/admin/dashboard");
+      // ✅ Admin 탭: 백엔드 API와 연동
+      setAdminError(""); // 에러 메시지 초기화
+
+      // 입력값 검증
+      if (adminNumber.trim() === "" || adminPassword.trim() === "") {
+        setAdminError("관리자 번호와 비밀번호를 모두 입력해 주세요.");
+        return;
+      }
+
+      // Master 키 체크 (MASTER-0001 / master-pass일 때는 API 호출 없이 바로 이동)
+      if (
+        adminNumber.trim() === MASTER_IDENTIFIER &&
+        adminPassword.trim() === MASTER_PASSWORD
+      ) {
+        router.push("/master");
+        return;
+      }
+
+      // API 호출
+      setIsLoading(true);
+      try {
+        const response = await adminLogin({
+          identifier: adminNumber.trim(),
+          password: adminPassword.trim(),
+        });
+
+        // 성공 시: accessToken을 localStorage에 저장하고 대시보드로 이동
+        localStorage.setItem("admin_access_token", response.accessToken);
+        router.push("/admin/dashboard");
+      } catch (error) {
+        // 실패 시: 에러 메시지 표시
+        setAdminError("아이디 또는 비밀번호가 일치하지 않습니다.");
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }
-};
+  };
 
 
   return (
@@ -97,15 +128,36 @@ export default function LoginCard() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="entry-code">입장 코드</Label>
-              <Input id="entry-code" type="text" placeholder="입장 코드를 입력하세요" className="h-11" />
+              <Input 
+                id="entry-code" 
+                type="text" 
+                placeholder="입장 코드를 입력하세요" 
+                className="h-11"
+                value={entryCode}
+                onChange={(e) => setEntryCode(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">이름</Label>
-              <Input id="name" type="text" placeholder="이름을 입력하세요" className="h-11" />
+              <Input 
+                id="name" 
+                type="text" 
+                placeholder="이름을 입력하세요" 
+                className="h-11"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">전화번호</Label>
-              <Input id="phone" type="tel" placeholder="전화번호를 입력하세요" className="h-11" />
+              <Input 
+                id="phone" 
+                type="tel" 
+                placeholder="전화번호를 입력하세요" 
+                className="h-11"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
             </div>
           </div>
         ) : (
@@ -120,7 +172,10 @@ export default function LoginCard() {
               <Label htmlFor="admin-number">관리자 번호</Label>
               <Input id="admin-number" type="text" placeholder="관리자 번호를 입력하세요" className="h-11" 
                 value={adminNumber}                             
-                onChange={(e) => setAdminNumber(e.target.value)}
+                onChange={(e) => {
+                  setAdminNumber(e.target.value);
+                  setAdminError(""); // 입력 시 에러 메시지 초기화
+                }}
                 />
               </div>
 
@@ -128,8 +183,14 @@ export default function LoginCard() {
               <Label htmlFor="admin-password">비밀번호</Label>
               <Input id="admin-password" type="password" placeholder="비밀번호를 입력하세요" className="h-11" 
                 value={adminPassword}                            
-                onChange={(e) => setAdminPassword(e.target.value)}
+                onChange={(e) => {
+                  setAdminPassword(e.target.value);
+                  setAdminError(""); // 입력 시 에러 메시지 초기화
+                }}
                 />
+              {adminError && (
+                <p className="text-sm text-red-500 mt-1">{adminError}</p>
+              )}
             </div>
           </div>
         )}
@@ -139,9 +200,10 @@ export default function LoginCard() {
         <Button
           type="button"
           className="w-full h-11 text-base font-medium"
-          onClick={handleClick}   // ✅ 여기만!
+          onClick={handleClick}
+          disabled={isLoading}
         >
-          {activeTab === "user" ? "시험에 참여하기" : "로그인"}
+          {activeTab === "user" ? "시험에 참여하기" : isLoading ? "로그인 중..." : "로그인"}
         </Button>
         {activeTab === "user" ? (
           // User helper texts
