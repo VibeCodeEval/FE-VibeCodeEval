@@ -1,10 +1,23 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Users, UserCheck, CheckCircle2, CalendarClock, FileCode, ScrollText, ArrowRight } from "lucide-react"
+import { Users, UserCheck, CheckCircle2, CalendarClock, FileCode, ScrollText, ArrowRight, KeyRound, Copy, Check } from "lucide-react"
 import Link from "next/link";
+import { issueAdminNumber, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const recentSessions = [
   { id: 1, sessionId: "SESSION-2025-001", status: "진행 중", createdAt: "2025년 1월 14일", participants: 18 },
@@ -24,6 +37,73 @@ type DashboardContentProps = {
 }
 
 export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false)
+  const [label, setLabel] = useState("")
+  const [expiresAt, setExpiresAt] = useState("")
+  const [issuedAdminNumber, setIssuedAdminNumber] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+
+  const handleIssueAdminNumber = async () => {
+    setIsLoading(true)
+    try {
+      const response = await issueAdminNumber({
+        label: label.trim() || undefined,
+        expiresAt: expiresAt || undefined,
+      })
+
+      setIssuedAdminNumber(response.adminNumber)
+      setLabel("")
+      setExpiresAt("")
+      toast({
+        title: "관리자 번호 발급 성공",
+        description: "관리자 번호가 성공적으로 발급되었습니다.",
+      })
+    } catch (error) {
+      if (error instanceof LoginFailedError) {
+        toast({
+          title: "발급 실패",
+          description: error.message,
+          variant: "destructive",
+        })
+      } else if (error instanceof NetworkError) {
+        toast({
+          title: "네트워크 오류",
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "오류",
+          description: "관리자 번호 발급 중 오류가 발생했습니다.",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCopyAdminNumber = async () => {
+    if (issuedAdminNumber) {
+      await navigator.clipboard.writeText(issuedAdminNumber)
+      setCopied(true)
+      toast({
+        description: "관리자 번호가 클립보드에 복사되었습니다.",
+      })
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handleCloseModal = () => {
+    setIsIssueModalOpen(false)
+    setIssuedAdminNumber(null)
+    setLabel("")
+    setExpiresAt("")
+    setCopied(false)
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6" style={{ minHeight: "calc(100vh - 80px)" }}>
       {/* Page Header */}
@@ -334,8 +414,159 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
               </CardContent>
             </Card>
           </Link>
+
+          {/* Issue Admin Number */}
+          <Card
+            className="cursor-pointer transition-all hover:shadow-md"
+            onClick={() => setIsIssueModalOpen(true)}
+            style={{
+              borderRadius: "12px",
+              border: "1px solid #E5E5E5",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}
+          >
+            <CardContent className="p-5">
+              <div className="flex items-center gap-4">
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    backgroundColor: "#FEF3C7",
+                    borderRadius: "12px",
+                  }}
+                >
+                  <KeyRound size={24} style={{ color: "#92400E" }} />
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>관리자 번호 발급</span>
+                  <span style={{ fontSize: "13px", color: "#6B7280" }}>새 관리자 계정 생성을 위한 번호 발급</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* 관리자 번호 발급 모달 */}
+      <Dialog open={isIssueModalOpen} onOpenChange={handleCloseModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle
+              style={{
+                fontSize: "18px",
+                fontWeight: 600,
+                color: "#1A1A1A",
+              }}
+            >
+              {issuedAdminNumber ? "관리자 번호 발급 완료" : "관리자 번호 발급"}
+            </DialogTitle>
+            <DialogDescription
+              style={{
+                fontSize: "14px",
+                color: "#6B7280",
+              }}
+            >
+              {issuedAdminNumber
+                ? "발급된 관리자 번호를 안전하게 보관하세요. 이 번호는 한 번만 표시됩니다."
+                : "새 관리자 계정 생성을 위한 관리자 번호를 발급합니다."}
+            </DialogDescription>
+          </DialogHeader>
+          {issuedAdminNumber ? (
+            <div className="py-4">
+              <label
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#1A1A1A",
+                  display: "block",
+                  marginBottom: "8px",
+                }}
+              >
+                발급된 관리자 번호
+              </label>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={issuedAdminNumber}
+                  className="flex-1 bg-[#F9FAFB] font-mono text-[#1A1A1A]"
+                  style={{ fontSize: "14px" }}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCopyAdminNumber}
+                  className="h-10 w-10 shrink-0 bg-transparent"
+                  style={{
+                    borderColor: "#E5E5E5",
+                  }}
+                >
+                  {copied ? <Check className="h-4 w-4 text-[#16A34A]" /> : <Copy className="h-4 w-4 text-[#6B7280]" />}
+                </Button>
+              </div>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#6B7280",
+                  marginTop: "8px",
+                }}
+              >
+                이 번호를 새 관리자에게 안전하게 전달하세요.
+              </p>
+            </div>
+          ) : (
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="label">라벨 (선택사항)</Label>
+                <Input
+                  id="label"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  placeholder="관리자 번호에 대한 설명을 입력하세요"
+                  style={{ fontSize: "14px" }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expiresAt">만료일 (선택사항)</Label>
+                <Input
+                  id="expiresAt"
+                  type="datetime-local"
+                  value={expiresAt}
+                  onChange={(e) => setExpiresAt(e.target.value)}
+                  style={{ fontSize: "14px" }}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseModal}
+              style={{
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              {issuedAdminNumber ? "닫기" : "취소"}
+            </Button>
+            {!issuedAdminNumber && (
+              <Button
+                onClick={handleIssueAdminNumber}
+                disabled={isLoading}
+                style={{
+                  backgroundColor: "#3B82F6",
+                  color: "#FFFFFF",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  opacity: isLoading ? 0.6 : 1,
+                }}
+              >
+                {isLoading ? "발급 중..." : "관리자 번호 발급"}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

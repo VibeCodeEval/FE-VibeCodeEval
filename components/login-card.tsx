@@ -5,7 +5,9 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
+import { adminLogin, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { isMasterAdmin, saveAuthInfo } from "@/lib/auth/utils"
 
 type TabType = "user" | "admin"
 
@@ -19,38 +21,92 @@ export default function LoginCard() {
 
   const [adminNumber, setAdminNumber] = useState<string>("");
   const [adminPassword, setAdminPassword] = useState<string>("");
+  const [adminError, setAdminError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  const MASTER_KEY = "master";
 
+  const handleClick = async () => {
+    if (activeTab === "user") {
+      // ✅ User 탭: 입력값 검증 후 대기 화면으로 이동
+      if (
+        entryCode.trim() === "" ||
+        userName.trim() === "" ||
+        phoneNumber.trim() === ""
+      ) {
+        alert("Entry Code, Name, Phone Number를 모두 입력해 주세요.");
+        return;
+      }
 
-  const handleClick = () => {
-  if (activeTab === "user") {
-    // ✅ User 탭: 입력값 검증 후 대기 화면으로 이동
-    if (
-      entryCode.trim() === "" ||
-      userName.trim() === "" ||
-      phoneNumber.trim() === ""
-    ) {
-      alert("Entry Code, Name, Phone Number를 모두 입력해 주세요.");
-      return;
-    }
+      // TODO: 나중에 여기서 실제 API 호출을 붙이면 됨
+      // 예: await startUserSession({ entryCode, userName, phoneNumber });
 
-    // TODO: 나중에 여기서 실제 API 호출을 붙이면 됨
-    // 예: await startUserSession({ entryCode, userName, phoneNumber });
-
-    router.push("/waiting");
-  } else {
-    // ✅ Admin 탭: 입력값에 따라 분기
-    if (adminNumber.trim().toLowerCase() === MASTER_KEY) {
-      // Admin Number 가 "master" 일 때 -> Master Dashboard
-      router.push("/master");
+      router.push("/waiting");
     } else {
-      // 그 외의 기존 Admin Dashboard
-      router.push("/admin/dashboard");
+      // ✅ Admin 탭: 백엔드 API와 연동
+      setAdminError(""); // 에러 메시지 초기화
+
+      // 입력값 검증
+      if (adminNumber.trim() === "" || adminPassword.trim() === "") {
+        setAdminError("관리자 번호와 비밀번호를 모두 입력해 주세요.");
+        return;
+      }
+
+      // ✅ 모든 관리자 로그인(마스터 포함)은 백엔드 API를 통해 처리
+      setIsLoading(true);
+      try {
+        const response = await adminLogin({
+          identifier: adminNumber.trim(),
+          password: adminPassword.trim(),
+        });
+
+        // 응답에서 관리자 번호 확인 (response.admin.adminNumber 또는 identifier 사용)
+        const adminNumberFromResponse = response.admin?.adminNumber || adminNumber.trim();
+        
+        // 인증 정보 저장
+        saveAuthInfo(
+          response.accessToken,
+          adminNumberFromResponse,
+          response.role,
+          response.admin?.email
+        );
+
+        // 마스터/일반 관리자 분기
+        const isMaster = isMasterAdmin({
+          adminNumber: adminNumberFromResponse,
+          role: response.role,
+        });
+
+        // 마스터면 마스터 대시보드로, 일반 관리자면 관리자 대시보드로 이동
+        if (isMaster) {
+          router.push("/master");
+        } else {
+          router.push("/admin/dashboard");
+        }
+      } catch (error) {
+        // 에러 처리 개선
+        if (error instanceof LoginFailedError) {
+          const status = error.status;
+          const code = error.code;
+
+          // 비활성화된 계정 처리
+          if (status === 403 && code === "AUTH022") {
+            setAdminError("비활성화된 관리자 계정입니다. 마스터에게 문의해주세요.");
+          } else if (status === 401) {
+            setAdminError("이메일 또는 비밀번호가 올바르지 않습니다.");
+          } else {
+            setAdminError(error.message || "로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+          }
+        } else if (error instanceof NetworkError) {
+          setAdminError(error.message);
+        } else {
+          setAdminError("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }
-};
+  };
 
 
   return (
@@ -97,15 +153,36 @@ export default function LoginCard() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="entry-code">입장 코드</Label>
-              <Input id="entry-code" type="text" placeholder="입장 코드를 입력하세요" className="h-11" />
+              <Input 
+                id="entry-code" 
+                type="text" 
+                placeholder="입장 코드를 입력하세요" 
+                className="h-11"
+                value={entryCode}
+                onChange={(e) => setEntryCode(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">이름</Label>
-              <Input id="name" type="text" placeholder="이름을 입력하세요" className="h-11" />
+              <Input 
+                id="name" 
+                type="text" 
+                placeholder="이름을 입력하세요" 
+                className="h-11"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">전화번호</Label>
-              <Input id="phone" type="tel" placeholder="전화번호를 입력하세요" className="h-11" />
+              <Input 
+                id="phone" 
+                type="tel" 
+                placeholder="전화번호를 입력하세요" 
+                className="h-11"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
             </div>
           </div>
         ) : (
@@ -120,7 +197,10 @@ export default function LoginCard() {
               <Label htmlFor="admin-number">관리자 번호</Label>
               <Input id="admin-number" type="text" placeholder="관리자 번호를 입력하세요" className="h-11" 
                 value={adminNumber}                             
-                onChange={(e) => setAdminNumber(e.target.value)}
+                onChange={(e) => {
+                  setAdminNumber(e.target.value);
+                  setAdminError(""); // 입력 시 에러 메시지 초기화
+                }}
                 />
               </div>
 
@@ -128,8 +208,18 @@ export default function LoginCard() {
               <Label htmlFor="admin-password">비밀번호</Label>
               <Input id="admin-password" type="password" placeholder="비밀번호를 입력하세요" className="h-11" 
                 value={adminPassword}                            
-                onChange={(e) => setAdminPassword(e.target.value)}
+                onChange={(e) => {
+                  setAdminPassword(e.target.value);
+                  setAdminError(""); // 입력 시 에러 메시지 초기화
+                }}
                 />
+              <div className="h-6 flex items-start">
+                {adminError ? (
+                  <p className="text-sm text-red-500">{adminError}</p>
+                ) : (
+                  <span className="invisible text-sm">placeholder</span>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -139,9 +229,10 @@ export default function LoginCard() {
         <Button
           type="button"
           className="w-full h-11 text-base font-medium"
-          onClick={handleClick}   // ✅ 여기만!
+          onClick={handleClick}
+          disabled={isLoading}
         >
-          {activeTab === "user" ? "시험에 참여하기" : "로그인"}
+          {activeTab === "user" ? "시험에 참여하기" : isLoading ? "로그인 중..." : "로그인"}
         </Button>
         {activeTab === "user" ? (
           // User helper texts

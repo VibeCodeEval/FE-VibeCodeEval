@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { logoutAdmin } from "@/lib/api/admin"
 
 interface SidebarProps {
   activeItem: string
@@ -75,14 +76,28 @@ const menuGroupB: MenuItem[] = [
 export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
   const router = useRouter()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogoutClick = () => {
     setShowLogoutModal(true)
   }
 
-  const handleConfirmLogout = () => {
-    setShowLogoutModal(false)
-    router.push("/")
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      // 백엔드 로그아웃 API 호출
+      await logoutAdmin()
+      // API 호출 성공/실패와 관계없이 프론트엔드 세션 정리 및 리다이렉트
+      // (logoutAdmin 함수 내부에서 이미 localStorage를 정리함)
+      setShowLogoutModal(false)
+      router.push("/")
+    } catch (error) {
+      // 에러가 발생해도 로그아웃은 진행 (idempotent)
+      setShowLogoutModal(false)
+      router.push("/")
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -208,9 +223,10 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
             </Button>
             <Button
               onClick={handleConfirmLogout}
-              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+              disabled={isLoggingOut}
+              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white disabled:opacity-50"
             >
-              로그아웃
+              {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
             </Button>
           </DialogFooter>
         </DialogContent>
