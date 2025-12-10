@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
-import { adminLogin } from "@/lib/api/admin"
+import { adminLogin, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { isMasterAdmin, saveAuthInfo } from "@/lib/auth/utils"
 
 type TabType = "user" | "admin"
 
@@ -23,9 +24,6 @@ export default function LoginCard() {
   const [adminError, setAdminError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-
-  const MASTER_IDENTIFIER = "MASTER-0001";
-  const MASTER_PASSWORD = "master-pass";
 
 
   const handleClick = async () => {
@@ -54,16 +52,7 @@ export default function LoginCard() {
         return;
       }
 
-      // Master 키 체크 (MASTER-0001 / master-pass일 때는 API 호출 없이 바로 이동)
-      if (
-        adminNumber.trim() === MASTER_IDENTIFIER &&
-        adminPassword.trim() === MASTER_PASSWORD
-      ) {
-        router.push("/master");
-        return;
-      }
-
-      // API 호출
+      // ✅ 모든 관리자 로그인(마스터 포함)은 백엔드 API를 통해 처리
       setIsLoading(true);
       try {
         const response = await adminLogin({
@@ -71,12 +60,48 @@ export default function LoginCard() {
           password: adminPassword.trim(),
         });
 
-        // 성공 시: accessToken을 localStorage에 저장하고 대시보드로 이동
-        localStorage.setItem("admin_access_token", response.accessToken);
-        router.push("/admin/dashboard");
+        // 응답에서 관리자 번호 확인 (response.admin.adminNumber 또는 identifier 사용)
+        const adminNumberFromResponse = response.admin?.adminNumber || adminNumber.trim();
+        
+        // 인증 정보 저장
+        saveAuthInfo(
+          response.accessToken,
+          adminNumberFromResponse,
+          response.role,
+          response.admin?.email
+        );
+
+        // 마스터/일반 관리자 분기
+        const isMaster = isMasterAdmin({
+          adminNumber: adminNumberFromResponse,
+          role: response.role,
+        });
+
+        // 마스터면 마스터 대시보드로, 일반 관리자면 관리자 대시보드로 이동
+        if (isMaster) {
+          router.push("/master");
+        } else {
+          router.push("/admin/dashboard");
+        }
       } catch (error) {
-        // 실패 시: 에러 메시지 표시
-        setAdminError("아이디 또는 비밀번호가 일치하지 않습니다.");
+        // 에러 처리 개선
+        if (error instanceof LoginFailedError) {
+          const status = error.status;
+          const code = error.code;
+
+          // 비활성화된 계정 처리
+          if (status === 403 && code === "AUTH022") {
+            setAdminError("비활성화된 관리자 계정입니다. 마스터에게 문의해주세요.");
+          } else if (status === 401) {
+            setAdminError("이메일 또는 비밀번호가 올바르지 않습니다.");
+          } else {
+            setAdminError(error.message || "로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+          }
+        } else if (error instanceof NetworkError) {
+          setAdminError(error.message);
+        } else {
+          setAdminError("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -188,9 +213,13 @@ export default function LoginCard() {
                   setAdminError(""); // 입력 시 에러 메시지 초기화
                 }}
                 />
-              {adminError && (
-                <p className="text-sm text-red-500 mt-1">{adminError}</p>
-              )}
+              <div className="h-6 flex items-start">
+                {adminError ? (
+                  <p className="text-sm text-red-500">{adminError}</p>
+                ) : (
+                  <span className="invisible text-sm">placeholder</span>
+                )}
+              </div>
             </div>
           </div>
         )}

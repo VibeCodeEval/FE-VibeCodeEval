@@ -5,35 +5,88 @@ import type React from "react"
 import { useState } from "react"
 
 import { useRouter } from "next/navigation";
+import { signUpAdmin, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AdminSignupForm() {
   const [formData, setFormData] = useState({
-    adminName: "",
+    adminNumber: "",
     email: "",
-    secretKey: "",
     password: "",
     confirmPassword: "",
   })
-
-
+  const [error, setError] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const router = useRouter();
+  const { toast } = useToast()
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+    setError("") // 입력 시 에러 메시지 초기화
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle signup logic
-    console.log("Form submitted:", formData)
+    setError("")
 
-    router.push("/"); // 로그인 화면 경로
-  }
+    // 입력값 검증
+    if (!formData.adminNumber.trim()) {
+      setError("관리자 번호를 입력해주세요.")
+      return
+    }
+    if (!formData.email.trim()) {
+      setError("이메일을 입력해주세요.")
+      return
+    }
+    if (!formData.password.trim()) {
+      setError("비밀번호를 입력해주세요.")
+      return
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("비밀번호가 일치하지 않습니다.")
+      return
+    }
+    if (formData.password.length < 8) {
+      setError("비밀번호는 최소 8자 이상이어야 합니다.")
+      return
+    }
 
-  const handleVerifyEmail = () => {
-    // Handle email verification
-    console.log("Verifying email:", formData.email)
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email.trim())) {
+      setError("올바른 이메일 형식을 입력해주세요.")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await signUpAdmin({
+        adminNumber: formData.adminNumber.trim(),
+        email: formData.email.trim(),
+        password: formData.password.trim(),
+      })
+
+      toast({
+        title: "회원가입 성공",
+        description: "관리자 계정이 성공적으로 생성되었습니다. 로그인해주세요.",
+      })
+
+      // 성공 시 로그인 페이지로 이동
+      setTimeout(() => {
+        router.push("/")
+      }, 1500)
+    } catch (error) {
+      if (error instanceof LoginFailedError) {
+        setError(error.message)
+      } else if (error instanceof NetworkError) {
+        setError(error.message)
+      } else {
+        setError("회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -44,14 +97,14 @@ export default function AdminSignupForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Admin Name */}
+        {/* Admin Number */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">관리자 이름</label>
+          <label className="block text-sm font-medium text-gray-700">관리자 번호</label>
           <input
             type="text"
-            name="adminName"
-            placeholder="이름을 입력하세요"
-            value={formData.adminName}
+            name="adminNumber"
+            placeholder="발급받은 관리자 번호를 입력하세요"
+            value={formData.adminNumber}
             onChange={handleChange}
             className="w-full h-11 px-3.5 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
           />
@@ -67,23 +120,9 @@ export default function AdminSignupForm() {
               placeholder="이메일 주소를 입력하세요"
               value={formData.email}
               onChange={handleChange}
-              className="w-full h-11 px-3.5 pr-24 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
+              className="w-full h-11 px-3.5 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
             />
-          
           </div>
-        </div>
-
-        {/* Admin Secret Key */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">관리자 시크릿 키</label>
-          <input
-            type="password"
-            name="secretKey"
-            placeholder="발급받은 시크릿 키를 입력하세요"
-            value={formData.secretKey}
-            onChange={handleChange}
-            className="w-full h-11 px-3.5 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
-          />
         </div>
 
         {/* Password */}
@@ -92,7 +131,7 @@ export default function AdminSignupForm() {
           <input
             type="password"
             name="password"
-            placeholder="비밀번호를 설정하세요"
+            placeholder="비밀번호를 설정하세요 (최소 8자)"
             value={formData.password}
             onChange={handleChange}
             className="w-full h-11 px-3.5 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
@@ -112,12 +151,20 @@ export default function AdminSignupForm() {
           />
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mt-2">
+            <p className="text-sm text-red-500">{error}</p>
+          </div>
+        )}
+
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full h-11 mt-3 bg-white border border-[#D0D0D0] rounded-[10px] text-sm font-medium text-gray-900 hover:bg-gray-50 hover:border-gray-400 active:scale-[0.99] transition-all"
+          disabled={isLoading}
+          className="w-full h-11 mt-3 bg-white border border-[#D0D0D0] rounded-[10px] text-sm font-medium text-gray-900 hover:bg-gray-50 hover:border-gray-400 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          회원가입
+          {isLoading ? "회원가입 중..." : "회원가입"}
         </button>
       </form>
 
