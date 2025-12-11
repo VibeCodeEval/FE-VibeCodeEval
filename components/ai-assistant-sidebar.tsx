@@ -4,8 +4,7 @@ import { useState } from "react"
 import { ChevronLeft, ChevronRight, Send, Bot, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { saveChatMessage, updateTokenUsage, ChatError, NetworkError } from "@/lib/api/chat"
-import { useToast } from "@/components/ui/use-toast"
+import { saveChatMessage, updateTokenUsage } from "@/lib/api/chat"
 
 interface Message {
   id: number
@@ -19,7 +18,7 @@ interface AiAssistantSidebarProps {
   examId: number
   participantId: number
   usedTokens: number
-  onTokensUpdate: (delta: number) => void // delta: 이번 요청에서 증가한 토큰 수
+  onTokensUpdate: (delta: number) => void
 }
 
 export function AiAssistantSidebar({ 
@@ -30,7 +29,6 @@ export function AiAssistantSidebar({
   usedTokens, 
   onTokensUpdate 
 }: AiAssistantSidebarProps) {
-  const { toast } = useToast()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -47,7 +45,7 @@ export function AiAssistantSidebar({
 
     const userMessageContent = inputValue.trim()
     
-    // 사용자 메시지를 먼저 UI에 추가
+    // 사용자 메시지를 먼저 UI에 추가 (optimistic UI)
     const newUserMessage: Message = {
       id: messages.length + 1,
       role: "user",
@@ -59,17 +57,22 @@ export function AiAssistantSidebar({
     setIsSending(true)
 
     try {
-      // 1. /api/chat/messages 호출
-      const response = await saveChatMessage({
-        sessionId: null, // 세션 ID는 백엔드에서 자동 생성/조회
+      // Swagger 스펙에 맞게 payload 구성
+      const payload = {
+        sessionId: undefined, // 세션 ID는 백엔드에서 자동 생성/조회 (선택 필드)
         examId: examId,
         participantId: participantId,
         turn: currentTurn,
-        role: "user", // BE에서는 "user" 또는 "USER" 모두 허용하지만, 일관성을 위해 소문자 사용
+        role: "USER", // Swagger 예시는 "USER" (대문자)
         content: userMessageContent,
-        tokenCount: null, // 사용자 메시지 토큰은 백엔드에서 계산
-        meta: null,
-      })
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[saveChatMessage] payload', payload);
+      }
+
+      // 1. /api/chat/messages 호출
+      const response = await saveChatMessage(payload)
 
       // 2. AI 응답을 UI에 추가
       const newAssistantMessage: Message = {
@@ -85,18 +88,14 @@ export function AiAssistantSidebar({
 
       // 4. 토큰 사용량 처리
       // response.totalCount는 전체 누적 토큰 수 (사용자 질문 토큰 + AI 응답 토큰)
-      // 하지만 Mock 응답의 경우 항상 같은 값을 반환하므로, 실제로는 "이번 요청에서 사용한 토큰 수(delta)"를 계산해야 함
-      
       // 이번 요청에서 사용한 토큰 수(delta) 계산
-      // 실제 백엔드 응답: totalCount는 전체 누적 토큰이므로, 현재 usedTokens와의 차이를 계산
-      // Mock 응답: totalCount가 항상 고정값이므로, tokenCount(이번 AI 응답 토큰) + 사용자 메시지 토큰(대략 30)을 사용
       let tokensDelta = 0;
       
       if (response.totalCount !== null && response.totalCount !== undefined) {
         // 실제 백엔드 응답인 경우: 전체 누적 토큰에서 현재 사용량을 빼서 증가량 계산
         tokensDelta = response.totalCount - usedTokens;
         
-        // 만약 계산된 delta가 0 이하이거나 비정상적으로 작으면, Mock 응답이거나 이미 반영된 것으로 간주
+        // 만약 계산된 delta가 0 이하이면, Mock 응답이거나 이미 반영된 것으로 간주
         // 이 경우 tokenCount(이번 AI 응답 토큰) + 사용자 메시지 토큰(대략 30)을 사용
         if (tokensDelta <= 0 && response.tokenCount !== null) {
           tokensDelta = response.tokenCount + 30; // AI 응답 토큰 + 사용자 메시지 토큰(대략)
@@ -104,70 +103,47 @@ export function AiAssistantSidebar({
       } else if (response.tokenCount !== null) {
         // totalCount가 없지만 tokenCount가 있는 경우: AI 응답 토큰 + 사용자 메시지 토큰(대략 30)
         tokensDelta = response.tokenCount + 30;
+      } else {
+        // 둘 다 없는 경우 기본값 사용 (Mock 응답의 경우)
+        tokensDelta = 80; // Mock 응답의 기본값
       }
       
       // delta가 0보다 크면 토큰 업데이트 수행
       if (tokensDelta > 0) {
         try {
-          // 5. /api/chat/tokens/update 호출
-          // BE의 UpdateTokenUsageRequest는 tokens 필드에 "증가량"을 받음 (addTokenUsed 메서드 확인)
-          await updateTokenUsage({
+          const tokenUpdatePayload = {
             examId: examId,
             participantId: participantId,
             tokens: tokensDelta, // 증가량 전달
-          })
+          }
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[updateChatTokens] payload', tokenUpdatePayload);
+          }
+
+          // 5. /api/chat/tokens/update 호출
+          await updateTokenUsage(tokenUpdatePayload)
 
           // 6. 프론트에서 토큰 상태 업데이트 (delta를 전달하여 부모에서 prev + delta로 누적)
           onTokensUpdate(tokensDelta)
         } catch (tokenError) {
-          console.error("[AiAssistantSidebar] 토큰 업데이트 실패:", tokenError)
+          if (process.env.NODE_ENV === 'development') {
+            console.warn("[AiAssistantSidebar] 토큰 업데이트 실패:", tokenError)
+          }
           
           // 토큰 업데이트 실패해도 UI는 업데이트 (일관성 유지)
-          // TODO: 토큰 동기화 실패 시 재시도 로직 고려
           onTokensUpdate(tokensDelta)
-          
-          toast({
-            variant: "destructive",
-            title: "토큰 업데이트 실패",
-            description: "토큰 사용량 업데이트에 실패했습니다. 화면에 표시된 값이 실제와 다를 수 있습니다.",
-          })
-        }
-      } else {
-        // delta가 0 이하인 경우에도, 최소한 AI 응답 토큰은 사용되었다고 가정
-        // (Mock 응답의 경우 항상 50 + 30 = 80을 사용)
-        const fallbackDelta = response.tokenCount !== null ? response.tokenCount + 30 : 80;
-        
-        try {
-          await updateTokenUsage({
-            examId: examId,
-            participantId: participantId,
-            tokens: fallbackDelta,
-          })
-          onTokensUpdate(fallbackDelta)
-        } catch (tokenError) {
-          console.error("[AiAssistantSidebar] 토큰 업데이트 실패 (fallback):", tokenError)
-          onTokensUpdate(fallbackDelta)
         }
       }
     } catch (error) {
-      console.error("[AiAssistantSidebar] 메시지 전송 실패:", error)
-      
-      // 에러 발생 시 사용자 메시지 제거 (롤백)
-      setMessages((prev) => prev.filter((msg) => msg.id !== newUserMessage.id))
-      
-      let errorMessage = "메시지 전송에 실패했습니다. 잠시 후 다시 시도해주세요."
-      
-      if (error instanceof ChatError) {
-        errorMessage = error.message
-      } else if (error instanceof NetworkError) {
-        errorMessage = error.message
+      // saveChatMessage는 이제 throw를 하지 않으므로, 이 블록은 거의 실행되지 않습니다.
+      // 하지만 예상치 못한 에러에 대비해 안전하게 처리합니다.
+      if (process.env.NODE_ENV === 'development') {
+        console.warn("[AiAssistantSidebar] 예상치 못한 에러 발생:", error)
       }
       
-      toast({
-        variant: "destructive",
-        title: "전송 실패",
-        description: errorMessage,
-      })
+      // 에러가 발생해도 UI는 유지하고, 조용히 Mock 응답을 표시
+      // saveChatMessage가 항상 Mock 응답을 반환하므로, 여기서는 로딩 상태만 정리
     } finally {
       setIsSending(false)
     }

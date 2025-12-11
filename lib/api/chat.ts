@@ -105,16 +105,38 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
   const url = `${apiBaseUrl}/api/chat/messages`;
   const isDev = process.env.NODE_ENV === 'development';
 
+  // Swagger 스펙에 맞게 payload 구성
+  // Swagger 예시: { sessionId: 1, examId: 1, participantId: 1, turn: 1, role: "USER", content: "안녕하세요" }
+  const payload: {
+    sessionId?: number;
+    examId: number;
+    participantId: number;
+    turn: number;
+    role: string;
+    content: string;
+  } = {
+    examId: request.examId,
+    participantId: request.participantId,
+    turn: request.turn,
+    role: request.role.toUpperCase(), // Swagger 예시는 "USER" (대문자)
+    content: request.content,
+  };
+
+  // sessionId가 null이 아니고 유효한 값일 때만 포함
+  if (request.sessionId !== null && request.sessionId !== undefined) {
+    payload.sessionId = request.sessionId;
+  }
+
   if (isDev) {
     console.log('[Save Chat Message] API 호출:', url);
-    console.log('[Save Chat Message] Request:', request);
+    console.log('[saveChatMessage] request payload:', payload);
   }
 
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: getUserAuthHeaders(),
-      body: JSON.stringify(request),
+      body: JSON.stringify(payload),
       credentials: 'include',
     });
 
@@ -122,53 +144,39 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
       console.log('[Save Chat Message] 응답 상태:', response.status, response.statusText);
     }
 
-    let data: BaseResponse<SendMessageResponse>;
-    
-    try {
-      data = await response.json();
-    } catch (jsonError) {
-      // JSON 파싱 실패 시 Mock 응답 반환
-      // TODO: 실제 AI 서버가 준비되면 여기서 에러를 던지도록 다시 변경
-      try {
-        const errorText = await response.text();
-        if (isDev) {
-          console.error('[Save Chat Message] JSON 파싱 실패, 텍스트 응답:', errorText);
-          console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
-        }
-        return createMockChatResponse(request);
-      } catch (textError) {
-        if (isDev) {
-          console.error('[Save Chat Message] 응답 읽기 실패:', textError);
-          console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
-        }
-        return createMockChatResponse(request);
-      }
-    }
+    // 응답 body를 문자열로 한 번만 읽기
+    const raw = await response.text();
 
     if (!response.ok) {
       // 응답 코드가 비정상일 때 Mock 응답 반환
       // TODO: 실제 AI 서버가 준비되면 여기서 에러를 던지도록 다시 변경
-      let errorMessage = data?.message || '채팅 메시지 저장에 실패했습니다.';
-      
-      if (response.status === 400) {
-        errorMessage = data?.message || '잘못된 요청입니다.';
-      } else if (response.status === 401) {
-        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
-      } else if (response.status === 403) {
-        errorMessage = '권한이 없습니다.';
-      } else if (response.status === 404) {
-        errorMessage = '시험 또는 세션을 찾을 수 없습니다.';
-      }
-
       if (isDev) {
-        console.error('[Save Chat Message] 저장 실패:', {
-          status: response.status,
-          code: data?.code,
-          message: errorMessage,
-        });
+        console.error('[Save Chat Message] 응답 에러:', response.status, raw);
         console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
       }
+      return createMockChatResponse(request);
+    }
 
+    // JSON 파싱 시도
+    let data: BaseResponse<SendMessageResponse> | null = null;
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 Mock 응답 반환
+      // TODO: 실제 AI 서버가 준비되면 여기서 에러를 던지도록 다시 변경
+      if (isDev) {
+        console.error('[Save Chat Message] JSON 파싱 실패, 원본 텍스트:', raw);
+        console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
+      }
+      return createMockChatResponse(request);
+    }
+
+    if (!data) {
+      // 데이터가 null인 경우 Mock 응답 반환
+      if (isDev) {
+        console.error('[Save Chat Message] 응답 데이터가 null입니다.');
+        console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
+      }
       return createMockChatResponse(request);
     }
 
