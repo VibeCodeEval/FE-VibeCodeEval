@@ -20,7 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
-import { getAllAdmins, AdminInfo, LoginFailedError, NetworkError, issueAdminNumber, updateAdminNumber, AdminNumberUpdateRequest } from "@/lib/api/admin"
+import { getAllAdmins, AdminInfo, LoginFailedError, NetworkError, issueAdminNumber, updateAdminNumber, AdminNumberUpdateRequest, toggleAdminNumberActive, AdminNumberDto } from "@/lib/api/admin"
 import { isMasterAdmin, isSystemMasterAdmin, SYSTEM_MASTER_ADMIN_NUMBER } from "@/lib/auth/utils"
 import { useRouter } from "next/navigation"
 
@@ -28,6 +28,8 @@ type Admin = AdminInfo & {
   status?: string; // UI 표시용: "활성화" | "비활성화"
   lastLogin?: string;
   createdAt?: string;
+  secretKey?: string;
+  lastKeyIssued?: string;
 }
 
 function generateSecretKey(): string {
@@ -200,11 +202,10 @@ export function AdminAccountsContent() {
     setIsChangeStatusOpen(true)
   }
 
-  const handleConfirmChangeStatus = async () => {
-    if (!selectedAdmin) return
-
+  // 공용 상태 변경 핸들러 (모달에서 확인 버튼을 누른 후 호출됨)
+  const handleToggleStatus = async (admin: Admin) => {
     // MASTER-0001 보호 로직 (이중 체크)
-    if (isSystemMasterAdmin({ adminNumber: selectedAdmin.adminNumber })) {
+    if (isSystemMasterAdmin({ adminNumber: admin.adminNumber })) {
       toast({
         title: "변경 불가",
         description: "마스터 관리자 계정은 상태를 변경할 수 없습니다.",
@@ -217,19 +218,40 @@ export function AdminAccountsContent() {
     setIsChangingStatus(true);
 
     try {
-      // 현재 상태를 기반으로 토글 (백엔드에 active 필드가 없으므로 임시로 true/false 토글)
-      const currentActive = true; // 기본값 true
-      const newActiveStatus = !currentActive;
+      // 현재 상태를 기반으로 active 값 추론
+      const currentActive = admin.status === "활성화";
 
-      // PATCH API 호출
-      const updated = await updateAdminNumber(selectedAdmin.adminNumber, {
+      // AdminNumberDto 구성 (status 기반으로 active 추론)
+      const adminNumberDto: AdminNumberDto = {
+        adminNumber: admin.adminNumber,
         label: undefined,
-        active: newActiveStatus,
-        expiresAt: null,
-      });
+        active: currentActive,
+        issuedBy: 0, // 실제 값은 필요 없음 (API에서 사용하지 않음)
+        assignedAdminId: admin.id,
+        expiresAt: undefined,
+        usedAt: undefined,
+        createdAt: "",
+      };
 
-      // 성공 시 목록 재조회
-      await fetchAdmins();
+      // toggleAdminNumberActive 호출
+      const updated = await toggleAdminNumberActive(adminNumberDto);
+
+      // 성공 시 목록(state) 즉시 업데이트
+      setAdminUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.adminNumber === admin.adminNumber
+            ? { ...user, status: updated.active ? "활성화" : "비활성화" }
+            : user
+        )
+      );
+
+      // 상세 패널이 열려 있으면 selectedAdmin도 업데이트
+      if (selectedAdmin && selectedAdmin.adminNumber === admin.adminNumber) {
+        setSelectedAdmin({
+          ...selectedAdmin,
+          status: updated.active ? "활성화" : "비활성화",
+        });
+      }
 
       toast({
         title: "상태 변경 성공",
@@ -263,6 +285,11 @@ export function AdminAccountsContent() {
     } finally {
       setIsChangingStatus(false);
     }
+  }
+
+  const handleConfirmChangeStatus = async () => {
+    if (!selectedAdmin) return;
+    await handleToggleStatus(selectedAdmin);
   }
 
   const handleOpenResetPassword = (admin: Admin) => {
@@ -341,11 +368,11 @@ export function AdminAccountsContent() {
         )
       )
       // Update selectedAdmin to reflect the changes
-      setSelectedAdmin({
-        ...selectedAdmin,
+      setSelectedAdmin((prev) => prev ? {
+        ...prev,
         secretKey: newKey,
         lastKeyIssued: koreanDate,
-      })
+      } : null)
     }
     
     setIsReissueKeyOpen(false)
@@ -1082,7 +1109,7 @@ export function AdminAccountsContent() {
                 <p className="font-semibold text-sm" style={{ color: "#1A1A1A" }}>
                   {selectedAdmin.email}
                 </p>
-                <p className="text-sm text-muted-foreground">{selectedAdmin.name}</p>
+                <p className="text-sm text-muted-foreground">{selectedAdmin.adminNumber}</p>
               </div>
             )}
 

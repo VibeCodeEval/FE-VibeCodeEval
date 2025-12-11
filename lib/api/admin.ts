@@ -121,6 +121,9 @@ export interface AdminNumberResponse {
   createdAt: string; // ISO 8601 형식
 }
 
+// AdminNumberDto (AdminNumberResponse와 동일)
+export type AdminNumberDto = AdminNumberResponse;
+
 // ChangeAdminPasswordRequest
 export interface ChangeAdminPasswordRequest {
   currentPassword: string;
@@ -859,6 +862,777 @@ export async function changeAdminPassword(request: ChangeAdminPasswordRequest): 
       console.warn('[Change Admin Password] 예상치 못한 오류:', error);
     }
     throw new NetworkError('비밀번호 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 관리자 번호의 active 상태를 토글하는 함수
+ * @param admin 관리자 번호 정보 (AdminNumberDto)
+ * @returns 업데이트된 관리자 번호 정보
+ */
+export async function toggleAdminNumberActive(admin: AdminNumberDto): Promise<AdminNumberDto> {
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Toggle Admin Number Active] 상태 토글:', admin.adminNumber, '현재 active:', admin.active);
+  }
+
+  // active 값을 반전
+  const newActiveStatus = !admin.active;
+
+  // updateAdminNumber를 호출하여 상태 변경
+  const updated = await updateAdminNumber(admin.adminNumber, {
+    label: admin.label ?? undefined,
+    active: newActiveStatus,
+    expiresAt: admin.expiresAt,
+  });
+
+  if (isDev) {
+    console.log('[Toggle Admin Number Active] 상태 토글 완료:', updated.adminNumber, '새로운 active:', updated.active);
+  }
+
+  return updated;
+}
+
+// Exam 관련 타입 정의
+export interface CreateExamRequest {
+  title: string;
+  startsAt: string; // ISO 8601 형식: "YYYY-MM-DDTHH:mm:ss"
+  endsAt: string;   // ISO 8601 형식: "YYYY-MM-DDTHH:mm:ss"
+}
+
+export interface Exam {
+  id: number;
+  title: string;
+  state: string; // "WAITING" | "IN_PROGRESS" | "ENDED" 등
+  startsAt: string; // ISO 8601 형식
+  endsAt: string;   // ISO 8601 형식
+  version: number;
+  createdBy: number;
+  entryCode?: string; // 입장 코드 (선택적)
+}
+
+// Entry Code 관련 타입 정의
+export interface CreateEntryCodeRequest {
+  label?: string;
+  examId: number;
+  problemSetId?: number;
+  expiresAt?: string; // ISO 8601 형식
+  maxUses?: number;
+}
+
+export interface EntryCodeResponse {
+  code: string;
+  label?: string | null;
+  examId: number;
+  problemSetId?: number | null;
+  expiresAt?: string | null; // ISO 8601 형식
+  maxUses: number;
+  usedCount: number;
+  isActive: boolean;
+  createdAt: string; // ISO 8601 형식
+}
+
+/**
+ * 시험 생성 API 호출
+ */
+export async function createExam(request: CreateExamRequest): Promise<Exam> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/exams`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Create Exam] API 호출:', url);
+    console.log('[Create Exam] Request:', request);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(request),
+      credentials: 'omit',
+    });
+
+    if (isDev) {
+      console.log('[Create Exam] 응답 상태:', response.status, response.statusText);
+    }
+
+    let data: BaseResponse<Exam>;
+    
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      try {
+        const errorText = await response.text();
+        if (isDev) {
+          console.warn('[Create Exam] JSON 파싱 실패, 텍스트 응답:', errorText);
+        }
+        throw new LoginFailedError('서버 응답을 파싱할 수 없습니다.', response.status);
+      } catch (textError) {
+        throw new LoginFailedError('서버 응답을 읽을 수 없습니다.', response.status);
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || '시험 생성에 실패했습니다.';
+      
+      if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '권한이 없습니다.';
+      } else if (response.status === 400) {
+        errorMessage = data.message || '입력한 정보가 올바르지 않습니다.';
+      }
+
+      if (isDev) {
+        console.warn('[Create Exam] 생성 실패:', {
+          status: response.status,
+          code: data.code,
+          message: errorMessage,
+        });
+      }
+
+      throw new LoginFailedError(errorMessage, response.status, data.code);
+    }
+
+    if (isDev) {
+      console.log('[Create Exam] 응답 데이터:', { code: data.code, hasResult: !!data.result });
+    }
+
+    if (data.code !== 'COMMON200' || !data.result) {
+      const errorMessage = data.message || '시험 생성에 실패했습니다.';
+      
+      if (isDev) {
+        console.warn('[Create Exam] 응답 데이터 검증 실패:', data);
+      }
+
+      throw new LoginFailedError(errorMessage);
+    }
+
+    if (isDev) {
+      console.log('[Create Exam] 생성 성공:', data.result);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (isDev) {
+        console.warn('[Create Exam] 네트워크 오류:', error.message);
+      }
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    if (isDev) {
+      console.warn('[Create Exam] 예상치 못한 오류:', error);
+    }
+    throw new NetworkError('시험 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 시험 목록 조회 API 호출
+ */
+export async function getExams(): Promise<Exam[]> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/exams`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Get Exams] API 호출:', url);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'omit',
+    });
+
+    if (isDev) {
+      console.log('[Get Exams] 응답 상태:', response.status, response.statusText);
+    }
+
+    let data: BaseResponse<Exam[]>;
+    
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      try {
+        const errorText = await response.text();
+        if (isDev) {
+          console.warn('[Get Exams] JSON 파싱 실패, 텍스트 응답:', errorText);
+        }
+        throw new LoginFailedError('서버 응답을 파싱할 수 없습니다.', response.status);
+      } catch (textError) {
+        throw new LoginFailedError('서버 응답을 읽을 수 없습니다.', response.status);
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || '시험 목록 조회에 실패했습니다.';
+      
+      if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '권한이 없습니다.';
+      }
+
+      if (isDev) {
+        console.warn('[Get Exams] 조회 실패:', {
+          status: response.status,
+          code: data.code,
+          message: errorMessage,
+        });
+      }
+
+      throw new LoginFailedError(errorMessage, response.status, data.code);
+    }
+
+    if (isDev) {
+      console.log('[Get Exams] 응답 데이터:', { code: data.code, hasResult: !!data.result, examCount: data.result?.length });
+    }
+
+    if (data.code !== 'COMMON200' || !data.result) {
+      const errorMessage = data.message || '시험 목록 조회에 실패했습니다.';
+      
+      if (isDev) {
+        console.warn('[Get Exams] 응답 데이터 검증 실패:', data);
+      }
+
+      throw new LoginFailedError(errorMessage);
+    }
+
+    if (isDev) {
+      console.log('[Get Exams] 조회 성공:', data.result.length, '개');
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (isDev) {
+        console.warn('[Get Exams] 네트워크 오류:', error.message);
+      }
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    if (isDev) {
+      console.warn('[Get Exams] 예상치 못한 오류:', error);
+    }
+    throw new NetworkError('시험 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 입장 코드 생성 API 호출
+ */
+export async function createEntryCode(request: CreateEntryCodeRequest): Promise<EntryCodeResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/entry-codes`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Create Entry Code] API 호출:', url);
+    console.log('[Create Entry Code] Request:', request);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(request),
+      credentials: 'omit',
+    });
+
+    if (isDev) {
+      console.log('[Create Entry Code] 응답 상태:', response.status, response.statusText);
+    }
+
+    let data: BaseResponse<EntryCodeResponse>;
+    
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      try {
+        const errorText = await response.text();
+        if (isDev) {
+          console.warn('[Create Entry Code] JSON 파싱 실패, 텍스트 응답:', errorText);
+        }
+        throw new LoginFailedError('서버 응답을 파싱할 수 없습니다.', response.status);
+      } catch (textError) {
+        throw new LoginFailedError('서버 응답을 읽을 수 없습니다.', response.status);
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || '입장 코드 생성에 실패했습니다.';
+      
+      if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '권한이 없습니다.';
+      } else if (response.status === 400) {
+        errorMessage = data.message || '입력한 정보가 올바르지 않습니다.';
+      }
+
+      if (isDev) {
+        console.warn('[Create Entry Code] 생성 실패:', {
+          status: response.status,
+          code: data.code,
+          message: errorMessage,
+        });
+      }
+
+      throw new LoginFailedError(errorMessage, response.status, data.code);
+    }
+
+    if (isDev) {
+      console.log('[Create Entry Code] 응답 데이터:', { code: data.code, hasResult: !!data.result });
+    }
+
+    if (data.code !== 'COMMON200' || !data.result) {
+      const errorMessage = data.message || '입장 코드 생성에 실패했습니다.';
+      
+      if (isDev) {
+        console.warn('[Create Entry Code] 응답 데이터 검증 실패:', data);
+      }
+
+      throw new LoginFailedError(errorMessage);
+    }
+
+    if (isDev) {
+      console.log('[Create Entry Code] 생성 성공:', data.result.code);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (isDev) {
+        console.warn('[Create Entry Code] 네트워크 오류:', error.message);
+      }
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    if (isDev) {
+      console.warn('[Create Entry Code] 예상치 못한 오류:', error);
+    }
+    throw new NetworkError('입장 코드 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 시험 삭제 API 호출
+ */
+export async function deleteExam(examId: number): Promise<void> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/exams/${examId}`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Delete Exam] API 호출:', url);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'omit',
+    });
+
+    if (isDev) {
+      console.log('[Delete Exam] 응답 상태:', response.status, response.statusText);
+    }
+
+    let data: BaseResponse<null>;
+    
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      try {
+        const errorText = await response.text();
+        if (isDev) {
+          console.warn('[Delete Exam] JSON 파싱 실패, 텍스트 응답:', errorText);
+        }
+        throw new LoginFailedError('서버 응답을 파싱할 수 없습니다.', response.status);
+      } catch (textError) {
+        throw new LoginFailedError('서버 응답을 읽을 수 없습니다.', response.status);
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || '시험 삭제에 실패했습니다.';
+      
+      if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '권한이 없습니다.';
+      } else if (response.status === 404) {
+        errorMessage = '시험을 찾을 수 없습니다.';
+      }
+
+      if (isDev) {
+        console.warn('[Delete Exam] 삭제 실패:', {
+          status: response.status,
+          code: data.code,
+          message: errorMessage,
+        });
+      }
+
+      throw new LoginFailedError(errorMessage, response.status, data.code);
+    }
+
+    if (isDev) {
+      console.log('[Delete Exam] 응답 데이터:', { code: data.code });
+    }
+
+    if (data.code !== 'COMMON200') {
+      const errorMessage = data.message || '시험 삭제에 실패했습니다.';
+      
+      if (isDev) {
+        console.warn('[Delete Exam] 응답 데이터 검증 실패:', data);
+      }
+
+      throw new LoginFailedError(errorMessage);
+    }
+
+    if (isDev) {
+      console.log('[Delete Exam] 삭제 성공');
+    }
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (isDev) {
+        console.warn('[Delete Exam] 네트워크 오류:', error.message);
+      }
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    if (isDev) {
+      console.warn('[Delete Exam] 예상치 못한 오류:', error);
+    }
+    throw new NetworkError('시험 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 시험 시작 API 호출
+ */
+export async function startExam(examId: number): Promise<void> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/exams/${examId}/start`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Start Exam] API 호출:', url);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      credentials: 'omit',
+    });
+
+    if (isDev) {
+      console.log('[Start Exam] 응답 상태:', response.status, response.statusText);
+    }
+
+    let data: BaseResponse<null>;
+    
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      try {
+        const errorText = await response.text();
+        if (isDev) {
+          console.warn('[Start Exam] JSON 파싱 실패, 텍스트 응답:', errorText);
+        }
+        throw new LoginFailedError('서버 응답을 파싱할 수 없습니다.', response.status);
+      } catch (textError) {
+        throw new LoginFailedError('서버 응답을 읽을 수 없습니다.', response.status);
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || '시험 시작에 실패했습니다.';
+      
+      if (response.status === 400) {
+        errorMessage = data.message || '시험을 시작할 수 없습니다. (이미 시작된 시험일 수 있습니다.)';
+      } else if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '권한이 없습니다.';
+      } else if (response.status === 404) {
+        errorMessage = '시험을 찾을 수 없습니다.';
+      }
+
+      if (isDev) {
+        console.warn('[Start Exam] 시작 실패:', {
+          status: response.status,
+          code: data.code,
+          message: errorMessage,
+        });
+      }
+
+      throw new LoginFailedError(errorMessage, response.status, data.code);
+    }
+
+    if (isDev) {
+      console.log('[Start Exam] 응답 데이터:', { code: data.code });
+    }
+
+    if (data.code !== 'COMMON200') {
+      const errorMessage = data.message || '시험 시작에 실패했습니다.';
+      
+      if (isDev) {
+        console.warn('[Start Exam] 응답 데이터 검증 실패:', data);
+      }
+
+      throw new LoginFailedError(errorMessage);
+    }
+
+    if (isDev) {
+      console.log('[Start Exam] 시작 성공');
+    }
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (isDev) {
+        console.warn('[Start Exam] 네트워크 오류:', error.message);
+      }
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    if (isDev) {
+      console.warn('[Start Exam] 예상치 못한 오류:', error);
+    }
+    throw new NetworkError('시험 시작 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 시험 종료 API 호출
+ */
+export async function endExam(examId: number): Promise<void> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/exams/${examId}/end`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[End Exam] API 호출:', url);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      credentials: 'omit',
+    });
+
+    if (isDev) {
+      console.log('[End Exam] 응답 상태:', response.status, response.statusText);
+    }
+
+    let data: BaseResponse<null>;
+    
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      try {
+        const errorText = await response.text();
+        if (isDev) {
+          console.warn('[End Exam] JSON 파싱 실패, 텍스트 응답:', errorText);
+        }
+        throw new LoginFailedError('서버 응답을 파싱할 수 없습니다.', response.status);
+      } catch (textError) {
+        throw new LoginFailedError('서버 응답을 읽을 수 없습니다.', response.status);
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || '시험 종료에 실패했습니다.';
+      
+      if (response.status === 400) {
+        errorMessage = data.message || '시험을 종료할 수 없습니다. (이미 종료된 시험일 수 있습니다.)';
+      } else if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '권한이 없습니다.';
+      } else if (response.status === 404) {
+        errorMessage = '시험을 찾을 수 없습니다.';
+      }
+
+      if (isDev) {
+        console.warn('[End Exam] 종료 실패:', {
+          status: response.status,
+          code: data.code,
+          message: errorMessage,
+        });
+      }
+
+      throw new LoginFailedError(errorMessage, response.status, data.code);
+    }
+
+    if (isDev) {
+      console.log('[End Exam] 응답 데이터:', { code: data.code });
+    }
+
+    if (data.code !== 'COMMON200') {
+      const errorMessage = data.message || '시험 종료에 실패했습니다.';
+      
+      if (isDev) {
+        console.warn('[End Exam] 응답 데이터 검증 실패:', data);
+      }
+
+      throw new LoginFailedError(errorMessage);
+    }
+
+    if (isDev) {
+      console.log('[End Exam] 종료 성공');
+    }
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (isDev) {
+        console.warn('[End Exam] 네트워크 오류:', error.message);
+      }
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    if (isDev) {
+      console.warn('[End Exam] 예상치 못한 오류:', error);
+    }
+    throw new NetworkError('시험 종료 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 입장 코드 목록 조회 API 호출
+ * @param examId 시험 ID
+ * @param isActive 활성 상태 필터 (선택적)
+ * @returns 입장 코드 목록
+ */
+export async function getEntryCodes(examId: number, isActive?: boolean): Promise<EntryCodeResponse[]> {
+  const apiBaseUrl = getApiBaseUrl();
+  const params = new URLSearchParams({ examId: examId.toString() });
+  if (isActive !== undefined) {
+    params.append('isActive', isActive.toString());
+  }
+  const url = `${apiBaseUrl}/api/admin/entry-codes?${params.toString()}`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Get Entry Codes] API 호출:', url);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'omit',
+    });
+
+    if (isDev) {
+      console.log('[Get Entry Codes] 응답 상태:', response.status, response.statusText);
+    }
+
+    let data: BaseResponse<EntryCodeResponse[]>;
+    
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      try {
+        const errorText = await response.text();
+        if (isDev) {
+          console.warn('[Get Entry Codes] JSON 파싱 실패, 텍스트 응답:', errorText);
+        }
+        throw new LoginFailedError('서버 응답을 파싱할 수 없습니다.', response.status);
+      } catch (textError) {
+        throw new LoginFailedError('서버 응답을 읽을 수 없습니다.', response.status);
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || '입장 코드 목록 조회에 실패했습니다.';
+      
+      if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '권한이 없습니다.';
+      } else if (response.status === 404) {
+        // 404는 입장 코드가 없는 경우로 처리 (빈 배열 반환)
+        return [];
+      }
+
+      if (isDev) {
+        console.warn('[Get Entry Codes] 조회 실패:', {
+          status: response.status,
+          code: data.code,
+          message: errorMessage,
+        });
+      }
+
+      throw new LoginFailedError(errorMessage, response.status, data.code);
+    }
+
+    if (isDev) {
+      console.log('[Get Entry Codes] 응답 데이터:', { code: data.code, hasResult: !!data.result, entryCodeCount: data.result?.length });
+    }
+
+    if (data.code !== 'COMMON200' || !data.result) {
+      // 결과가 없으면 빈 배열 반환
+      return [];
+    }
+
+    if (isDev) {
+      console.log('[Get Entry Codes] 조회 성공:', data.result.length, '개');
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (isDev) {
+        console.warn('[Get Entry Codes] 네트워크 오류:', error.message);
+      }
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    if (isDev) {
+      console.warn('[Get Entry Codes] 예상치 못한 오류:', error);
+    }
+    throw new NetworkError('입장 코드 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   }
 }
 
