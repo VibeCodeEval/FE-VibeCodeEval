@@ -10,14 +10,13 @@ import { AiAssistantSidebar } from "@/components/ai-assistant-sidebar"
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
-import { getExamState, ExamState } from "@/lib/api/exams";
+import { getExamState, ExamState, GetExamStateResponse } from "@/lib/api/exams";
+import { RemainingTimer } from "@/components/remaining-timer";
 
 export default function UserTestScreen() {
   const router = useRouter();
   const examId = useExamSessionStore((state) => state.examId);
-
-  // 남은 시간 (예시: 초 단위)
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(/* 기존 초기값 */);
+  const participantId = useExamSessionStore((state) => state.participantId);
 
   // 모달 2개 상태
   const [showTimeOverModal, setShowTimeOverModal] = useState(false);   // "시험 시간 종료 시 모달"
@@ -27,10 +26,19 @@ export default function UserTestScreen() {
   const [isExamEnded, setIsExamEnded] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const [examState, setExamState] = useState<ExamState | null>(null);
+  const [examStateData, setExamStateData] = useState<GetExamStateResponse | null>(null);
+
+  // 토큰 사용량 상태 관리
+  const [usedTokens, setUsedTokens] = useState<number>(0);
+  const maxTokens = 20000; // TODO: 나중에 API로 가져오도록 확장 가능
+
+  // 토큰 업데이트 핸들러: delta(증가량)를 받아서 누적
+  const handleTokensUpdate = (delta: number) => {
+    setUsedTokens((prev) => prev + delta);
+  };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
-  const [timeRemaining, setTimeRemaining] = useState(45 * 60 + 23)
 
 
   const handleTimeExpired = () => {
@@ -53,6 +61,7 @@ export default function UserTestScreen() {
         if (cancelled) return;
 
         setExamState(res.state);
+        setExamStateData(res);
 
         // 시험이 종료된 상태(ENDED)로 변경되었고, 아직 종료 모달을 보여주지 않았다면
         if (res.state === "ENDED" && !isExamEnded && !showEndModal) {
@@ -77,25 +86,6 @@ export default function UserTestScreen() {
     };
   }, [examId, isExamEnded, showEndModal]);
 
-  useEffect(() => {
-    if (timeRemaining <= 0) {
-      // 시간이 0이 되면 모달을 띄우고 타이머는 더 이상 돌리지 않음
-      handleTimeExpired();
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [timeRemaining, handleTimeExpired]);
 
   // 홈으로 이동하는 핸들러
   const handleGoHome = () => {
@@ -103,12 +93,6 @@ export default function UserTestScreen() {
     router.push("/");
   };
 
-  const formatTime = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = totalSeconds % 60
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -122,7 +106,14 @@ export default function UserTestScreen() {
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
             <Clock className="w-5 h-5 text-[#2563EB]" />
             <span className="text-lg font-medium text-[#1F2937]">남은 시간:</span>
-            <span className="font-mono text-xl text-[#2563EB] font-bold">{formatTime(timeRemaining)}</span>
+            {examStateData?.endsAt ? (
+              <RemainingTimer 
+                endAt={examStateData.endsAt} 
+                onTimeOver={handleTimeExpired}
+              />
+            ) : (
+              <span className="font-mono text-xl text-[#2563EB] font-bold">00:00:00</span>
+            )}
           </div>
 
           {/* Right - Token and Submit */}
@@ -130,7 +121,7 @@ export default function UserTestScreen() {
             <div className="flex items-center gap-2 text-[#4B5563]">
               <Coins className="w-4 h-4" />
               <span className="text-sm font-medium">토큰:</span>
-              <span className="font-mono text-[#1F2937] font-semibold">204 / 20000</span>
+              <span className="font-mono text-[#1F2937] font-semibold">{usedTokens} / {maxTokens}</span>
             </div>
             {!isExamEnded && (
               <Button
@@ -159,7 +150,16 @@ export default function UserTestScreen() {
         </main>
 
         {/* AI Assistant Sidebar */}
-        <AiAssistantSidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+        {examId && participantId && (
+          <AiAssistantSidebar 
+            isOpen={isSidebarOpen} 
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            examId={examId}
+            participantId={participantId}
+            usedTokens={usedTokens}
+            onTokensUpdate={handleTokensUpdate}
+          />
+        )}
       </div>
 
       {isSubmitModalOpen && (
