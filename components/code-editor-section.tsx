@@ -44,7 +44,11 @@ function compressString(s) {
 `,
 }
 
-export function CodeEditorSection() {
+interface CodeEditorSectionProps {
+  isReadOnly?: boolean;
+}
+
+export function CodeEditorSection({ isReadOnly = false }: CodeEditorSectionProps) {
   const [language, setLanguage] = useState("python")
   // 각 언어별로 작성한 코드를 저장
   const [languageCodes, setLanguageCodes] = useState<Record<string, string>>({
@@ -105,7 +109,7 @@ export function CodeEditorSection() {
       {/* Editor Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB]">
         <span className="text-sm font-medium text-[#1F2937]">Code Editor</span>
-        <Select value={language} onValueChange={handleLanguageChange}>
+        <Select value={language} onValueChange={handleLanguageChange} disabled={isReadOnly}>
           <SelectTrigger className="w-[140px] h-8 text-sm">
             <SelectValue />
           </SelectTrigger>
@@ -140,7 +144,11 @@ export function CodeEditorSection() {
           onKeyUp={(e) => updateCursorPosition(e.currentTarget)}
           onScroll={handleEditorScroll}
           rows={15}
-          className="flex-1 p-4 font-mono text-sm text-[#1F2937] bg-white resize-none focus:outline-none leading-6"
+          readOnly={isReadOnly}
+          disabled={isReadOnly}
+          className={`flex-1 p-4 font-mono text-sm text-[#1F2937] bg-white resize-none focus:outline-none leading-6 ${
+            isReadOnly ? "cursor-not-allowed opacity-75" : ""
+          }`}
           spellCheck={false}
         />
       </div>

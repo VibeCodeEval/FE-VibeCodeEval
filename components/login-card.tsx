@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { adminLogin, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { enterExam, AuthError } from "@/lib/api/auth"
 import { isMasterAdmin, saveAuthInfo } from "@/lib/auth/utils"
+import { useExamSessionStore } from "@/lib/stores/exam-session-store"
 
 type TabType = "user" | "admin"
 
@@ -22,27 +24,70 @@ export default function LoginCard() {
   const [adminNumber, setAdminNumber] = useState<string>("");
   const [adminPassword, setAdminPassword] = useState<string>("");
   const [adminError, setAdminError] = useState<string>("");
+  const [userError, setUserError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const setSession = useExamSessionStore((state: { setSession: (examId: number, participantId: number) => void }) => state.setSession);
 
 
   const handleClick = async () => {
-    if (activeTab === "user") {
-      // ✅ User 탭: 입력값 검증 후 대기 화면으로 이동
-      if (
-        entryCode.trim() === "" ||
-        userName.trim() === "" ||
-        phoneNumber.trim() === ""
-      ) {
-        alert("Entry Code, Name, Phone Number를 모두 입력해 주세요.");
-        return;
+  if (activeTab === "user") {
+    // ✅ User 탭: 입력값 검증 후 API 호출
+    setUserError(""); // 에러 메시지 초기화
+
+    // 기본적인 클라이언트 유효성 검사
+    if (
+      entryCode.trim() === "" ||
+      userName.trim() === "" ||
+      phoneNumber.trim() === ""
+    ) {
+      setUserError("입장 코드, 이름, 전화번호를 모두 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // /api/auth/enter API 호출
+      const response = await enterExam({
+        code: entryCode.trim(),
+        name: userName.trim(),
+        phone: phoneNumber.trim(),
+      });
+
+      // examId와 participantId를 전역 상태에 저장
+      const examId = response.exam?.id;
+      const participantId = response.participant?.id;
+
+      if (examId && participantId) {
+        setSession(examId, participantId);
       }
 
-      // TODO: 나중에 여기서 실제 API 호출을 붙이면 됨
-      // 예: await startUserSession({ entryCode, userName, phoneNumber });
+      // accessToken 저장 (필요한 경우)
+      if (response.accessToken && typeof window !== 'undefined') {
+        localStorage.setItem('user_access_token', response.accessToken);
+      }
 
+      // ✅ API 성공 시에만 대기 화면으로 이동
       router.push("/waiting");
-    } else {
+    } catch (error) {
+      console.error("[LoginCard] enterExam error:", error);
+      if (error instanceof AuthError) {
+        if (error.status === 400) {
+          // DB에 없는 입장 코드 or 유효하지 않은 코드
+          setUserError("입장 코드가 올바르지 않거나 만료되었습니다.");
+        } else {
+          setUserError(error.message || "입장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        }
+      } else if (error instanceof NetworkError) {
+        setUserError(error.message || "네트워크 오류가 발생했습니다. 서버에 연결할 수 없습니다.");
+      } else {
+        setUserError("입장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      }
+      // 에러 발생 시 대기 화면으로 이동하지 않음
+    } finally {
+      setIsLoading(false);
+    }
+  } else {
       // ✅ Admin 탭: 백엔드 API와 연동
       setAdminError(""); // 에러 메시지 초기화
 
@@ -79,9 +124,9 @@ export default function LoginCard() {
 
         // 마스터면 마스터 대시보드로, 일반 관리자면 관리자 대시보드로 이동
         if (isMaster) {
-          router.push("/master");
-        } else {
-          router.push("/admin/dashboard");
+      router.push("/master");
+    } else {
+      router.push("/admin/dashboard");
         }
       } catch (error) {
         // 에러 처리 개선
@@ -104,9 +149,9 @@ export default function LoginCard() {
         }
       } finally {
         setIsLoading(false);
-      }
     }
-  };
+  }
+};
 
 
   return (
@@ -159,7 +204,10 @@ export default function LoginCard() {
                 placeholder="입장 코드를 입력하세요" 
                 className="h-11"
                 value={entryCode}
-                onChange={(e) => setEntryCode(e.target.value)}
+                onChange={(e) => {
+                  setEntryCode(e.target.value);
+                  setUserError(""); // 입력 시 에러 메시지 초기화
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -170,7 +218,10 @@ export default function LoginCard() {
                 placeholder="이름을 입력하세요" 
                 className="h-11"
                 value={userName}
-                onChange={(e) => setUserName(e.target.value)}
+                onChange={(e) => {
+                  setUserName(e.target.value);
+                  setUserError(""); // 입력 시 에러 메시지 초기화
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -178,11 +229,21 @@ export default function LoginCard() {
               <Input 
                 id="phone" 
                 type="tel" 
-                placeholder="전화번호를 입력하세요" 
+                placeholder="전화번호를 입력하세요 (예: 010-1234-5678)" 
                 className="h-11"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => {
+                  setPhoneNumber(e.target.value);
+                  setUserError(""); // 입력 시 에러 메시지 초기화
+                }}
               />
+              <div className="h-6 flex items-start">
+                {userError ? (
+                  <p className="text-sm text-red-500">{userError}</p>
+                ) : (
+                  <span className="invisible text-sm">placeholder</span>
+                )}
+              </div>
             </div>
           </div>
         ) : (
@@ -232,7 +293,7 @@ export default function LoginCard() {
           onClick={handleClick}
           disabled={isLoading}
         >
-          {activeTab === "user" ? "시험에 참여하기" : isLoading ? "로그인 중..." : "로그인"}
+          {activeTab === "user" ? (isLoading ? "입장 중..." : "시험에 참여하기") : (isLoading ? "로그인 중..." : "로그인")}
         </Button>
         {activeTab === "user" ? (
           // User helper texts

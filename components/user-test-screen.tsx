@@ -2,63 +2,97 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Clock, Coins } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button"
 import { ProblemSection } from "@/components/problem-section"
 import { CodeEditorSection } from "@/components/code-editor-section"
 import { AiAssistantSidebar } from "@/components/ai-assistant-sidebar"
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import { useExamSessionStore } from "@/lib/stores/exam-session-store";
+import { getExamState, ExamState, GetExamStateResponse } from "@/lib/api/exams";
+import { RemainingTimer } from "@/components/remaining-timer";
 
 export default function UserTestScreen() {
   const router = useRouter();
-
-  // 남은 시간 (예시: 초 단위)
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(/* 기존 초기값 */);
+  const examId = useExamSessionStore((state) => state.examId);
+  const participantId = useExamSessionStore((state) => state.participantId);
 
   // 모달 2개 상태
   const [showTimeOverModal, setShowTimeOverModal] = useState(false);   // "시험 시간 종료 시 모달"
   const [showFinishedModal, setShowFinishedModal] = useState(false);   // "시험 종료 완료 공지 모달"
 
+  // 시험 종료 감지 상태
+  const [isExamEnded, setIsExamEnded] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [examState, setExamState] = useState<ExamState | null>(null);
+  const [examStateData, setExamStateData] = useState<GetExamStateResponse | null>(null);
+
+  // 토큰 사용량 상태 관리
+  const [usedTokens, setUsedTokens] = useState<number>(0);
+  const maxTokens = 20000; // TODO: 나중에 API로 가져오도록 확장 가능
+
+  // 토큰 업데이트 핸들러: delta(증가량)를 받아서 누적
+  const handleTokensUpdate = (delta: number) => {
+    setUsedTokens((prev) => prev + delta);
+  };
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
-  const [timeRemaining, setTimeRemaining] = useState(45 * 60 + 23)
 
 
   const handleTimeExpired = () => {
     // 이미 모달이 떠있으면 다시 열지 않기 위한 가드 (선택사항)
-    if (showTimeOverModal || showFinishedModal) return;
+    if (showTimeOverModal || showFinishedModal || showEndModal) return;
 
     // "시험 시간 종료 시 모달" 열기
     setShowTimeOverModal(true);
   };
 
+  // 시험 상태 폴링 (관리자가 종료했는지 감지)
   useEffect(() => {
-    if (timeRemaining <= 0) {
-      // 시간이 0이 되면 모달을 띄우고 타이머는 더 이상 돌리지 않음
-      handleTimeExpired();
-      return;
-    }
+    if (!examId) return;
 
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
+    let cancelled = false;
+
+    const checkExamState = async () => {
+      try {
+        const res = await getExamState(examId);
+        if (cancelled) return;
+
+        setExamState(res.state);
+        setExamStateData(res);
+
+        // 시험이 종료된 상태(ENDED)로 변경되었고, 아직 종료 모달을 보여주지 않았다면
+        if (res.state === "ENDED" && !isExamEnded && !showEndModal) {
+          setIsExamEnded(true);
+          setShowEndModal(true);
         }
-        return prev - 1;
-      });
-    }, 1000);
+      } catch (err) {
+        console.error("[UserTestScreen] getExamState error:", err);
+        // 에러가 발생해도 기존 상태 유지
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [timeRemaining, handleTimeExpired]);
+    // 컴포넌트 마운트 시 즉시 한 번 체크
+    checkExamState();
 
-  const formatTime = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = totalSeconds % 60
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-  }
+    // 그 이후에는 5초마다 상태를 폴링
+    const intervalId = setInterval(checkExamState, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [examId, isExamEnded, showEndModal]);
+
+
+  // 홈으로 이동하는 핸들러
+  const handleGoHome = () => {
+    // 사용자 로그인/입장 화면으로 이동
+    router.push("/");
+  };
+
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -72,7 +106,14 @@ export default function UserTestScreen() {
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
             <Clock className="w-5 h-5 text-[#2563EB]" />
             <span className="text-lg font-medium text-[#1F2937]">남은 시간:</span>
-            <span className="font-mono text-xl text-[#2563EB] font-bold">{formatTime(timeRemaining)}</span>
+            {examStateData?.endsAt ? (
+              <RemainingTimer 
+                endAt={examStateData.endsAt} 
+                onTimeOver={handleTimeExpired}
+              />
+            ) : (
+              <span className="font-mono text-xl text-[#2563EB] font-bold">00:00:00</span>
+            )}
           </div>
 
           {/* Right - Token and Submit */}
@@ -80,14 +121,17 @@ export default function UserTestScreen() {
             <div className="flex items-center gap-2 text-[#4B5563]">
               <Coins className="w-4 h-4" />
               <span className="text-sm font-medium">토큰:</span>
-              <span className="font-mono text-[#1F2937] font-semibold">204 / 20000</span>
+              <span className="font-mono text-[#1F2937] font-semibold">{usedTokens} / {maxTokens}</span>
             </div>
-            <Button
-              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-6"
-              onClick={() => setIsSubmitModalOpen(true)}
-            >
-              제출하기
-            </Button>
+            {!isExamEnded && (
+              <Button
+                className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-6"
+                onClick={() => setIsSubmitModalOpen(true)}
+                disabled={isExamEnded}
+              >
+                제출하기
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -101,12 +145,21 @@ export default function UserTestScreen() {
             <ProblemSection />
 
             {/* Code Editor Section */}
-            <CodeEditorSection />
+            <CodeEditorSection isReadOnly={isExamEnded} />
           </div>
         </main>
 
         {/* AI Assistant Sidebar */}
-        <AiAssistantSidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+        {examId && participantId && (
+          <AiAssistantSidebar 
+            isOpen={isSidebarOpen} 
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            examId={examId}
+            participantId={participantId}
+            usedTokens={usedTokens}
+            onTokensUpdate={handleTokensUpdate}
+          />
+        )}
       </div>
 
       {isSubmitModalOpen && (
@@ -172,6 +225,37 @@ export default function UserTestScreen() {
               확인
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 3) 관리자가 시험을 종료한 경우 모달 */}
+      <Dialog 
+        open={showEndModal} 
+        onOpenChange={(open) => {
+          // 바깥쪽 클릭이나 ESC 키로 닫히는 것을 방지
+          if (!open) {
+            return;
+          }
+          setShowEndModal(open);
+        }}
+      >
+        <DialogContent className="max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">
+              시험이 종료되었습니다.
+            </DialogTitle>
+            <DialogDescription className="text-center pt-2">
+              현재까지 작성한 코드가 최종 답안으로 제출되었습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex w-full !justify-center pt-4">
+            <Button
+              className="w-full sm:w-auto px-8"
+              onClick={handleGoHome}
+            >
+              홈 화면으로 돌아가기
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
