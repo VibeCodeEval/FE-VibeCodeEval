@@ -11,14 +11,18 @@ interface Problem {
   version: string
   difficulty: "쉬움" | "중간" | "어려움"
   available: boolean
+  tags?: string[]
 }
 
 const initialProblems: Problem[] = [
-  { id: "1", title: "String Compression", version: "v1.2", difficulty: "중간", available: true },
-  { id: "2", title: "Median of Two Sorted Arrays", version: "v2.0", difficulty: "어려움", available: false },
-  { id: "3", title: "Longest Substring Without Repeating", version: "v1.5", difficulty: "중간", available: true },
-  { id: "4", title: "Regular Expression Matching", version: "v1.1", difficulty: "어려움", available: true },
-  { id: "5", title: "Two Sum", version: "v3.0", difficulty: "쉬움", available: false },
+  { 
+    id: "1", 
+    title: "외판원 순회", 
+    version: "v1.2", 
+    difficulty: "어려움", 
+    available: true,
+    tags: ["dp", "bitmask", "tsp"]
+  },
 ]
 
 type FilterOption = "전체" | "사용 가능만 보기" | "사용 불가만 보기"
@@ -141,11 +145,24 @@ export function ProblemsContent() {
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-3">
                       <h3 className="text-base font-semibold text-[#1A1A1A]">{problem.title}</h3>
-                      <span className="text-sm text-[#9CA3AF]">{problem.version}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-[#9CA3AF]">{problem.version}</span>
+                        <DifficultyBadge difficulty={problem.difficulty} />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <DifficultyBadge difficulty={problem.difficulty} />
-                    </div>
+                    {/* Tags */}
+                    {problem.tags && problem.tags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {problem.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-[#E5E5E5] bg-[#F9FAFB] px-2.5 py-0.5 text-xs font-medium text-[#6B7280]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Toggle Section */}
