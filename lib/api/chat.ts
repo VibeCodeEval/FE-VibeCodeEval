@@ -76,29 +76,8 @@ export interface UpdateTokenUsageRequest {
 }
 
 /**
- * Mock 채팅 응답 생성 헬퍼 함수
- * 실제 AI 서버가 준비되지 않았을 때 사용하는 테스트용 응답
- * TODO: 실제 AI 서버가 준비되면 이 함수는 제거하거나 사용하지 않도록 변경
- */
-function createMockChatResponse(request: SaveChatMessageRequest): SendMessageResponse {
-  const mockTokenCount = 50; // Mock AI 응답 토큰 수 (테스트용)
-  const mockTotalCount = mockTokenCount + 30; // 사용자 메시지 토큰(대략 30) + AI 응답 토큰(50) = 80
-
-  return {
-    sessionId: request.examId, // 임시로 examId를 sessionId로 사용
-    turnId: request.turn + 1, // AI 응답은 사용자 메시지 turn + 1
-    role: "AI",
-    content: "현재는 테스트 모드입니다. 실제 AI 응답은 추후 연결될 예정입니다. 질문해주신 내용에 대해 답변을 드리기 위해 준비 중입니다.",
-    tokenCount: mockTokenCount,
-    totalCount: mockTotalCount, // 전체 토큰 수 (사용자 질문 + AI 응답)
-  };
-}
-
-/**
  * 채팅 메시지 저장 및 AI 응답 받기 API 호출
  * POST /api/chat/messages
- * 
- * TODO: 실제 AI 서버가 준비되면, 에러 발생 시 ChatError를 던지도록 다시 변경해야 함
  */
 export async function saveChatMessage(request: SaveChatMessageRequest): Promise<SendMessageResponse> {
   const apiBaseUrl = getApiBaseUrl();
@@ -106,7 +85,6 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
   const isDev = process.env.NODE_ENV === 'development';
 
   // Swagger 스펙에 맞게 payload 구성
-  // Swagger 예시: { sessionId: 1, examId: 1, participantId: 1, turn: 1, role: "USER", content: "안녕하세요" }
   const payload: {
     sessionId?: number;
     examId: number;
@@ -118,7 +96,7 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
     examId: request.examId,
     participantId: request.participantId,
     turn: request.turn,
-    role: request.role.toUpperCase(), // Swagger 예시는 "USER" (대문자)
+    role: request.role.toUpperCase(),
     content: request.content,
   };
 
@@ -144,17 +122,13 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
       console.log('[Save Chat Message] 응답 상태:', response.status, response.statusText);
     }
 
-    // 응답 body를 문자열로 한 번만 읽기
     const raw = await response.text();
 
     if (!response.ok) {
-      // 응답 코드가 비정상일 때 Mock 응답 반환
-      // TODO: 실제 AI 서버가 준비되면 여기서 에러를 던지도록 다시 변경
       if (isDev) {
         console.error('[Save Chat Message] 응답 에러:', response.status, raw);
-        console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
       }
-      return createMockChatResponse(request);
+      throw new ChatError('채팅 메시지 저장 및 AI 응답 요청에 실패했습니다.', response.status);
     }
 
     // JSON 파싱 시도
@@ -162,22 +136,14 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
     try {
       data = raw ? JSON.parse(raw) : null;
     } catch (jsonError) {
-      // JSON 파싱 실패 시 Mock 응답 반환
-      // TODO: 실제 AI 서버가 준비되면 여기서 에러를 던지도록 다시 변경
       if (isDev) {
         console.error('[Save Chat Message] JSON 파싱 실패, 원본 텍스트:', raw);
-        console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
       }
-      return createMockChatResponse(request);
+      throw new ChatError('서버 응답을 파싱할 수 없습니다.', response.status);
     }
 
     if (!data) {
-      // 데이터가 null인 경우 Mock 응답 반환
-      if (isDev) {
-        console.error('[Save Chat Message] 응답 데이터가 null입니다.');
-        console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
-      }
-      return createMockChatResponse(request);
+      throw new ChatError('응답 데이터가 비어있습니다.', response.status);
     }
 
     if (isDev) {
@@ -185,16 +151,11 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
     }
 
     if (data.code !== 'COMMON200' || !data.result) {
-      // 응답 데이터 검증 실패 시 Mock 응답 반환
-      // TODO: 실제 AI 서버가 준비되면 여기서 에러를 던지도록 다시 변경
       const errorMessage = data.message || '채팅 메시지 저장에 실패했습니다.';
-      
       if (isDev) {
-        console.error('[Save Chat Message] 응답 데이터 검증 실패:', data);
-        console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
+        console.error('[Save Chat Message] 서비스 에러:', data);
       }
-
-      return createMockChatResponse(request);
+      throw new ChatError(errorMessage, response.status, data.code);
     }
 
     if (isDev) {
@@ -203,21 +164,21 @@ export async function saveChatMessage(request: SaveChatMessageRequest): Promise<
 
     return data.result;
   } catch (error) {
-    // 네트워크 오류 또는 기타 예상치 못한 오류 발생 시 Mock 응답 반환
-    // TODO: 실제 AI 서버가 준비되면 여기서 에러를 던지도록 다시 변경
+    if (error instanceof ChatError) {
+      throw error;
+    }
+
     if (error instanceof TypeError && error.message.includes('fetch')) {
       if (isDev) {
         console.error('[Save Chat Message] 네트워크 오류:', error.message);
-        console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
       }
-      return createMockChatResponse(request);
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
     }
 
     if (isDev) {
       console.error('[Save Chat Message] 예상치 못한 오류:', error);
-      console.warn('[Save Chat Message] Mock 응답으로 대체합니다.');
     }
-    return createMockChatResponse(request);
+    throw error;
   }
 }
 

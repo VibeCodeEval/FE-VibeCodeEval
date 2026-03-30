@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, ChevronDown } from "lucide-react"
 
 type LogStatus = "방 생성" | "시험 시작" | "평가 완료" | "시험 종료"
@@ -12,79 +12,6 @@ interface LogEntry {
   entryCode: string
   message: string
 }
-
-const initialLogs: LogEntry[] = [
-  {
-    id: 1,
-    timestamp: "2025-01-07 18:30",
-    status: "시험 종료",
-    entryCode: "AV4B203A",
-    message: "시험 세션이 종료되었습니다.",
-  },
-  {
-    id: 2,
-    timestamp: "2025-01-07 18:20",
-    status: "평가 완료",
-    entryCode: "AV4B203A",
-    message: "채점 과정이 성공적으로 완료되었습니다.",
-  },
-  {
-    id: 3,
-    timestamp: "2025-01-07 18:10",
-    status: "시험 시작",
-    entryCode: "AV4B203A",
-    message: "시험 세션이 시작되었습니다.",
-  },
-  {
-    id: 4,
-    timestamp: "2025-01-07 17:55",
-    status: "방 생성",
-    entryCode: "AV4B203A",
-    message: "시험 방 생성됨",
-  },
-  {
-    id: 5,
-    timestamp: "2025-01-06 16:45",
-    status: "시험 종료",
-    entryCode: "AV3C102B",
-    message: "시험 세션이 종료되었습니다.",
-  },
-  {
-    id: 6,
-    timestamp: "2025-01-06 16:30",
-    status: "평가 완료",
-    entryCode: "AV3C102B",
-    message: "채점 과정이 성공적으로 완료되었습니다.",
-  },
-  {
-    id: 7,
-    timestamp: "2025-01-06 15:20",
-    status: "시험 시작",
-    entryCode: "AV3C102B",
-    message: "시험 세션이 시작되었습니다.",
-  },
-  {
-    id: 8,
-    timestamp: "2025-01-06 15:00",
-    status: "방 생성",
-    entryCode: "AV3C102B",
-    message: "시험 방 생성됨",
-  },
-  {
-    id: 9,
-    timestamp: "2025-01-05 14:30",
-    status: "시험 종료",
-    entryCode: "AV2A501C",
-    message: "시험 세션이 종료되었습니다.",
-  },
-  {
-    id: 10,
-    timestamp: "2025-01-05 14:00",
-    status: "평가 완료",
-    entryCode: "AV2A501C",
-    message: "채점 과정이 성공적으로 완료되었습니다.",
-  },
-]
 
 const statusColors: Record<LogStatus, { bg: string; text: string; marker: string }> = {
   "방 생성": { bg: "#EBF0FA", text: "#4A74E0", marker: "#4A74E0" },
@@ -112,11 +39,32 @@ function groupLogsByDate(logs: LogEntry[]): Map<string, LogEntry[]> {
 }
 
 export function LogsContent() {
+  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("전체 상태")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-  const filteredLogs = initialLogs.filter((log) => {
+  // 추후 로그 조원을 위한 API 연동 가능 (현재는 API 부재로 빈 상태)
+  /*
+  useEffect(() => {
+    const fetchLogs = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/admin/logs');
+        const data = await response.json();
+        if (data.result) setLogs(data.result);
+      } catch (e) {
+        console.error("Failed to fetch logs", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLogs();
+  }, []);
+  */
+
+  const filteredLogs = logs.filter((log: LogEntry) => {
     const matchesSearch =
       log.entryCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.message.toLowerCase().includes(searchQuery.toLowerCase())

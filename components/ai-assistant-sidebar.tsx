@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { ChevronLeft, ChevronRight, Send, Bot, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { saveChatMessage, updateTokenUsage } from "@/lib/api/chat"
+import { useChatSocket } from "@/hooks/use-chat-socket"
+import { updateTokenUsage } from "@/lib/api/chat"
 
 interface Message {
   id: number
@@ -38,16 +39,60 @@ export function AiAssistantSidebar({
   ])
   const [inputValue, setInputValue] = useState("")
   const [isSending, setIsSending] = useState(false)
-  const [currentTurn, setCurrentTurn] = useState(1) // turn은 1부터 시작
+  const [currentTurn, setCurrentTurn] = useState(1)
+
+  // WebSocket 메시지 수신 핸들러
+  const handleMessageReceived = useCallback((newMessage: Message, response: any) => {
+    setMessages((prev) => [...prev, newMessage]);
+    setIsSending(false);
+    
+    // turn 증가
+    setCurrentTurn((prev) => prev + 1);
+
+    // 토큰 사용량 처리
+    let tokensDelta = 0;
+    
+    if (response.totalCount !== null && response.totalCount !== undefined) {
+      // usedTokens는 부모 상태이므로 최신 값을 기반으로 계산
+      tokensDelta = response.tokenCount || (response.totalCount - usedTokens);
+      
+      if (tokensDelta <= 0 && response.tokenCount !== null) {
+        tokensDelta = response.tokenCount + 30; 
+      }
+    } else if (response.tokenCount !== null) {
+      tokensDelta = response.tokenCount + 30;
+    }
+
+    if (tokensDelta > 0) {
+      updateTokenUsage({
+        examId,
+        participantId,
+        tokens: tokensDelta
+      }).then(() => {
+        onTokensUpdate(tokensDelta);
+      }).catch(err => {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn("[WS Chat] Token update failed:", err);
+        }
+        onTokensUpdate(tokensDelta); // 실패해도 상태는 동기화
+      });
+    }
+  }, [examId, participantId, usedTokens, onTokensUpdate]);
+
+  const { isConnected, sendMessage: sendWsMessage } = useChatSocket(
+    examId,
+    participantId,
+    handleMessageReceived
+  );
 
   const handleSend = async () => {
-    if (!inputValue.trim() || isSending) return
+    if (!inputValue.trim() || isSending || !isConnected) return
 
     const userMessageContent = inputValue.trim()
     
-    // 사용자 메시지를 먼저 UI에 추가 (optimistic UI)
+    // UI 즉시 반영 (Optimistic UI)
     const newUserMessage: Message = {
-      id: messages.length + 1,
+      id: Date.now(),
       role: "user",
       content: userMessageContent,
     }
@@ -56,96 +101,12 @@ export function AiAssistantSidebar({
     setInputValue("")
     setIsSending(true)
 
-    try {
-      // Swagger 스펙에 맞게 payload 구성
-      const payload = {
-        sessionId: undefined, // 세션 ID는 백엔드에서 자동 생성/조회 (선택 필드)
-        examId: examId,
-        participantId: participantId,
-        turn: currentTurn,
-        role: "USER", // Swagger 예시는 "USER" (대문자)
-        content: userMessageContent,
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[saveChatMessage] payload', payload);
-      }
-
-      // 1. /api/chat/messages 호출
-      const response = await saveChatMessage(payload)
-
-      // 2. AI 응답을 UI에 추가
-      const newAssistantMessage: Message = {
-        id: messages.length + 2,
-        role: "assistant",
-        content: response.content || "응답을 받지 못했습니다.",
-      }
-      
-      setMessages((prev) => [...prev, newAssistantMessage])
-      
-      // 3. turn 증가 (다음 사용자 메시지를 위해)
-      setCurrentTurn((prev) => prev + 1)
-
-      // 4. 토큰 사용량 처리
-      // response.totalCount는 전체 누적 토큰 수 (사용자 질문 토큰 + AI 응답 토큰)
-      // 이번 요청에서 사용한 토큰 수(delta) 계산
-      let tokensDelta = 0;
-      
-      if (response.totalCount !== null && response.totalCount !== undefined) {
-        // 실제 백엔드 응답인 경우: 전체 누적 토큰에서 현재 사용량을 빼서 증가량 계산
-        tokensDelta = response.totalCount - usedTokens;
-        
-        // 만약 계산된 delta가 0 이하이면, Mock 응답이거나 이미 반영된 것으로 간주
-        // 이 경우 tokenCount(이번 AI 응답 토큰) + 사용자 메시지 토큰(대략 30)을 사용
-        if (tokensDelta <= 0 && response.tokenCount !== null) {
-          tokensDelta = response.tokenCount + 30; // AI 응답 토큰 + 사용자 메시지 토큰(대략)
-        }
-      } else if (response.tokenCount !== null) {
-        // totalCount가 없지만 tokenCount가 있는 경우: AI 응답 토큰 + 사용자 메시지 토큰(대략 30)
-        tokensDelta = response.tokenCount + 30;
-      } else {
-        // 둘 다 없는 경우 기본값 사용 (Mock 응답의 경우)
-        tokensDelta = 80; // Mock 응답의 기본값
-      }
-      
-      // delta가 0보다 크면 토큰 업데이트 수행
-      if (tokensDelta > 0) {
-        try {
-          const tokenUpdatePayload = {
-            examId: examId,
-            participantId: participantId,
-            tokens: tokensDelta, // 증가량 전달
-          }
-
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[updateChatTokens] payload', tokenUpdatePayload);
-          }
-
-          // 5. /api/chat/tokens/update 호출
-          await updateTokenUsage(tokenUpdatePayload)
-
-          // 6. 프론트에서 토큰 상태 업데이트 (delta를 전달하여 부모에서 prev + delta로 누적)
-          onTokensUpdate(tokensDelta)
-        } catch (tokenError) {
-          if (process.env.NODE_ENV === 'development') {
-            console.warn("[AiAssistantSidebar] 토큰 업데이트 실패:", tokenError)
-          }
-          
-          // 토큰 업데이트 실패해도 UI는 업데이트 (일관성 유지)
-          onTokensUpdate(tokensDelta)
-        }
-      }
-    } catch (error) {
-      // saveChatMessage는 이제 throw를 하지 않으므로, 이 블록은 거의 실행되지 않습니다.
-      // 하지만 예상치 못한 에러에 대비해 안전하게 처리합니다.
-      if (process.env.NODE_ENV === 'development') {
-        console.warn("[AiAssistantSidebar] 예상치 못한 에러 발생:", error)
-      }
-      
-      // 에러가 발생해도 UI는 유지하고, 조용히 Mock 응답을 표시
-      // saveChatMessage가 항상 Mock 응답을 반환하므로, 여기서는 로딩 상태만 정리
-    } finally {
-      setIsSending(false)
+    // WebSocket으로 메시지 전송
+    const success = sendWsMessage(userMessageContent, currentTurn);
+    
+    if (!success) {
+      console.error("[WS Chat] Failed to send message via WebSocket");
+      setIsSending(false);
     }
   }
 
@@ -233,16 +194,16 @@ export function AiAssistantSidebar({
                   handleSend()
                 }
               }}
-              placeholder="메시지를 입력하세요…"
+              placeholder={isConnected ? "메시지를 입력하세요…" : "연결 대기 중…"}
               rows={1}
               className="flex-1 bg-white border-[#D0D0D0] resize-none whitespace-normal break-words"
-              disabled={isSending}
+              disabled={isSending || !isConnected}
             />
             <Button 
               onClick={handleSend} 
               size="icon" 
               className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSending || !inputValue.trim()}
+              disabled={isSending || !inputValue.trim() || !isConnected}
             >
               <Send className="w-4 h-4" />
             </Button>

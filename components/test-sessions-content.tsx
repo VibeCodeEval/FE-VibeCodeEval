@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Eye, Trash2, MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,325 +20,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useRouter } from "next/navigation";
 
-const initialTestSessions = [
-  {
-    id: 1,
-    sessionId: "AVBE2024A",
-    createdBy: "John Anderson",
-    createdAt: "2024-01-15",
-    status: "Active",
-    participants: 18,
-  },
-  {
-    id: 2,
-    sessionId: "AVBE2024B",
-    createdBy: "Sarah Mitchell",
-    createdAt: "2024-01-14",
-    status: "Completed",
-    participants: 25,
-  },
-  {
-    id: 3,
-    sessionId: "AVBE2024C",
-    createdBy: "Michael Chen",
-    createdAt: "2024-01-13",
-    status: "Completed",
-    participants: 12,
-  },
-  {
-    id: 4,
-    sessionId: "AVBE2024D",
-    createdBy: "Emily Davis",
-    createdAt: "2024-01-12",
-    status: "Active",
-    participants: 30,
-  },
-  {
-    id: 5,
-    sessionId: "AVBE2024E",
-    createdBy: "Robert Wilson",
-    createdAt: "2024-01-11",
-    status: "Completed",
-    participants: 22,
-  },
-  {
-    id: 6,
-    sessionId: "AVBE2024F",
-    createdBy: "Jennifer Brown",
-    createdAt: "2024-01-10",
-    status: "Active",
-    participants: 15,
-  },
-  {
-    id: 7,
-    sessionId: "AVBE2024G",
-    createdBy: "David Martinez",
-    createdAt: "2024-01-09",
-    status: "Completed",
-    participants: 28,
-  },
-  {
-    id: 8,
-    sessionId: "AVBE2024H",
-    createdBy: "Lisa Thompson",
-    createdAt: "2024-01-08",
-    status: "Active",
-    participants: 19,
-  },
-  {
-    id: 9,
-    sessionId: "AVBE2024I",
-    createdBy: "James Garcia",
-    createdAt: "2024-01-07",
-    status: "Completed",
-    participants: 24,
-  },
-  {
-    id: 10,
-    sessionId: "AVBE2024J",
-    createdBy: "Amanda Rodriguez",
-    createdAt: "2024-01-06",
-    status: "Active",
-    participants: 16,
-  },
-  {
-    id: 11,
-    sessionId: "AVBE2024K",
-    createdBy: "Christopher Lee",
-    createdAt: "2024-01-05",
-    status: "Completed",
-    participants: 21,
-  },
-  {
-    id: 12,
-    sessionId: "AVBE2024L",
-    createdBy: "Michelle White",
-    createdAt: "2024-01-04",
-    status: "Active",
-    participants: 27,
-  },
-  {
-    id: 13,
-    sessionId: "AVBE2024M",
-    createdBy: "Daniel Harris",
-    createdAt: "2024-01-03",
-    status: "Completed",
-    participants: 14,
-  },
-  {
-    id: 14,
-    sessionId: "AVBE2024N",
-    createdBy: "Stephanie Clark",
-    createdAt: "2024-01-02",
-    status: "Active",
-    participants: 32,
-  },
-  {
-    id: 15,
-    sessionId: "AVBE2024O",
-    createdBy: "Kevin Lewis",
-    createdAt: "2024-01-01",
-    status: "Completed",
-    participants: 20,
-  },
-  {
-    id: 16,
-    sessionId: "AVBE2024P",
-    createdBy: "Nicole Walker",
-    createdAt: "2023-12-31",
-    status: "Active",
-    participants: 23,
-  },
-  {
-    id: 17,
-    sessionId: "AVBE2024Q",
-    createdBy: "Brian Hall",
-    createdAt: "2023-12-30",
-    status: "Completed",
-    participants: 17,
-  },
-  {
-    id: 18,
-    sessionId: "AVBE2024R",
-    createdBy: "Laura Allen",
-    createdAt: "2023-12-29",
-    status: "Active",
-    participants: 26,
-  },
-  {
-    id: 19,
-    sessionId: "AVBE2024S",
-    createdBy: "Ryan Young",
-    createdAt: "2023-12-28",
-    status: "Completed",
-    participants: 11,
-  },
-  {
-    id: 20,
-    sessionId: "AVBE2024T",
-    createdBy: "Ashley King",
-    createdAt: "2023-12-27",
-    status: "Active",
-    participants: 29,
-  },
-  {
-    id: 21,
-    sessionId: "AVBE2024U",
-    createdBy: "Jason Wright",
-    createdAt: "2023-12-26",
-    status: "Completed",
-    participants: 13,
-  },
-  {
-    id: 22,
-    sessionId: "AVBE2024V",
-    createdBy: "Kimberly Scott",
-    createdAt: "2023-12-25",
-    status: "Active",
-    participants: 31,
-  },
-  {
-    id: 23,
-    sessionId: "AVBE2024W",
-    createdBy: "Andrew Green",
-    createdAt: "2023-12-24",
-    status: "Completed",
-    participants: 18,
-  },
-  {
-    id: 24,
-    sessionId: "AVBE2024X",
-    createdBy: "Rebecca Adams",
-    createdAt: "2023-12-23",
-    status: "Active",
-    participants: 22,
-  },
-  {
-    id: 25,
-    sessionId: "AVBE2024Y",
-    createdBy: "Timothy Baker",
-    createdAt: "2023-12-22",
-    status: "Completed",
-    participants: 25,
-  },
-  {
-    id: 26,
-    sessionId: "AVBE2024Z",
-    createdBy: "Melissa Nelson",
-    createdAt: "2023-12-21",
-    status: "Active",
-    participants: 19,
-  },
-  {
-    id: 27,
-    sessionId: "AVBE2025A",
-    createdBy: "Brandon Carter",
-    createdAt: "2023-12-20",
-    status: "Completed",
-    participants: 24,
-  },
-  {
-    id: 28,
-    sessionId: "AVBE2025B",
-    createdBy: "Samantha Mitchell",
-    createdAt: "2023-12-19",
-    status: "Active",
-    participants: 16,
-  },
-  {
-    id: 29,
-    sessionId: "AVBE2025C",
-    createdBy: "Justin Perez",
-    createdAt: "2023-12-18",
-    status: "Completed",
-    participants: 28,
-  },
-  {
-    id: 30,
-    sessionId: "AVBE2025D",
-    createdBy: "Heather Roberts",
-    createdAt: "2023-12-17",
-    status: "Active",
-    participants: 21,
-  },
-  {
-    id: 31,
-    sessionId: "AVBE2025E",
-    createdBy: "Tyler Turner",
-    createdAt: "2023-12-16",
-    status: "Completed",
-    participants: 15,
-  },
-  {
-    id: 32,
-    sessionId: "AVBE2025F",
-    createdBy: "Megan Phillips",
-    createdAt: "2023-12-15",
-    status: "Active",
-    participants: 27,
-  },
-]
-
-type TestSession = {
+interface TestSession {
   id: number
-  sessionId: string
+  sessionId: string     // BE의 title을 sessionId로 매핑 (필요시)
   createdBy: string
   createdAt: string
   status: string
   participants: number
 }
 
-type Participant = {
+interface Participant {
   id: number
   name: string
   phoneNumber: string
-  connectionStatus: "Connected" | "Disconnected"
-  submissionStatus: "Submitted" | "In Progress" | "Not Started"
+  connectionStatus: string
+  submissionStatus: string
   tokenUsage: number
-}
-
-const generateParticipants = (count: number): Participant[] => {
-  const names = [
-    "Alice Johnson",
-    "Bob Smith",
-    "Carol Williams",
-    "David Brown",
-    "Emma Davis",
-    "Frank Miller",
-    "Grace Wilson",
-    "Henry Moore",
-    "Ivy Taylor",
-    "Jack Anderson",
-    "Karen Thomas",
-    "Leo Jackson",
-    "Mia White",
-    "Noah Harris",
-    "Olivia Martin",
-    "Paul Garcia",
-    "Quinn Martinez",
-    "Rachel Robinson",
-    "Sam Clark",
-    "Tina Lewis",
-    "Uma Lee",
-    "Victor Walker",
-    "Wendy Hall",
-    "Xavier Allen",
-    "Yuki Young",
-    "Zara King",
-    "Aaron Wright",
-    "Bella Scott",
-    "Chris Green",
-    "Diana Adams",
-  ]
-
-  return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    name: names[i % names.length],
-    phoneNumber: `+82 10-${String(Math.floor(1000 + Math.random() * 9000))}-${String(Math.floor(1000 + Math.random() * 9000))}`,
-    connectionStatus: Math.random() > 0.2 ? "Connected" : "Disconnected",
-    submissionStatus: Math.random() > 0.6 ? "Submitted" : Math.random() > 0.3 ? "In Progress" : "Not Started",
-    tokenUsage: Math.floor(8000 + Math.random() * 12000),
-  }))
 }
 
 interface TestSessionsContentProps {
@@ -346,7 +43,8 @@ interface TestSessionsContentProps {
 }
 
 export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps) {
-  const [testSessions, setTestSessions] = useState<TestSession[]>(initialTestSessions)
+  const [testSessions, setTestSessions] = useState<TestSession[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState("All")
   const [selectedSession, setSelectedSession] = useState<TestSession | null>(null)
   const [isDeleteSessionOpen, setIsDeleteSessionOpen] = useState(false)
@@ -356,8 +54,75 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [detailsSession, setDetailsSession] = useState<TestSession | null>(null)
   const [participants, setParticipants] = useState<Participant[]>([])
+  const [isParticipantsLoading, setIsParticipantsLoading] = useState(false)
   const [participantPage, setParticipantPage] = useState(1)
   const participantPageSize = 10
+
+  // 1. 시험 목록 조회 (Exams)
+  const fetchExams = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch('/api/admin/exams', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      
+      if (data.code === 'COMMON200' && data.result) {
+        const mapped: TestSession[] = data.result.map((exam: any) => ({
+          id: exam.id,
+          sessionId: exam.title, // 제목을 세션 ID로 표시
+          createdBy: "Admin",    // BE 상에 생성자 이름 정보가 부족할 경우 고정값
+          createdAt: exam.startTime ? exam.startTime.split('T')[0] : "-",
+          status: exam.status === 'RUNNING' ? 'Active' : 'Completed',
+          participants: exam.participantCount || 0
+        }));
+        setTestSessions(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to fetch exams:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 2. 특정 시험의 참가자 현황 조회 (Board)
+  const fetchParticipants = async (examId: number) => {
+    setIsParticipantsLoading(true);
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch(`/api/admin/board?examId=${examId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+
+      if (data.code === 'COMMON200' && data.result) {
+        const mapped: Participant[] = data.result.map((p: any) => ({
+          id: p.examParticipantId,
+          name: p.name,
+          phoneNumber: p.phoneMasked,
+          connectionStatus: p.state === 'ENTRANCE' ? "Connected" : "Disconnected",
+          submissionStatus: p.submitted ? "Submitted" : (p.state === 'ENTRANCE' ? "In Progress" : "Not Started"),
+          tokenUsage: p.tokenUsed || 0
+        }));
+        setParticipants(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to fetch participants:", error);
+    } finally {
+      setIsParticipantsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExams();
+  }, []);
 
   const filteredSessions =
     statusFilter === "All" ? testSessions : testSessions.filter((session) => session.status === statusFilter)
@@ -378,14 +143,32 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
     setIsDeleteSessionOpen(true)
   }
 
-  const handleConfirmDeleteSession = () => {
+  const handleConfirmDeleteSession = async () => {
     if (!selectedSession) return
-    setTestSessions((prev) => prev.filter((session) => session.id !== selectedSession.id))
-    setIsDeleteSessionOpen(false)
-    setSelectedSession(null)
+    
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch(`/api/admin/exams/${selectedSession.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        setTestSessions((prev) => prev.filter((session) => session.id !== selectedSession.id))
+      }
+    } catch (error) {
+      console.error("Failed to delete exam:", error);
+    } finally {
+      setIsDeleteSessionOpen(false)
+      setSelectedSession(null)
+    }
   }
 
-  const handleViewDetails = (session: TestSession) => {
+  const handleViewDetailsAction = (session: TestSession) => {
+    setDetailsSession(session);
+    setIsDetailsOpen(true);
+    fetchParticipants(session.id);
     if (onViewDetails) {
       onViewDetails(session);
     }
@@ -412,6 +195,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
 
   const getPageNumbers = () => {
     const pages: number[] = []
+    if (totalPages === 0) return [1];
     for (let i = 1; i <= totalPages; i++) {
       pages.push(i)
     }
@@ -616,7 +400,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem
                             className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => handleViewDetails(session)}
+                            onClick={() => handleViewDetailsAction(session)}
                           >
                             <Eye className="h-4 w-4" />
                             상세 보기

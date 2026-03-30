@@ -14,68 +14,9 @@ type Participant = {
   id: number
   name: string
   phoneNumber: string
-  connectionStatus: "Connected" | "Pending"
-  submissionStatus: "Submitted" | "In Progress" | "Not Started"
+  connectionStatus: string
+  submissionStatus: string
   tokenUsage: number
-}
-
-// Generate dummy participants
-const generateParticipants = (count: number): Participant[] => {
-  const names = [
-    "Alice Johnson",
-    "Bob Smith",
-    "Carol Williams",
-    "David Brown",
-    "Emma Davis",
-    "Frank Miller",
-    "Grace Wilson",
-    "Henry Moore",
-    "Ivy Taylor",
-    "Jack Anderson",
-    "Karen Thomas",
-    "Leo Jackson",
-    "Mia White",
-    "Noah Harris",
-    "Olivia Martin",
-    "Paul Thompson",
-    "Quinn Garcia",
-    "Rachel Martinez",
-    "Sam Robinson",
-    "Tina Clark",
-    "Uma Lewis",
-    "Victor Lee",
-    "Wendy Walker",
-    "Xavier Hall",
-    "Yuki Allen",
-    "Zara Young",
-    "Adam King",
-    "Beth Wright",
-    "Carl Scott",
-    "Diana Green",
-  ]
-
-  return Array.from({ length: count }, (_, i) => {
-    const connectionStatus: "Connected" | "Pending" = Math.random() > 0.2 ? "Connected" : "Pending"
-
-    // If Pending → must be "Not Started"
-    // If Connected → must be either "Submitted" or "In Progress" (NOT "Not Started")
-    let submissionStatus: "Submitted" | "In Progress" | "Not Started"
-    if (connectionStatus === "Pending") {
-      submissionStatus = "Not Started"
-    } else {
-      // Connected: randomly assign "Submitted" or "In Progress"
-      submissionStatus = Math.random() > 0.5 ? "Submitted" : "In Progress"
-    }
-
-    return {
-      id: i + 1,
-      name: names[i % names.length],
-      phoneNumber: `+1 ${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
-      connectionStatus,
-      submissionStatus,
-      tokenUsage: Math.floor(8000 + Math.random() * 12000),
-    }
-  })
 }
 
 interface TestSessionDetailsContentProps {
@@ -92,26 +33,60 @@ interface TestSessionDetailsContentProps {
 
 export default function TestSessionDetailsContent({ session, onBack }: TestSessionDetailsContentProps) {
   const router = useRouter()
-  // 1) 처음에는 빈 배열로 시작
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [participants, setParticipants] = useState<Participant[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
-  // 2) 클라이언트에서만 랜덤 데이터 생성
+  const fetchParticipants = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch(`/api/admin/board?examId=${session.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+
+      if (data.code === 'COMMON200' && data.result) {
+        const mapped: Participant[] = data.result.map((p: any) => ({
+          id: p.examParticipantId,
+          name: p.name,
+          phoneNumber: p.phoneMasked,
+          connectionStatus: p.state === 'ENTRANCE' ? "Connected" : "Pending",
+          submissionStatus: p.submitted ? "Submitted" : (p.state === 'ENTRANCE' ? "In Progress" : "Not Started"),
+          tokenUsage: p.tokenUsed || 0
+        }));
+        setParticipants(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to fetch participants:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const generated = generateParticipants(session.participants);
-    setParticipants(generated);
-  }, [session.participants]);
+    fetchParticipants();
+    // 30초마다 자동 갱신 (실시간성 확보)
+    const timer = setInterval(fetchParticipants, 30000);
+    return () => clearInterval(timer);
+  }, [session.id]);
 
   // Pagination calculations
-  const totalPages = Math.ceil(participants.length / itemsPerPage)
+  const totalPages = participants.length > 0 ? Math.ceil(participants.length / itemsPerPage) : 1
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentParticipants = participants.slice(startIndex, endIndex)
 
   // Calculate summary stats
   const submissions = participants.filter((p) => p.submissionStatus === "Submitted").length
-  const avgTokenUsage = Math.round(participants.reduce((sum, p) => sum + p.tokenUsage, 0) / participants.length)
+  const avgTokenUsage =
+    participants.length > 0
+      ? Math.round(participants.reduce((sum, p) => sum + p.tokenUsage, 0) / participants.length)
+      : 0
 
   const getStatusBadge = (status: string) => {
     if (status === "Active") {
