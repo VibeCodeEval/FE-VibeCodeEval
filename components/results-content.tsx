@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Search, Download, Eye, X, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -17,40 +17,22 @@ interface Toast {
   description: string
 }
 
-const initialResults: ResultEntry[] = [
-  { id: "1", entryCode: "AIV-2024-001", total: 54, completed: 54 },
-  { id: "2", entryCode: "AIV-2024-002", total: 30, completed: 30 },
-  { id: "3", entryCode: "AIV-2024-003", total: 28, completed: 28 },
-  { id: "4", entryCode: "TEST-2024-04", total: 12, completed: 12 },
-]
-
-function generateDummyCSV(entryCode: string): string {
-  const header = "Name,Phone,Score,PromptScore,PerformanceScore,CorrectnessScore"
-  const rows = [
-    "John Doe,+1-555-0101,87,28,30,29",
-    "Jane Smith,+1-555-0102,92,30,32,30",
-    "Bob Johnson,+1-555-0103,78,25,28,25",
-    "Alice Brown,+1-555-0104,95,32,33,30",
-    "Charlie Wilson,+1-555-0105,81,27,29,25",
-  ]
-  return [header, ...rows].join("\n")
+interface ResultEntry {
+  id: string
+  entryCode: string
+  total: number
+  completed: number
 }
 
-function downloadCSV(entryCode: string) {
-  const csvContent = generateDummyCSV(entryCode)
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement("a")
-  link.href = url
-  link.download = `results-${entryCode}.csv`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+interface Toast {
+  id: string
+  title: string
+  description: string
 }
 
 export function ResultsContent() {
-  const [results] = useState<ResultEntry[]>(initialResults)
+  const [results, setResults] = useState<ResultEntry[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [toasts, setToasts] = useState<Toast[]>([])
   const [currentPage, setCurrentPage] = useState(1)
@@ -64,15 +46,46 @@ export function ResultsContent() {
     }, 3000)
   }
 
+  const fetchResults = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch('/api/admin/exams', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+
+      if (data.code === 'COMMON200' && data.result) {
+        const mapped: ResultEntry[] = data.result.map((exam: any) => ({
+          id: String(exam.id),
+          entryCode: exam.title,
+          total: exam.participantCount || 0,
+          completed: exam.status === 'COMPLETED' ? (exam.participantCount || 0) : 0 // 실제 완료 인원은 별도 API 필요
+        }));
+        setResults(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to fetch results:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchResults();
+  }, []);
+
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }
 
   const handleDownload = (entryCode: string) => {
-    downloadCSV(entryCode)
     showToast(
-      "Results file download started",
-      "The evaluation results for this entry code are being downloaded as a CSV file.",
+      "CSV 다운로드 준비 중",
+      "현재 해당 기능을 서버에서 준비 중입니다. 조만간 업데이트될 예정입니다.",
     )
   }
 
