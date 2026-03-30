@@ -58,7 +58,7 @@ Language        | TypeScript
 UI Library      | React, shadcn/ui
 Styling         | Tailwind CSS
 State Mgmt      | Zustand
-Real-time       | SSE / WebSocket (계획됨)
+Real-time       | WebSocket (STOMP/SockJS) — 시험 상태 수신 구현 완료 (BE 제공)
 
 --------------------------------------------------------------------------------
 # 📁 Project Structure
