@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createExam, getExams, createEntryCode, deleteExam, getEntryCodes, startExam, endExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { createExam, getExams, createEntryCode, deleteExam, getEntryCodes, startExam, endExam, extendExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
 import { useToast } from "@/hooks/use-toast"
 
 
@@ -79,6 +79,12 @@ export function EntryCodesContent() {
   const [isEndExamModalOpen, setIsEndExamModalOpen] = useState(false)
   const [selectedExamForEnd, setSelectedExamForEnd] = useState<Exam | null>(null)
   const [isEndingExam, setIsEndingExam] = useState(false)
+
+  // 시험 연장 모달 상태
+  const [isExtendExamModalOpen, setIsExtendExamModalOpen] = useState(false)
+  const [selectedExamForExtend, setSelectedExamForExtend] = useState<Exam | null>(null)
+  const [extendMinutes, setExtendMinutes] = useState("30")
+  const [isExtendingExam, setIsExtendingExam] = useState(false)
 
   const { toast } = useToast()
 
@@ -392,6 +398,48 @@ export function EntryCodesContent() {
     }
   }
 
+  // 시험 연장 핸들러
+  const handleExtendExam = (exam: Exam) => {
+    setSelectedExamForExtend(exam)
+    setExtendMinutes("30")
+    setIsExtendExamModalOpen(true)
+  }
+
+  // 시험 연장 확인 핸들러
+  const handleConfirmExtendExam = async () => {
+    if (!selectedExamForExtend) return
+    const mins = parseInt(extendMinutes, 10)
+    if (!mins || mins <= 0) {
+      toast({
+        title: "입력 오류",
+        description: "연장 시간은 1분 이상이어야 합니다.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsExtendingExam(true)
+    try {
+      await extendExam(selectedExamForExtend.id, mins)
+      await handleFetchExams()
+      setIsExtendExamModalOpen(false)
+      setSelectedExamForExtend(null)
+      toast({
+        title: "시험 연장 성공",
+        description: `"${selectedExamForExtend.title}" 시험이 ${mins}분 연장되었습니다.`,
+      })
+    } catch (error) {
+      console.error("Failed to extend exam", error)
+      toast({
+        title: "시험 연장 실패",
+        description: error instanceof Error ? error.message : "시험 연장 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsExtendingExam(false)
+    }
+  }
+
   // 시험 삭제 핸들러
   const handleDeleteExam = (exam: Exam) => {
     setSelectedExamForDelete(exam)
@@ -583,7 +631,12 @@ export function EntryCodesContent() {
                           <MoreVertical className="h-5 w-5" strokeWidth={1.5} />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-32">
+                      <DropdownMenuContent align="end" className="w-36">
+                        {(exam.state === "RUNNING" || exam.state === "IN_PROGRESS") && (
+                          <DropdownMenuItem onClick={() => handleExtendExam(exam)}>
+                            시간 연장
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           onClick={() => handleDeleteExam(exam)}
                           className="text-red-600 focus:text-red-600"
@@ -730,6 +783,48 @@ export function EntryCodesContent() {
             </Button>
             <Button onClick={handleConfirmDeleteExam} disabled={isDeletingExam} variant="destructive">
               {isDeletingExam ? "삭제 중..." : "삭제"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Extend Exam Modal */}
+      <Dialog open={isExtendExamModalOpen} onOpenChange={setIsExtendExamModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>시험 시간 연장</DialogTitle>
+            <DialogDescription className="pt-2 text-[#6B7280]">
+              {selectedExamForExtend
+                ? `"${selectedExamForExtend.title}" 시험의 종료 시각을 연장합니다.`
+                : "시험 시간을 연장합니다."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="extend-minutes" className="text-sm font-medium text-[#1A1A1A]">
+                연장 시간 (분)
+              </label>
+              <Input
+                id="extend-minutes"
+                type="number"
+                min="1"
+                placeholder="30"
+                value={extendMinutes}
+                onChange={(e) => setExtendMinutes(e.target.value)}
+                disabled={isExtendingExam}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex flex-row justify-end gap-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsExtendExamModalOpen(false)}
+              disabled={isExtendingExam}
+            >
+              취소
+            </Button>
+            <Button onClick={handleConfirmExtendExam} disabled={isExtendingExam}>
+              {isExtendingExam ? "연장 중..." : "연장"}
             </Button>
           </DialogFooter>
         </DialogContent>

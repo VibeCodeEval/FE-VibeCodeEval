@@ -6,7 +6,7 @@ import { TopNavBar } from "@/components/top-nav-bar"
 import { DashboardContent } from "@/components/dashboard-content"
 import { AdminAccountsContent } from "@/components/admin-accounts-content"
 import { TestSessionsContent } from "@/components/test-sessions-content"
-import { TestSessionDetailsContent } from "@/components/test-session-details-content"
+import TestSessionDetailsContent from "@/components/test-session-details-content"
 import { GlobalSettingsContent } from "@/components/global-settings-content"
 import { ProblemContent } from "@/components/problem-content"
 import { PlatformLogsContent } from "@/components/platform-logs-content"
@@ -49,7 +49,7 @@ export function MasterDashboard() {
         </div>
 
         <main className="flex-1 mt-[80px] overflow-y-auto">
-          {activeItem === "Dashboard" && <DashboardContent onNavigate={handleSidebarItemClick} />}
+          {activeItem === "Dashboard" && <DashboardContent />}
           {activeItem === "Admin Accounts" && <AdminAccountsContent />}
           {activeItem === "Test Sessions" && !selectedSession && (
             <TestSessionsContent onViewDetails={handleViewSessionDetails} />

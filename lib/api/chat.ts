@@ -285,3 +285,56 @@ export async function updateTokenUsage(request: UpdateTokenUsageRequest): Promis
   }
 }
 
+// ─── 채팅 히스토리 ─────────────────────────────────────────────────────────────
+
+export interface ChatHistoryMessage {
+  id: number;
+  turn: number;
+  role: string;
+  content: string;
+  tokenCount: number | null;
+}
+
+export interface ChatHistoryResponse {
+  sessionId: number;
+  examId: number;
+  participantId: number;
+  totalTokens: number;
+  messages: ChatHistoryMessage[];
+}
+
+/**
+ * 채팅 히스토리 조회 API 호출
+ * GET /api/chat/history?examId={}&participantId={}
+ */
+export async function getChatHistory(
+  examId: number,
+  participantId: number
+): Promise<ChatHistoryResponse | null> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/chat/history?examId=${examId}&participantId=${participantId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getUserAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (response.status === 404) {
+      return null; // 히스토리 없음
+    }
+
+    const data: BaseResponse<ChatHistoryResponse> = await response.json();
+    if (!response.ok || data.code !== 'COMMON200') {
+      throw new ChatError(data.message || '채팅 히스토리 조회에 실패했습니다.', response.status);
+    }
+    return data.result;
+  } catch (error) {
+    if (error instanceof ChatError) throw error;
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError();
+    }
+    throw error;
+  }
+}

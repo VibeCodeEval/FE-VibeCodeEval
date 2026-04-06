@@ -28,9 +28,15 @@ export function useChatSocket(
   const stompClientRef = useRef<Client | null>(null);
 
   useEffect(() => {
+    // STOMP CONNECT 시 JWT를 헤더로 전달해 서버 Principal(userId) 설정을 가능하게 함
+    // BE의 StompPrincipalInterceptor가 이 토큰을 파싱해 participantId를 Principal로 등록
+    // → convertAndSendToUser(participantId, "/queue/chat", response) 라우팅이 정상 동작
+    const token = typeof window !== 'undefined' ? localStorage.getItem('user_access_token') : null;
+
     const socket = new SockJS(`${API_BASE_URL}/ws`);
     const client = new Client({
       webSocketFactory: () => socket,
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       debug: (str) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('[STOMP Chat] ' + str);

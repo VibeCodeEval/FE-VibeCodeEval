@@ -12,15 +12,57 @@ import { CheckCircle2 } from "lucide-react";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import { getExamState, ExamState, GetExamStateResponse } from "@/lib/api/exams";
 import { RemainingTimer } from "@/components/remaining-timer";
+import { useExamSocket, ExamStateEvent } from "@/hooks/use-exam-socket";
+import { streamScoringResult, FinalScoreEvent, SubmissionStatus } from "@/lib/api/submissions";
+import { getChatHistory } from "@/lib/api/chat";
+
+// ─── 채점 결과 표시용 타입 ────────────────────────────────────────────────────
+
+interface ScoringResult {
+  status: SubmissionStatus;
+  score: {
+    prompt: number | null;
+    perf: number | null;
+    correctness: number | null;
+    total: number | null;
+  } | null;
+  passRate: number | null;
+}
+
+const SCORING_STATUS_LABEL: Record<SubmissionStatus, string> = {
+  PENDING:               "채점 대기 중",
+  JUDGING:               "채점 중…",
+  ACCEPTED:              "✅ 정답",
+  WRONG_ANSWER:          "❌ 오답",
+  TIME_LIMIT_EXCEEDED:   "⏱ 시간 초과",
+  MEMORY_LIMIT_EXCEEDED: "💾 메모리 초과",
+  RUNTIME_ERROR:         "🔥 런타임 오류",
+  COMPILE_ERROR:         "🔨 컴파일 오류",
+  SYSTEM_ERROR:          "⚠️ 시스템 오류",
+}
+
+const SCORING_STATUS_COLOR: Record<SubmissionStatus, string> = {
+  PENDING:               "text-[#6B7280]",
+  JUDGING:               "text-[#2563EB]",
+  ACCEPTED:              "text-[#059669]",
+  WRONG_ANSWER:          "text-[#DC2626]",
+  TIME_LIMIT_EXCEEDED:   "text-[#D97706]",
+  MEMORY_LIMIT_EXCEEDED: "text-[#D97706]",
+  RUNTIME_ERROR:         "text-[#DC2626]",
+  COMPILE_ERROR:         "text-[#DC2626]",
+  SYSTEM_ERROR:          "text-[#6B7280]",
+}
+
+// ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
 export default function UserTestScreen() {
   const router = useRouter();
   const examId = useExamSessionStore((state) => state.examId);
   const participantId = useExamSessionStore((state) => state.participantId);
 
-  // 모달 2개 상태
-  const [showTimeOverModal, setShowTimeOverModal] = useState(false);   // "시험 시간 종료 시 모달"
-  const [showFinishedModal, setShowFinishedModal] = useState(false);   // "시험 종료 완료 공지 모달"
+  // 모달 상태
+  const [showTimeOverModal, setShowTimeOverModal] = useState(false);
+  const [showFinishedModal, setShowFinishedModal] = useState(false);
 
   // 시험 종료 감지 상태
   const [isExamEnded, setIsExamEnded] = useState(false);
@@ -28,28 +70,122 @@ export default function UserTestScreen() {
   const [examState, setExamState] = useState<ExamState | null>(null);
   const [examStateData, setExamStateData] = useState<GetExamStateResponse | null>(null);
 
-  // 토큰 사용량 상태 관리
+  // 토큰 사용량 상태 관리 (초기 로드 포함)
   const [usedTokens, setUsedTokens] = useState<number>(0);
-  const maxTokens = 20000; // TODO: 나중에 API로 가져오도록 확장 가능
+  const maxTokens = 20000;
+
+  // 채점 결과 상태
+  const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
+  const [isScoring, setIsScoring] = useState(false);
+  const [caseResultCount, setCaseResultCount] = useState(0);
+
+  // SSE cleanup ref
+  const sseCleanupRef = useRef<(() => void) | null>(null);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+
+  // ── 초기 토큰 사용량 로드 (getChatHistory.totalTokens) ──────────────────────
+  useEffect(() => {
+    if (!examId || !participantId) return;
+
+    getChatHistory(examId, participantId)
+      .then((history) => {
+        if (history && history.totalTokens > 0) {
+          setUsedTokens(history.totalTokens);
+        }
+      })
+      .catch((err) => {
+        // 히스토리 없음(404)은 정상 — 0 유지
+        if (process.env.NODE_ENV === 'development') {
+          console.warn("[UserTestScreen] getChatHistory 초기 로드 실패:", err);
+        }
+      });
+  }, [examId, participantId]);
 
   // 토큰 업데이트 핸들러: delta(증가량)를 받아서 누적
   const handleTokensUpdate = (delta: number) => {
     setUsedTokens((prev) => prev + delta);
   };
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+  // ── WebSocket 시험 상태 이벤트 핸들러 ───────────────────────────────────────
+  const handleExamStateEvent = (event: ExamStateEvent) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[UserTestScreen] WS exam state event:', event);
+    }
+    setExamState(event.state);
+    setExamStateData({
+      examId: event.examId,
+      state: event.state,
+      startsAt: event.startsAt,
+      endsAt: event.endsAt,
+      version: event.version,
+      serverTime: event.serverTime,
+    });
+    if (event.state === 'ENDED' && !isExamEnded && !showEndModal) {
+      setIsExamEnded(true);
+      setShowEndModal(true);
+    }
+  };
 
+  useExamSocket(examId, handleExamStateEvent);
 
+  // ── SSE 채점 결과 스트리밍 ───────────────────────────────────────────────────
+  /**
+   * CodeEditorSection의 onSubmitted 콜백.
+   * submissionId를 받아 SSE 구독을 시작한다.
+   * 이전 구독이 있으면 먼저 취소한다.
+   */
+  const handleCodeSubmitted = (submissionId: number) => {
+    // 이전 SSE 연결 취소
+    sseCleanupRef.current?.();
+
+    setIsScoring(true);
+    setCaseResultCount(0);
+    setScoringResult({ status: "PENDING", score: null, passRate: null });
+
+    const cancel = streamScoringResult(submissionId, {
+      onCaseResult: () => {
+        setCaseResultCount((n) => n + 1);
+        setScoringResult((prev) => prev ? { ...prev, status: "JUDGING" } : prev);
+      },
+      onFinalScore: (event: FinalScoreEvent) => {
+        setScoringResult({
+          status: event.status,
+          score: event.score ?? null,
+          passRate: event.tc?.passRateWeighted ?? null,
+        });
+        setIsScoring(false);
+      },
+      onError: (err) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error("[UserTestScreen] SSE 오류:", err);
+        }
+        setScoringResult((prev) => prev ? { ...prev, status: "SYSTEM_ERROR" } : prev);
+        setIsScoring(false);
+      },
+      onComplete: () => {
+        setIsScoring(false);
+      },
+    });
+
+    sseCleanupRef.current = cancel;
+  };
+
+  // 컴포넌트 언마운트 시 SSE 취소
+  useEffect(() => {
+    return () => {
+      sseCleanupRef.current?.();
+    };
+  }, []);
+
+  // ── 시간 만료 핸들러 ─────────────────────────────────────────────────────────
   const handleTimeExpired = () => {
-    // 이미 모달이 떠있으면 다시 열지 않기 위한 가드 (선택사항)
     if (showTimeOverModal || showFinishedModal || showEndModal) return;
-
-    // "시험 시간 종료 시 모달" 열기
     setShowTimeOverModal(true);
   };
 
-  // 시험 상태 폴링 (관리자가 종료했는지 감지)
+  // ── 시험 상태 폴링 ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!examId) return;
 
@@ -63,21 +199,16 @@ export default function UserTestScreen() {
         setExamState(res.state);
         setExamStateData(res);
 
-        // 시험이 종료된 상태(ENDED)로 변경되었고, 아직 종료 모달을 보여주지 않았다면
         if (res.state === "ENDED" && !isExamEnded && !showEndModal) {
           setIsExamEnded(true);
           setShowEndModal(true);
         }
       } catch (err) {
         console.error("[UserTestScreen] getExamState error:", err);
-        // 에러가 발생해도 기존 상태 유지
       }
     };
 
-    // 컴포넌트 마운트 시 즉시 한 번 체크
     checkExamState();
-
-    // 그 이후에는 5초마다 상태를 폴링
     const intervalId = setInterval(checkExamState, 5000);
 
     return () => {
@@ -86,13 +217,9 @@ export default function UserTestScreen() {
     };
   }, [examId, isExamEnded, showEndModal]);
 
-
-  // 홈으로 이동하는 핸들러
   const handleGoHome = () => {
-    // 사용자 로그인/입장 화면으로 이동
     router.push("/");
   };
-
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -107,8 +234,8 @@ export default function UserTestScreen() {
             <Clock className="w-5 h-5 text-[#2563EB]" />
             <span className="text-lg font-medium text-[#1F2937]">남은 시간:</span>
             {examStateData?.endsAt ? (
-              <RemainingTimer 
-                endAt={examStateData.endsAt} 
+              <RemainingTimer
+                endAt={examStateData.endsAt}
                 onTimeOver={handleTimeExpired}
               />
             ) : (
@@ -121,7 +248,7 @@ export default function UserTestScreen() {
             <div className="flex items-center gap-2 text-[#4B5563]">
               <Coins className="w-4 h-4" />
               <span className="text-sm font-medium">토큰:</span>
-              <span className="font-mono text-[#1F2937] font-semibold">{usedTokens} / {maxTokens}</span>
+              <span className="font-mono text-[#1F2937] font-semibold">{usedTokens.toLocaleString()} / {maxTokens.toLocaleString()}</span>
             </div>
             {!isExamEnded && (
               <Button
@@ -134,6 +261,38 @@ export default function UserTestScreen() {
             )}
           </div>
         </div>
+
+        {/* 채점 결과 배너 */}
+        {scoringResult && (
+          <div
+            className={`flex items-center justify-between px-6 py-2 text-sm border-t border-[#E5E7EB] bg-[#F9FAFB] ${
+              SCORING_STATUS_COLOR[scoringResult.status]
+            }`}
+          >
+            <div className="flex items-center gap-2 font-medium">
+              {isScoring && (
+                <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              )}
+              <span>{SCORING_STATUS_LABEL[scoringResult.status]}</span>
+              {caseResultCount > 0 && isScoring && (
+                <span className="text-xs text-[#6B7280]">({caseResultCount}개 테스트케이스 처리됨)</span>
+              )}
+            </div>
+            {!isScoring && scoringResult.score?.total !== null && scoringResult.score?.total !== undefined && (
+              <div className="flex items-center gap-4 text-xs text-[#6B7280]">
+                {scoringResult.passRate !== null && (
+                  <span>통과율 {Math.round(scoringResult.passRate * 100)}%</span>
+                )}
+                <span className="font-semibold text-[#1F2937]">
+                  총점 {scoringResult.score.total}점
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -142,17 +301,21 @@ export default function UserTestScreen() {
         <main className="flex-1 p-6">
           <div className="flex flex-col gap-6">
             {/* Problem Section */}
-            <ProblemSection />
+            {examId && <ProblemSection examId={examId} />}
 
             {/* Code Editor Section */}
-            <CodeEditorSection isReadOnly={isExamEnded} />
+            <CodeEditorSection
+              isReadOnly={isExamEnded}
+              examId={examId}
+              onSubmitted={handleCodeSubmitted}
+            />
           </div>
         </main>
 
         {/* AI Assistant Sidebar */}
         {examId && participantId && (
-          <AiAssistantSidebar 
-            isOpen={isSidebarOpen} 
+          <AiAssistantSidebar
+            isOpen={isSidebarOpen}
             onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
             examId={examId}
             participantId={participantId}
@@ -162,6 +325,7 @@ export default function UserTestScreen() {
         )}
       </div>
 
+      {/* 제출 확인 모달 */}
       {isSubmitModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
@@ -178,9 +342,7 @@ export default function UserTestScreen() {
               <Button
                 className="px-8 bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
                 onClick={() => {
-                  // 1) 제출 확인 모달 닫기
                   setIsSubmitModalOpen(false);
-                  // 2) 시험 종료 완료 공지 모달 열기
                   setShowFinishedModal(true);
                 }}
               >
@@ -190,16 +352,12 @@ export default function UserTestScreen() {
           </div>
         </div>
       )}
-      {/* 1) 시험 시간 종료 시 모달 */}
-      <Dialog 
-        open={showTimeOverModal} 
+
+      {/* 1) 시험 시간 종료 모달 */}
+      <Dialog
+        open={showTimeOverModal}
         onOpenChange={(open) => {
-          // 바깥쪽 클릭이나 ESC 키로 닫히는 것을 방지
-          // 오로지 모달 내부 버튼을 통해서만 닫을 수 있음
-          if (!open) {
-            // false로 변경 시도를 무시
-            return;
-          }
+          if (!open) return;
           setShowTimeOverModal(open);
         }}
       >
@@ -228,14 +386,11 @@ export default function UserTestScreen() {
         </DialogContent>
       </Dialog>
 
-      {/* 3) 관리자가 시험을 종료한 경우 모달 */}
-      <Dialog 
-        open={showEndModal} 
+      {/* 2) 관리자가 시험 종료한 경우 모달 */}
+      <Dialog
+        open={showEndModal}
         onOpenChange={(open) => {
-          // 바깥쪽 클릭이나 ESC 키로 닫히는 것을 방지
-          if (!open) {
-            return;
-          }
+          if (!open) return;
           setShowEndModal(open);
         }}
       >
@@ -259,16 +414,12 @@ export default function UserTestScreen() {
         </DialogContent>
       </Dialog>
 
-      {/* 2) 시험 종료 완료 공지 모달 */}
+      {/* 3) 시험 종료 완료 공지 모달 */}
       <Dialog open={showFinishedModal} onOpenChange={setShowFinishedModal}>
         <DialogContent className="max-w-md w-full rounded-2xl border border-gray-100 shadow-xl bg-white p-8">
-          
-          {/* 접근성용 DialogTitle (화면에는 안 보이게) */}
           <DialogTitle className="sr-only">시험이 종료되었습니다.</DialogTitle>
-          
-          <div className="flex flex-col items-center text-center space-y-5">
 
-            {/* 아이콘 + 서브텍스트 */}
+          <div className="flex flex-col items-center text-center space-y-5">
             <div className="flex flex-col items-center space-y-3">
               <div className="p-3 rounded-full bg-emerald-50">
                 <CheckCircle2 className="w-8 h-8 text-emerald-500" />
@@ -278,25 +429,21 @@ export default function UserTestScreen() {
               </span>
             </div>
 
-            {/* 타이틀 */}
             <h2 className="text-xl font-semibold text-gray-900">
               시험이 종료되었습니다.
             </h2>
 
-            {/* 설명 */}
             <p className="text-sm text-gray-500 leading-relaxed">
               수고하셨습니다! <br />
               시험이 정상적으로 종료되었습니다.
             </p>
 
-            {/* 얇은 구분선 */}
             <div className="w-full h-px bg-gray-100" />
 
-            {/* 버튼 영역 */}
             <div className="w-full flex flex-col gap-2">
               <Button
                 className="w-full rounded-lg bg-gray-900 text-white hover:bg-black"
-                onClick={() => router.push("/")}   // 기존 동작 유지
+                onClick={() => router.push("/")}
               >
                 홈 화면으로 돌아가기
               </Button>

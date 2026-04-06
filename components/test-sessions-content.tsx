@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useRouter } from "next/navigation";
 
-interface TestSession {
+export interface TestSession {
   id: number
   sessionId: string     // BE의 title을 sessionId로 매핑 (필요시)
   createdBy: string
