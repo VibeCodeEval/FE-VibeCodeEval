@@ -18,8 +18,8 @@ import { Button } from "@/components/ui/button"
 import { logoutAdmin } from "@/lib/api/admin"
 
 interface SidebarProps {
-  activeItem: string
-  onItemClick: (item: string) => void
+  activeItem?: string
+  onItemClick?: (item: string) => void
 }
 
 interface MenuItem {
