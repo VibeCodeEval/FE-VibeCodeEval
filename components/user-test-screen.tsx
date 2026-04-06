@@ -12,6 +12,7 @@ import { CheckCircle2 } from "lucide-react";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import { getExamState, ExamState, GetExamStateResponse } from "@/lib/api/exams";
 import { RemainingTimer } from "@/components/remaining-timer";
+import { useExamSocket, ExamStateEvent } from "@/hooks/use-exam-socket";
 
 export default function UserTestScreen() {
   const router = useRouter();
@@ -40,6 +41,28 @@ export default function UserTestScreen() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
 
+  // WebSocket 시험 상태 이벤트 핸들러
+  // REST 폴링(5초)과 병행하여 관리자의 시작/종료/연장을 실시간으로 수신
+  const handleExamStateEvent = (event: ExamStateEvent) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[UserTestScreen] WS exam state event:', event);
+    }
+    setExamState(event.state);
+    setExamStateData({
+      examId: event.examId,
+      state: event.state,
+      startsAt: event.startsAt,
+      endsAt: event.endsAt,
+      version: event.version,
+      serverTime: event.serverTime,
+    });
+    if (event.state === 'ENDED' && !isExamEnded && !showEndModal) {
+      setIsExamEnded(true);
+      setShowEndModal(true);
+    }
+  };
+
+  useExamSocket(examId, handleExamStateEvent);
 
   const handleTimeExpired = () => {
     // 이미 모달이 떠있으면 다시 열지 않기 위한 가드 (선택사항)
