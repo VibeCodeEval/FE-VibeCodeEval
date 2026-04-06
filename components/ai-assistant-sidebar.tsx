@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { ChevronLeft, ChevronRight, Send, Bot, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useChatSocket } from "@/hooks/use-chat-socket"
-import { updateTokenUsage } from "@/lib/api/chat"
+import { updateTokenUsage, getChatHistory } from "@/lib/api/chat"
 
 interface Message {
   id: number
@@ -22,13 +22,13 @@ interface AiAssistantSidebarProps {
   onTokensUpdate: (delta: number) => void
 }
 
-export function AiAssistantSidebar({ 
-  isOpen, 
-  onToggle, 
-  examId, 
-  participantId, 
-  usedTokens, 
-  onTokensUpdate 
+export function AiAssistantSidebar({
+  isOpen,
+  onToggle,
+  examId,
+  participantId,
+  usedTokens,
+  onTokensUpdate,
 }: AiAssistantSidebarProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -40,42 +40,83 @@ export function AiAssistantSidebar({
   const [inputValue, setInputValue] = useState("")
   const [isSending, setIsSending] = useState(false)
   const [currentTurn, setCurrentTurn] = useState(1)
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false)
 
-  // WebSocket 메시지 수신 핸들러
+  // 메시지 목록 하단 자동 스크롤
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+
+  // ── 채팅 히스토리 초기 로드 ────────────────────────────────────────────────
+  useEffect(() => {
+    if (isHistoryLoaded) return;
+
+    getChatHistory(examId, participantId)
+      .then((history) => {
+        if (!history || history.messages.length === 0) return;
+
+        const restored: Message[] = history.messages.map((msg) => ({
+          id: msg.id,
+          role: (msg.role.toLowerCase() === "user" ? "user" : "assistant") as "user" | "assistant",
+          content: msg.content,
+        }));
+
+        // 환영 메시지(id=1) 뒤에 히스토리 삽입
+        setMessages([
+          {
+            id: 1,
+            role: "assistant",
+            content: "이전 대화를 불러왔습니다. 이어서 질문하셔도 됩니다!",
+          },
+          ...restored,
+        ]);
+
+        // 마지막 turn 번호로 currentTurn 동기화
+        const lastTurn = history.messages.at(-1)?.turn ?? 0;
+        setCurrentTurn(lastTurn + 1);
+      })
+      .catch((err) => {
+        // 404(히스토리 없음)은 정상 — 초기 메시지 유지
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[AiAssistantSidebar] getChatHistory 로드 실패:", err);
+        }
+      })
+      .finally(() => {
+        setIsHistoryLoaded(true);
+      });
+  // examId/participantId는 마운트 후 변경되지 않으므로 의도적으로 한 번만 실행
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 메시지가 추가될 때 하단으로 스크롤
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ── WebSocket 메시지 수신 핸들러 ─────────────────────────────────────────────
   const handleMessageReceived = useCallback((newMessage: Message, response: any) => {
     setMessages((prev) => [...prev, newMessage]);
     setIsSending(false);
-    
-    // turn 증가
     setCurrentTurn((prev) => prev + 1);
 
-    // 토큰 사용량 처리
     let tokensDelta = 0;
-    
+
     if (response.totalCount !== null && response.totalCount !== undefined) {
-      // usedTokens는 부모 상태이므로 최신 값을 기반으로 계산
       tokensDelta = response.tokenCount || (response.totalCount - usedTokens);
-      
       if (tokensDelta <= 0 && response.tokenCount !== null) {
-        tokensDelta = response.tokenCount + 30; 
+        tokensDelta = response.tokenCount + 30;
       }
     } else if (response.tokenCount !== null) {
       tokensDelta = response.tokenCount + 30;
     }
 
     if (tokensDelta > 0) {
-      updateTokenUsage({
-        examId,
-        participantId,
-        tokens: tokensDelta
-      }).then(() => {
-        onTokensUpdate(tokensDelta);
-      }).catch(err => {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn("[WS Chat] Token update failed:", err);
-        }
-        onTokensUpdate(tokensDelta); // 실패해도 상태는 동기화
-      });
+      updateTokenUsage({ examId, participantId, tokens: tokensDelta })
+        .then(() => { onTokensUpdate(tokensDelta); })
+        .catch((err) => {
+          if (process.env.NODE_ENV === "development") {
+            console.warn("[WS Chat] Token update failed:", err);
+          }
+          onTokensUpdate(tokensDelta);
+        });
     }
   }, [examId, participantId, usedTokens, onTokensUpdate]);
 
@@ -89,21 +130,19 @@ export function AiAssistantSidebar({
     if (!inputValue.trim() || isSending || !isConnected) return
 
     const userMessageContent = inputValue.trim()
-    
-    // UI 즉시 반영 (Optimistic UI)
+
     const newUserMessage: Message = {
       id: Date.now(),
       role: "user",
       content: userMessageContent,
     }
-    
+
     setMessages((prev) => [...prev, newUserMessage])
     setInputValue("")
     setIsSending(true)
 
-    // WebSocket으로 메시지 전송
     const success = sendWsMessage(userMessageContent, currentTurn);
-    
+
     if (!success) {
       console.error("[WS Chat] Failed to send message via WebSocket");
       setIsSending(false);
@@ -154,6 +193,17 @@ export function AiAssistantSidebar({
           </button>
         </div>
 
+        {/* 히스토리 로딩 중 표시 */}
+        {!isHistoryLoaded && (
+          <div className="px-4 py-2 text-xs text-[#6B7280] bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center gap-1">
+            <svg className="animate-spin w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            이전 대화 불러오는 중…
+          </div>
+        )}
+
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
@@ -180,6 +230,22 @@ export function AiAssistantSidebar({
               </div>
             </div>
           ))}
+
+          {/* 응답 대기 중 타이핑 인디케이터 */}
+          {isSending && (
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#2563EB] flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="px-4 py-3 rounded-2xl bg-[#F3F4F6] rounded-tl-sm flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" />
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
@@ -199,9 +265,9 @@ export function AiAssistantSidebar({
               className="flex-1 bg-white border-[#D0D0D0] resize-none whitespace-normal break-words"
               disabled={isSending || !isConnected}
             />
-            <Button 
-              onClick={handleSend} 
-              size="icon" 
+            <Button
+              onClick={handleSend}
+              size="icon"
               className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSending || !inputValue.trim() || !isConnected}
             >

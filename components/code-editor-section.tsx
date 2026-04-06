@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { submitCode, SubmissionStatus } from "@/lib/api/submissions"
 
 const defaultCodeTemplates: Record<string, string> = {
   python: `# 언어를 선택하시고
@@ -44,13 +45,44 @@ function compressString(s) {
 `,
 }
 
-interface CodeEditorSectionProps {
-  isReadOnly?: boolean;
+// 제출 상태 레이블 매핑
+const STATUS_LABEL: Record<SubmissionStatus, string> = {
+  PENDING:              "제출 완료 — 채점 대기 중",
+  JUDGING:              "채점 중…",
+  ACCEPTED:             "✅ 정답",
+  WRONG_ANSWER:         "❌ 오답",
+  TIME_LIMIT_EXCEEDED:  "⏱ 시간 초과",
+  MEMORY_LIMIT_EXCEEDED:"💾 메모리 초과",
+  RUNTIME_ERROR:        "🔥 런타임 오류",
+  COMPILE_ERROR:        "🔨 컴파일 오류",
+  SYSTEM_ERROR:         "⚠️ 시스템 오류",
 }
 
-export function CodeEditorSection({ isReadOnly = false }: CodeEditorSectionProps) {
+const STATUS_COLOR: Record<SubmissionStatus, string> = {
+  PENDING:              "text-[#6B7280] bg-[#F3F4F6]",
+  JUDGING:              "text-[#2563EB] bg-[#EFF6FF]",
+  ACCEPTED:             "text-[#059669] bg-[#ECFDF5]",
+  WRONG_ANSWER:         "text-[#DC2626] bg-[#FEF2F2]",
+  TIME_LIMIT_EXCEEDED:  "text-[#D97706] bg-[#FFFBEB]",
+  MEMORY_LIMIT_EXCEEDED:"text-[#D97706] bg-[#FFFBEB]",
+  RUNTIME_ERROR:        "text-[#DC2626] bg-[#FEF2F2]",
+  COMPILE_ERROR:        "text-[#DC2626] bg-[#FEF2F2]",
+  SYSTEM_ERROR:         "text-[#6B7280] bg-[#F3F4F6]",
+}
+
+interface CodeEditorSectionProps {
+  isReadOnly?: boolean;
+  examId?: number | null;
+  /** 제출 완료 후 submissionId를 부모에 전달 (SSE 구독 트리거) */
+  onSubmitted?: (submissionId: number) => void;
+}
+
+export function CodeEditorSection({
+  isReadOnly = false,
+  examId,
+  onSubmitted,
+}: CodeEditorSectionProps) {
   const [language, setLanguage] = useState("python")
-  // 각 언어별로 작성한 코드를 저장
   const [languageCodes, setLanguageCodes] = useState<Record<string, string>>({
     python: defaultCodeTemplates.python,
     java: defaultCodeTemplates.java,
@@ -60,21 +92,20 @@ export function CodeEditorSection({ isReadOnly = false }: CodeEditorSectionProps
   const [code, setCode] = useState(defaultCodeTemplates.python)
   const [cursorPosition, setCursorPosition] = useState({ line: 1, col: 1 })
 
+  // 제출 상태
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<SubmissionStatus | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const lineNumberRef = useRef<HTMLDivElement | null>(null);
 
   const handleLanguageChange = (newLanguage: string) => {
-    // 현재 언어의 코드를 저장하고, 새 언어의 코드를 불러오기
     setLanguageCodes((prev) => {
-      const updated = {
-        ...prev,
-        [language]: code,
-      }
-      // 새 언어의 저장된 코드를 불러오기 (없으면 기본 템플릿 사용)
+      const updated = { ...prev, [language]: code }
       const newCode = updated[newLanguage] || defaultCodeTemplates[newLanguage] || defaultCodeTemplates.python
       setCode(newCode)
       return updated
     })
-    // 새 언어로 변경
     setLanguage(newLanguage)
   }
 
@@ -97,11 +128,36 @@ export function CodeEditorSection({ isReadOnly = false }: CodeEditorSectionProps
     }
   };
 
-  const MIN_LINES = 15;
+  /** 코드 제출 핸들러 */
+  const handleSubmit = async () => {
+    if (!examId) {
+      setSubmitError("시험 정보가 없습니다.")
+      return
+    }
+    if (!code.trim()) {
+      setSubmitError("코드를 작성해주세요.")
+      return
+    }
 
+    setIsSubmitting(true)
+    setSubmitError(null)
+    setSubmitStatus("PENDING")
+
+    try {
+      const result = await submitCode(examId, { lang: language, code })
+      setSubmitStatus(result.status)
+      onSubmitted?.(result.submissionId)
+    } catch (err: any) {
+      setSubmitError(err.message || "코드 제출에 실패했습니다.")
+      setSubmitStatus(null)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const MIN_LINES = 15;
   const actualLineCount = code.split("\n").length || 1;
   const lineCount = Math.max(MIN_LINES, actualLineCount);
-
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   return (
@@ -109,18 +165,58 @@ export function CodeEditorSection({ isReadOnly = false }: CodeEditorSectionProps
       {/* Editor Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB]">
         <span className="text-sm font-medium text-[#1F2937]">Code Editor</span>
-        <Select value={language} onValueChange={handleLanguageChange} disabled={isReadOnly}>
-          <SelectTrigger className="w-[140px] h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="python">Python</SelectItem>
-            <SelectItem value="java">Java</SelectItem>
-            <SelectItem value="cpp">C++</SelectItem>
-            <SelectItem value="javascript">JavaScript</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-3">
+          <Select value={language} onValueChange={handleLanguageChange} disabled={isReadOnly}>
+            <SelectTrigger className="w-[140px] h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="python">Python</SelectItem>
+              <SelectItem value="java">Java</SelectItem>
+              <SelectItem value="cpp">C++</SelectItem>
+              <SelectItem value="javascript">JavaScript</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* 제출 버튼 — isReadOnly일 때 숨김 */}
+          {!isReadOnly && examId && (
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="h-8 px-4 text-sm font-medium rounded-md bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting ? "제출 중…" : "코드 제출"}
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* 제출 상태 배너 */}
+      {(submitStatus || submitError) && (
+        <div
+          className={`px-4 py-2 text-sm font-medium flex items-center gap-2 ${
+            submitError
+              ? "text-[#DC2626] bg-[#FEF2F2]"
+              : submitStatus
+              ? STATUS_COLOR[submitStatus]
+              : ""
+          }`}
+        >
+          {submitError ? (
+            <span>⚠️ {submitError}</span>
+          ) : submitStatus ? (
+            <>
+              <span>{STATUS_LABEL[submitStatus]}</span>
+              {(submitStatus === "PENDING" || submitStatus === "JUDGING") && (
+                <svg className="animate-spin w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              )}
+            </>
+          ) : null}
+        </div>
+      )}
 
       {/* Editor Content */}
       <div className="flex flex-1 min-h-0">
