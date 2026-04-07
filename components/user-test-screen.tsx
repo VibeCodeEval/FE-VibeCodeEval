@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Clock, Coins } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button"
@@ -59,6 +59,7 @@ export default function UserTestScreen() {
   const router = useRouter();
   const examId = useExamSessionStore((state) => state.examId);
   const participantId = useExamSessionStore((state) => state.participantId);
+  const tokenLimit = useExamSessionStore((state) => state.tokenLimit);
 
   // 모달 상태
   const [showTimeOverModal, setShowTimeOverModal] = useState(false);
@@ -72,7 +73,7 @@ export default function UserTestScreen() {
 
   // 토큰 사용량 상태 관리 (초기 로드 포함)
   const [usedTokens, setUsedTokens] = useState<number>(0);
-  const maxTokens = 20000;
+  const maxTokens = tokenLimit; // enterExam 응답의 session.tokenLimit 사용
 
   // 채점 결과 상태
   const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
@@ -104,9 +105,10 @@ export default function UserTestScreen() {
   }, [examId, participantId]);
 
   // 토큰 업데이트 핸들러: delta(증가량)를 받아서 누적
-  const handleTokensUpdate = (delta: number) => {
+  // useCallback으로 안정화 - 이 함수가 바뀌면 useChatSocket의 WS 재연결이 발생함
+  const handleTokensUpdate = useCallback((delta: number) => {
     setUsedTokens((prev) => prev + delta);
-  };
+  }, []);
 
   // ── WebSocket 시험 상태 이벤트 핸들러 ───────────────────────────────────────
   const handleExamStateEvent = (event: ExamStateEvent) => {
@@ -319,7 +321,6 @@ export default function UserTestScreen() {
             onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
             examId={examId}
             participantId={participantId}
-            usedTokens={usedTokens}
             onTokensUpdate={handleTokensUpdate}
           />
         )}

@@ -18,7 +18,6 @@ interface AiAssistantSidebarProps {
   onToggle: () => void
   examId: number
   participantId: number
-  usedTokens: number
   onTokensUpdate: (delta: number) => void
 }
 
@@ -27,7 +26,6 @@ export function AiAssistantSidebar({
   onToggle,
   examId,
   participantId,
-  usedTokens,
   onTokensUpdate,
 }: AiAssistantSidebarProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -92,21 +90,14 @@ export function AiAssistantSidebar({
   }, [messages]);
 
   // ── WebSocket 메시지 수신 핸들러 ─────────────────────────────────────────────
+  // usedTokens를 의존성에서 제거: 변경 시 useChatSocket 이펙트가 재실행되어 WS 재연결됨
+  // tokenCount는 현재 턴의 토큰 수이므로 response에서 직접 사용
   const handleMessageReceived = useCallback((newMessage: Message, response: any) => {
     setMessages((prev) => [...prev, newMessage]);
     setIsSending(false);
     setCurrentTurn((prev) => prev + 1);
 
-    let tokensDelta = 0;
-
-    if (response.totalCount !== null && response.totalCount !== undefined) {
-      tokensDelta = response.tokenCount || (response.totalCount - usedTokens);
-      if (tokensDelta <= 0 && response.tokenCount !== null) {
-        tokensDelta = response.tokenCount + 30;
-      }
-    } else if (response.tokenCount !== null) {
-      tokensDelta = response.tokenCount + 30;
-    }
+    const tokensDelta: number = response.tokenCount ?? 0;
 
     if (tokensDelta > 0) {
       updateTokenUsage({ examId, participantId, tokens: tokensDelta })
@@ -118,12 +109,18 @@ export function AiAssistantSidebar({
           onTokensUpdate(tokensDelta);
         });
     }
-  }, [examId, participantId, usedTokens, onTokensUpdate]);
+  }, [examId, participantId, onTokensUpdate]);
+
+  const handleChatError = useCallback((errorMessage: string) => {
+    console.error('[AiAssistant] WS 에러로 로딩 해제:', errorMessage);
+    setIsSending(false);
+  }, []);
 
   const { isConnected, sendMessage: sendWsMessage } = useChatSocket(
     examId,
     participantId,
-    handleMessageReceived
+    handleMessageReceived,
+    handleChatError
   );
 
   const handleSend = async () => {

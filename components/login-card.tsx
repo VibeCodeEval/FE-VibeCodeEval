@@ -59,7 +59,7 @@ export default function LoginCard() {
       const participantId = response.participant?.id;
 
       if (examId && participantId) {
-        setSession(examId, participantId);
+        setSession(examId, participantId, response.session?.tokenLimit);
       }
 
       // accessToken 저장 (필요한 경우)
