@@ -70,7 +70,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
         createdBy: "Admin",
         createdAt: exam.startsAt ? exam.startsAt.split("T")[0] : "-",
         status: exam.state === "RUNNING" ? "Active" : "Completed",
-        participants: 0,
+        participants: exam.participantCount,
       }))
       setTestSessions(mapped)
     } catch (error) {

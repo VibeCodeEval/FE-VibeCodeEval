@@ -942,6 +942,8 @@ export interface Exam {
   endsAt: string;   // ISO 8601 형식
   version: number;
   createdBy: number;
+  participantCount: number;
+  completedCount: number;
   entryCode?: string; // 입장 코드 (선택적)
 }
 

@@ -41,8 +41,8 @@ export function ResultsContent() {
       const mapped: ResultEntry[] = exams.map((exam: Exam) => ({
         id: String(exam.id),
         entryCode: exam.title,
-        total: 0,
-        completed: exam.state === "ENDED" ? 0 : 0,
+        total: exam.participantCount,
+        completed: exam.completedCount,
       }))
       setResults(mapped)
     } catch (error) {
@@ -68,7 +68,7 @@ export function ResultsContent() {
   }
 
   const filteredResults = results.filter((result) => result.entryCode.toLowerCase().includes(searchQuery.toLowerCase()))
-  
+
   const totalPages = Math.ceil(filteredResults.length / pageSize)
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = currentPage * pageSize
