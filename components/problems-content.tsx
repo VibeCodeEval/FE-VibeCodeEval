@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { getCookie } from "@/lib/auth/cookie-utils"
 import { Search, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { getProblems, type AdminProblem } from "@/lib/api/admin"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
 
@@ -35,55 +35,43 @@ export function ProblemsContent() {
   const pageSize = 8
 
   const fetchProblems = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const token = getCookie('admin_access_token');
-      const response = await fetch('/api/admin/problems', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
+      const adminProblems = await getProblems()
+      const mapped: Problem[] = adminProblems.map((problem: AdminProblem) => {
+        let difficulty: "쉬움" | "중간" | "어려움" = "쉬움"
+        if (problem.difficulty === "MEDIUM") difficulty = "중간"
+        if (problem.difficulty === "HARD") difficulty = "어려움"
 
-      if (data.code === 'COMMON200' && data.result) {
-        const mapped: Problem[] = data.result.map((p: any) => {
-          // Difficulty 매핑
-          let difficulty: "쉬움" | "중간" | "어려움" = "쉬움";
-          if (p.difficulty === 'MEDIUM') difficulty = "중간";
-          if (p.difficulty === 'HARD') difficulty = "어려움";
-
-          // Tags 파싱 (JSON String)
-          let tags: string[] = [];
-          try {
-            if (p.tags) {
-              tags = typeof p.tags === 'string' ? JSON.parse(p.tags) : p.tags;
-            }
-          } catch (e) {
-            console.error("Failed to parse tags:", p.tags);
+        let tags: string[] = []
+        try {
+          if (problem.tags) {
+            tags = typeof problem.tags === "string" ? JSON.parse(problem.tags) : problem.tags
           }
+        } catch {
+          console.error("Failed to parse tags:", problem.tags)
+        }
 
-          return {
-            id: String(p.id),
-            title: p.title,
-            version: "v1.0", // BE에 버전 정보가 없으면 기본값
-            difficulty,
-            available: p.status === 'ACTIVE',
-            tags
-          };
-        });
-        setProblems(mapped);
-      }
+        return {
+          id: String(problem.id),
+          title: problem.title,
+          version: "v1.0",
+          difficulty,
+          available: problem.status === "PUBLISHED" || problem.status === "ACTIVE",
+          tags,
+        }
+      })
+      setProblems(mapped)
     } catch (error) {
-      console.error("Failed to fetch problems:", error);
+      console.error("Failed to fetch problems:", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchProblems();
-  }, []);
+    fetchProblems()
+  }, [])
 
   const filteredProblems = useMemo(() => {
     let result = problems

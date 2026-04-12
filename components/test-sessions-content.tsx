@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getCookie } from "@/lib/auth/cookie-utils"
 import { Eye, Trash2, MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useRouter } from "next/navigation";
+import { deleteExam, getBoard, getExams, type Exam, type ExamineeBoardEntry } from "@/lib/api/admin";
 
 export interface TestSession {
   id: number
@@ -61,69 +61,53 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
 
   // 1. 시험 목록 조회 (Exams)
   const fetchExams = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const token = getCookie('admin_access_token');
-      const response = await fetch('/api/admin/exams', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-      
-      if (data.code === 'COMMON200' && data.result) {
-        const mapped: TestSession[] = data.result.map((exam: any) => ({
-          id: exam.id,
-          sessionId: exam.title, // 제목을 세션 ID로 표시
-          createdBy: "Admin",    // BE 상에 생성자 이름 정보가 부족할 경우 고정값
-          createdAt: exam.startTime ? exam.startTime.split('T')[0] : "-",
-          status: exam.status === 'RUNNING' ? 'Active' : 'Completed',
-          participants: exam.participantCount || 0
-        }));
-        setTestSessions(mapped);
-      }
+      const exams = await getExams()
+      const mapped: TestSession[] = exams.map((exam: Exam) => ({
+        id: exam.id,
+        sessionId: exam.title,
+        createdBy: "Admin",
+        createdAt: exam.startsAt ? exam.startsAt.split("T")[0] : "-",
+        status: exam.state === "RUNNING" ? "Active" : "Completed",
+        participants: 0,
+      }))
+      setTestSessions(mapped)
     } catch (error) {
-      console.error("Failed to fetch exams:", error);
+      console.error("Failed to fetch exams:", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // 2. 특정 시험의 참가자 현황 조회 (Board)
   const fetchParticipants = async (examId: number) => {
-    setIsParticipantsLoading(true);
+    setIsParticipantsLoading(true)
     try {
-      const token = getCookie('admin_access_token');
-      const response = await fetch(`/api/admin/board?examId=${examId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-
-      if (data.code === 'COMMON200' && data.result) {
-        const mapped: Participant[] = data.result.map((p: any) => ({
-          id: p.examParticipantId,
-          name: p.name,
-          phoneNumber: p.phoneMasked,
-          connectionStatus: p.state === 'ENTRANCE' ? "Connected" : "Disconnected",
-          submissionStatus: p.submitted ? "Submitted" : (p.state === 'ENTRANCE' ? "In Progress" : "Not Started"),
-          tokenUsage: p.tokenUsed || 0
-        }));
-        setParticipants(mapped);
-      }
+      const board = await getBoard(examId)
+      const mapped: Participant[] = board.map((participant: ExamineeBoardEntry) => ({
+        id: participant.examParticipantId,
+        name: participant.name,
+        phoneNumber: participant.phoneMasked,
+        connectionStatus: participant.state === "ENTRANCE" ? "Connected" : "Disconnected",
+        submissionStatus: participant.submitted
+          ? "Submitted"
+          : participant.state === "ENTRANCE"
+            ? "In Progress"
+            : "Not Started",
+        tokenUsage: participant.tokenUsed || 0,
+      }))
+      setParticipants(mapped)
     } catch (error) {
-      console.error("Failed to fetch participants:", error);
+      console.error("Failed to fetch participants:", error)
     } finally {
-      setIsParticipantsLoading(false);
+      setIsParticipantsLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchExams();
-  }, []);
+    fetchExams()
+  }, [])
 
   const filteredSessions =
     statusFilter === "All" ? testSessions : testSessions.filter((session) => session.status === statusFilter)
@@ -148,18 +132,10 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
     if (!selectedSession) return
     
     try {
-      const token = getCookie('admin_access_token');
-      const response = await fetch(`/api/admin/exams/${selectedSession.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        setTestSessions((prev) => prev.filter((session) => session.id !== selectedSession.id))
-      }
+      await deleteExam(selectedSession.id)
+      setTestSessions((prev) => prev.filter((session) => session.id !== selectedSession.id))
     } catch (error) {
-      console.error("Failed to delete exam:", error);
+      console.error("Failed to delete exam:", error)
     } finally {
       setIsDeleteSessionOpen(false)
       setSelectedSession(null)
@@ -787,4 +763,3 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   )
 }
 export default TestSessionsContent;
-

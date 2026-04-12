@@ -45,24 +45,7 @@ export function LogsContent() {
   const [statusFilter, setStatusFilter] = useState("전체 상태")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-  // 추후 로그 조원을 위한 API 연동 가능 (현재는 API 부재로 빈 상태)
-  /*
-  useEffect(() => {
-    const fetchLogs = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/admin/logs');
-        const data = await response.json();
-        if (data.result) setLogs(data.result);
-      } catch (e) {
-        console.error("Failed to fetch logs", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchLogs();
-  }, []);
-  */
+  // 로그 API가 준비되면 컴포넌트에서 직접 fetch하지 말고 lib/api 레이어로 연결한다.
 
   const filteredLogs = logs.filter((log: LogEntry) => {
     const matchesSearch =
