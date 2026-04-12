@@ -28,7 +28,7 @@ export default function LoginCard() {
   const [userError, setUserError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-  const setSession = useExamSessionStore((state: { setSession: (examId: number, participantId: number) => void }) => state.setSession);
+  const setSession = useExamSessionStore((state: { setSession: (examId: number, participantId: number, tokenLimit?: number) => void }) => state.setSession);
 
 
   const handleClick = async () => {
