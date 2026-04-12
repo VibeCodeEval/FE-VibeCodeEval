@@ -1,5 +1,6 @@
 // 인증 관련 유틸리티 함수들
 import { setCookie, getCookie, removeCookie } from './cookie-utils';
+// admin_access_token은 백엔드가 HttpOnly 쿠키로 직접 발급 — JS에서 저장/삭제 불필요
 
 // 마스터 관리자 번호 상수
 export const MASTER_ADMIN_NUMBER = "MASTER-0001";
@@ -38,14 +39,14 @@ export function isSystemMasterAdmin(admin: { adminNumber?: string | null }): boo
 
 /**
  * 인증 정보를 쿠키에 저장
+ * 주의: admin_access_token은 백엔드가 HttpOnly 쿠키로 발급하므로 여기서 저장하지 않음
  */
 export function saveAuthInfo(
-  accessToken: string,
+  _accessToken: string,
   adminNumber: string,
   role?: string,
   email?: string
 ): void {
-  setCookie('admin_access_token', accessToken);
   setCookie('admin_number', adminNumber);
   if (role) {
     setCookie('admin_role', role);
@@ -57,6 +58,7 @@ export function saveAuthInfo(
 
 /**
  * 쿠키에서 인증 정보 가져오기
+ * 주의: accessToken은 HttpOnly 쿠키로 JS 접근 불가 → null 반환
  */
 export function getAuthInfo(): {
   accessToken: string | null;
@@ -65,7 +67,7 @@ export function getAuthInfo(): {
   email: string | null;
 } {
   return {
-    accessToken: getCookie('admin_access_token'),
+    accessToken: null, // HttpOnly 쿠키 — JS에서 읽기 불가
     adminNumber: getCookie('admin_number'),
     role: getCookie('admin_role'),
     email: getCookie('admin_email'),
@@ -74,9 +76,9 @@ export function getAuthInfo(): {
 
 /**
  * 쿠키에서 인증 정보 삭제
+ * 주의: admin_access_token은 백엔드 logout 엔드포인트가 HttpOnly 쿠키를 삭제
  */
 export function clearAuthInfo(): void {
-  removeCookie('admin_access_token');
   removeCookie('admin_number');
   removeCookie('admin_role');
   removeCookie('admin_email');
