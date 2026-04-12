@@ -1,4 +1,5 @@
 // Admin API 호출 함수들
+import { getCookie, removeCookie } from '../auth/cookie-utils';
 
 // 커스텀 에러 클래스: 로그인 실패와 네트워크 에러를 구분
 export class LoginFailedError extends Error {
@@ -28,7 +29,7 @@ function getApiBaseUrl(): string {
 
 // Authorization 헤더 가져오기
 function getAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
+  const token = getCookie('admin_access_token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -665,9 +666,7 @@ export async function logoutAdmin(): Promise<void> {
     }
   } finally {
     // 항상 프론트엔드 세션 정리
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('admin_access_token');
-    }
+    removeCookie('admin_access_token');
   }
 }
 
@@ -1636,3 +1635,220 @@ export async function getEntryCodes(examId: number, isActive?: boolean): Promise
   }
 }
 
+// ─── 추가 타입 정의 ────────────────────────────────────────────────────────────
+
+export interface ExamineeBoardEntry {
+  examParticipantId: number;
+  name: string;
+  phoneMasked: string;
+  state: string;
+  tokenLimit: number;
+  tokenUsed: number;
+  submitted: boolean;
+}
+
+export interface AdminMetrics {
+  concurrency: {
+    activeExaminees: number;
+    wsConnections: number;
+  };
+  queue: {
+    judgeQueueDepth: number;
+    avgWaitSec: number;
+  };
+  errors: {
+    rate1m: number;
+    last: string | null;
+  };
+}
+
+// ─── 시험 연장 ─────────────────────────────────────────────────────────────────
+
+/**
+ * 시험 시간 연장 API 호출
+ * POST /api/admin/exams/{id}/extend
+ */
+export async function extendExam(examId: number, minutes: number): Promise<void> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/exams/${examId}/extend`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ minutes }),
+    credentials: 'omit',
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new LoginFailedError(data.message || '시험 시간 연장에 실패했습니다.', response.status);
+  }
+}
+
+// ─── 입장 코드 수정·삭제 ────────────────────────────────────────────────────────
+
+/**
+ * 입장 코드 활성/비활성 변경 API 호출
+ * PATCH /api/admin/entry-codes/{code}
+ */
+export async function updateEntryCode(code: string, isActive: boolean): Promise<EntryCodeResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/entry-codes/${encodeURIComponent(code)}`;
+
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ isActive }),
+    credentials: 'omit',
+  });
+
+  const data: BaseResponse<EntryCodeResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(data.message || '입장 코드 수정에 실패했습니다.', response.status);
+  }
+  return data.result;
+}
+
+/**
+ * 입장 코드 삭제 API 호출
+ * DELETE /api/admin/entry-codes/{code}
+ */
+export async function deleteEntryCode(code: string): Promise<void> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/entry-codes/${encodeURIComponent(code)}`;
+
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'omit',
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new LoginFailedError(data.message || '입장 코드 삭제에 실패했습니다.', response.status);
+  }
+}
+
+// ─── 시험 지표·보드 ────────────────────────────────────────────────────────────
+
+/**
+ * 시험 실시간 지표 조회 API 호출
+ * GET /api/admin/metrics?examId={}
+ */
+export async function getMetrics(examId: number): Promise<AdminMetrics> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/metrics?examId=${examId}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    credentials: 'omit',
+  });
+
+  const data: BaseResponse<AdminMetrics> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(data.message || '지표 조회에 실패했습니다.', response.status);
+  }
+  return data.result;
+}
+
+/**
+ * 시험 참가자 현황 보드 조회 API 호출
+ * GET /api/admin/board?examId={}
+ */
+export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/board?examId=${examId}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    credentials: 'omit',
+  });
+
+  const data: BaseResponse<ExamineeBoardEntry[]> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200') {
+    throw new LoginFailedError(data.message || '보드 조회에 실패했습니다.', response.status);
+  }
+  return data.result ?? [];
+}
+
+// ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────
+
+export interface ScoringEvent {
+  type: 'case_result' | 'final_score';
+  data: unknown;
+}
+
+/**
+ * 채점 결과 SSE 스트리밍 구독
+ * GET /api/admin/submissions/{submissionId}/stream
+ *
+ * @returns cleanup 함수 (구독 해제 시 호출)
+ */
+export function streamScoringResult(
+  submissionId: number,
+  onEvent: (event: ScoringEvent) => void,
+  onError?: (err: Event) => void,
+  onDone?: () => void
+): () => void {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+  const token = getCookie('admin_access_token');
+
+  // SSE는 EventSource를 사용하며, 커스텀 헤더 지원이 없으므로 쿼리 파라미터로 토큰 전달
+  // 서버 측에서 쿼리 파라미터 토큰을 허용해야 함. 불가 시 fetch + ReadableStream으로 대체
+  const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+
+  // fetch + ReadableStream 방식 (Authorization 헤더 지원)
+  let aborted = false;
+  const controller = new AbortController();
+
+  fetch(url.replace(/\?token=.*/, ''), {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : '',
+      Accept: 'text/event-stream',
+    },
+    signal: controller.signal,
+  }).then(async (response) => {
+    if (!response.body) {
+      onError?.(new Event('no body'));
+      return;
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (!aborted) {
+      const { done, value } = await reader.read();
+      if (done) {
+        onDone?.();
+        break;
+      }
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (line.startsWith('data:')) {
+          try {
+            const parsed = JSON.parse(line.slice(5).trim());
+            onEvent(parsed);
+          } catch {
+            // non-JSON data line 무시
+          }
+        } else if (line === '' && buffer === '') {
+          // keep-alive 빈 라인
+        }
+      }
+    }
+  }).catch((err) => {
+    if (!aborted) {
+      onError?.(err);
+    }
+  });
+
+  return () => {
+    aborted = true;
+    controller.abort();
+  };
+}

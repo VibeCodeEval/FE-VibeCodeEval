@@ -1,4 +1,5 @@
 // Exam API 호출 함수들
+import { getCookie } from '../auth/cookie-utils';
 
 // 클라이언트 컴포넌트에서 환경 변수 접근을 위한 헬퍼 함수
 function getApiBaseUrl(): string {
@@ -8,7 +9,7 @@ function getApiBaseUrl(): string {
 
 // Authorization 헤더 가져오기 (사용자 토큰)
 function getUserAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('user_access_token') : null;
+  const token = getCookie('user_access_token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -16,6 +17,32 @@ function getUserAuthHeaders(): HeadersInit {
     headers['Authorization'] = `Bearer ${token}`;
   }
   return headers;
+}
+
+// ─── 문제 배정 응답 타입 ───────────────────────────────────────────────────────
+
+export interface AssignmentResponse {
+  problem: {
+    id: number;
+    title: string;
+    contentMd: string;
+    tags: string[];
+    difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  };
+  spec: {
+    version: number;
+    limits: {
+      timeMs: number;
+      memoryMb: number;
+    };
+    restrictions: {
+      allowedLangs: string[];
+      forbiddenApis: string[];
+    };
+    checker: {
+      type: string;
+    };
+  };
 }
 
 // BaseResponse 타입
@@ -141,3 +168,25 @@ export async function getExamState(examId: number): Promise<GetExamStateResponse
   }
 }
 
+/**
+ * 참가자에게 배정된 문제 조회 API
+ * GET /api/exams/{examId}/assignment
+ */
+export async function getAssignment(examId: number): Promise<AssignmentResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/exams/${examId}/assignment`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getUserAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<AssignmentResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    const err: any = new Error(data.message || '문제 조회에 실패했습니다.');
+    err.status = response.status;
+    throw err;
+  }
+  return data.result;
+}

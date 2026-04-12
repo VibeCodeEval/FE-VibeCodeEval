@@ -1,9 +1,11 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Users, CheckCircle, TrendingUp, Play, Plus, BarChart3, ArrowRight } from "lucide-react"
+import { Users, CheckCircle, Play, Plus, BarChart3, ArrowRight } from "lucide-react"
+import { getExams, getBoard } from "@/lib/api/admin"
 
-// Sample recent activity data
+// Sample recent activity data (정적 - 활동 로그 API 미지원)
 const recentActivity = [
   {
     id: 1,
@@ -43,14 +45,47 @@ function getStatusColor(status: string) {
 }
 
 export function DashboardContent() {
+  const [totalParticipants, setTotalParticipants] = useState<number | null>(null)
+  const [completedCount, setCompletedCount] = useState<number | null>(null)
+  const [runningExams, setRunningExams] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const exams = await getExams()
+        const running = exams.filter(
+          (e) => e.state === "RUNNING" || e.state === "IN_PROGRESS"
+        ).length
+        setRunningExams(running)
+
+        // 각 시험의 보드를 병렬로 조회해 참가자 수 집계
+        const boards = await Promise.all(
+          exams.map((e) => getBoard(e.id).catch(() => []))
+        )
+        const allParticipants = boards.flat()
+        setTotalParticipants(allParticipants.length)
+        setCompletedCount(allParticipants.filter((p) => p.submitted).length)
+      } catch (e) {
+        console.error("Failed to load dashboard stats", e)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadStats()
+  }, [])
+
+  const displayValue = (val: number | null) =>
+    isLoading ? "..." : val !== null ? val.toLocaleString() : "–"
+
   return (
     <div className="flex h-full flex-1 flex-col">
-      {/* Section 2: Top Header Bar - distinct horizontal section */}
+      {/* Section 2: Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
         <h1 className="text-2xl font-semibold text-[#1A1A1A]">관리자 대시보드</h1>
       </header>
 
-      {/* Section 3: Main Content Panel - separate content area */}
+      {/* Section 3: Main Content Panel */}
       <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
         {/* 1) Metric Summary Cards */}
         <div className="grid grid-cols-4 gap-4">
@@ -62,8 +97,8 @@ export function DashboardContent() {
               </div>
               <span className="text-sm font-medium text-gray-500">총 참가자 수</span>
             </div>
-            <p className="mt-6 text-4xl font-bold text-gray-900">248</p>
-            <p className="mt-1 text-xs text-gray-400">최근 7일 기준</p>
+            <p className="mt-6 text-4xl font-bold text-gray-900">{displayValue(totalParticipants)}</p>
+            <p className="mt-1 text-xs text-gray-400">전체 시험 기준</p>
           </div>
 
           {/* Completed Evaluations */}
@@ -74,20 +109,24 @@ export function DashboardContent() {
               </div>
               <span className="text-sm font-medium text-gray-500">평가 완료 수</span>
             </div>
-            <p className="mt-6 text-4xl font-bold text-gray-900">186</p>
-            <p className="mt-1 text-xs text-gray-400">완료율 75%</p>
+            <p className="mt-6 text-4xl font-bold text-gray-900">{displayValue(completedCount)}</p>
+            <p className="mt-1 text-xs text-gray-400">
+              {!isLoading && totalParticipants !== null && totalParticipants > 0
+                ? `완료율 ${Math.round(((completedCount ?? 0) / totalParticipants) * 100)}%`
+                : "코드 제출 기준"}
+            </p>
           </div>
 
-          {/* Average Prompt Score */}
+          {/* Average Prompt Score - no API available */}
           <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white px-6 py-8 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-                <TrendingUp className="h-5 w-5 text-purple-500" />
+                <svg className="h-5 w-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
               </div>
               <span className="text-sm font-medium text-gray-500">평균 프롬프트 점수</span>
             </div>
-            <p className="mt-6 text-4xl font-bold text-gray-900">78.5</p>
-            <p className="mt-1 text-xs text-gray-400">지난주 대비 +2.3</p>
+            <p className="mt-6 text-4xl font-bold text-gray-900">–</p>
+            <p className="mt-1 text-xs text-gray-400">채점 완료 후 집계</p>
           </div>
 
           {/* Active Test Sessions */}
@@ -98,7 +137,7 @@ export function DashboardContent() {
               </div>
               <span className="text-sm font-medium text-gray-500">진행 중인 테스트 세션</span>
             </div>
-            <p className="mt-6 text-4xl font-bold text-gray-900">4</p>
+            <p className="mt-6 text-4xl font-bold text-gray-900">{displayValue(runningExams)}</p>
             <p className="mt-1 text-xs text-gray-400">현재 진행 중</p>
           </div>
         </div>
@@ -125,7 +164,7 @@ export function DashboardContent() {
                 <div className="absolute left-[5px] top-2 bottom-2 w-[2px] bg-gray-200" />
 
                 <div className="space-y-5">
-                  {recentActivity.map((event, index) => (
+                  {recentActivity.map((event) => (
                     <div key={event.id} className="flex items-start gap-3 pl-6 relative">
                       {/* Timeline dot */}
                       <div className={`absolute left-0 top-1.5 h-3 w-3 rounded-full ${getStatusColor(event.status)}`} />

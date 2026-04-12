@@ -33,7 +33,7 @@ const recentLogs = [
 ]
 
 type DashboardContentProps = {
-  onNavigate: (page: string) => void
+  onNavigate?: (page: string) => void
 }
 
 export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {

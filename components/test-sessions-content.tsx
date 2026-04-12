@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getCookie } from "@/lib/auth/cookie-utils"
 import { Eye, Trash2, MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useRouter } from "next/navigation";
 
-interface TestSession {
+export interface TestSession {
   id: number
   sessionId: string     // BE의 title을 sessionId로 매핑 (필요시)
   createdBy: string
@@ -62,7 +63,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   const fetchExams = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = getCookie('admin_access_token');
       const response = await fetch('/api/admin/exams', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -93,7 +94,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   const fetchParticipants = async (examId: number) => {
     setIsParticipantsLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = getCookie('admin_access_token');
       const response = await fetch(`/api/admin/board?examId=${examId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -147,7 +148,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
     if (!selectedSession) return
     
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = getCookie('admin_access_token');
       const response = await fetch(`/api/admin/exams/${selectedSession.id}`, {
         method: 'DELETE',
         headers: {

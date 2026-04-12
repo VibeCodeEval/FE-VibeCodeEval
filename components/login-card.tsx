@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { adminLogin, LoginFailedError, NetworkError } from "@/lib/api/admin"
 import { enterExam, AuthError } from "@/lib/api/auth"
 import { isMasterAdmin, saveAuthInfo } from "@/lib/auth/utils"
+import { setCookie } from "@/lib/auth/cookie-utils"
 import { useExamSessionStore } from "@/lib/stores/exam-session-store"
 
 type TabType = "user" | "admin"
@@ -27,7 +28,7 @@ export default function LoginCard() {
   const [userError, setUserError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-  const setSession = useExamSessionStore((state: { setSession: (examId: number, participantId: number) => void }) => state.setSession);
+  const setSession = useExamSessionStore((state: { setSession: (examId: number, participantId: number, tokenLimit?: number) => void }) => state.setSession);
 
 
   const handleClick = async () => {
@@ -59,12 +60,12 @@ export default function LoginCard() {
       const participantId = response.participant?.id;
 
       if (examId && participantId) {
-        setSession(examId, participantId);
+        setSession(examId, participantId, response.session?.tokenLimit);
       }
 
-      // accessToken 저장 (필요한 경우)
-      if (response.accessToken && typeof window !== 'undefined') {
-        localStorage.setItem('user_access_token', response.accessToken);
+      // accessToken 저장
+      if (response.accessToken) {
+        setCookie('user_access_token', response.accessToken);
       }
 
       // ✅ API 성공 시에만 대기 화면으로 이동

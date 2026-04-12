@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { Download, TrendingUp, TrendingDown, Minus, ChevronDown, X, CheckCircle } from "lucide-react"
+import { getExams, getBoard, Exam, ExamineeBoardEntry } from "@/lib/api/admin"
 
 type Trend = "높음" | "보통" | "낮음"
 type Status = "완료" | "진행 중"
@@ -27,164 +28,26 @@ interface Toast {
   description: string
 }
 
-const participantsData: Participant[] = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    entryCode: "AIV-2024-001",
-    avgScore: 94,
-    status: "완료",
-    trend: "높음",
-    sparklineData: [65, 72, 80, 88, 94],
-    testDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    promptScore: 96,
-    performanceScore: 92,
-    correctnessScore: 94,
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    entryCode: "AIV-2024-001",
-    avgScore: 91,
-    status: "완료",
-    trend: "높음",
-    sparklineData: [70, 75, 82, 87, 91],
-    testDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-    promptScore: 90,
-    performanceScore: 88,
-    correctnessScore: 95,
-  },
-  {
-    id: "3",
-    name: "Emily Davis",
-    entryCode: "AIV-2024-002",
-    avgScore: 88,
-    status: "완료",
-    trend: "높음",
-    sparklineData: [60, 68, 75, 82, 88],
-    testDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-    promptScore: 85,
-    performanceScore: 90,
-    correctnessScore: 89,
-  },
-  {
-    id: "4",
-    name: "David Wilson",
-    entryCode: "AIV-2024-001",
-    avgScore: 86,
-    status: "완료",
-    trend: "높음",
-    sparklineData: [72, 78, 80, 84, 86],
-    testDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    promptScore: 88,
-    performanceScore: 84,
-    correctnessScore: 86,
-  },
-  {
-    id: "5",
-    name: "Jessica Lee",
-    entryCode: "AIV-2024-003",
-    avgScore: 82,
-    status: "완료",
+function mapBoardToParticipant(entry: ExamineeBoardEntry, examTitle: string): Participant {
+  const submitted = entry.submitted
+  // tokenUsed를 0~100 스케일로 정규화 (tokenLimit 기준)
+  const tokenRatio =
+    entry.tokenLimit > 0 ? Math.min(100, Math.round((entry.tokenUsed / entry.tokenLimit) * 100)) : 0
+
+  return {
+    id: entry.examParticipantId.toString(),
+    name: entry.name,
+    entryCode: examTitle,
+    avgScore: 0, // 채점 API 미연동 — 채점 완료 후 집계 예정
+    status: submitted ? "완료" : "진행 중",
     trend: "보통",
-    sparklineData: [78, 80, 79, 81, 82],
-    testDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 days ago
-    promptScore: 80,
-    performanceScore: 82,
-    correctnessScore: 84,
-  },
-  {
-    id: "6",
-    name: "Chris Martinez",
-    entryCode: "AIV-2024-002",
-    avgScore: 78,
-    status: "완료",
-    trend: "보통",
-    sparklineData: [75, 76, 78, 77, 78],
-    testDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
-    promptScore: 76,
-    performanceScore: 78,
-    correctnessScore: 80,
-  },
-  {
-    id: "7",
-    name: "Amanda Brown",
-    entryCode: "AIV-2024-001",
-    avgScore: 75,
-    status: "진행 중",
-    trend: "보통",
-    sparklineData: [68, 70, 72, 74, 75],
-    testDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    promptScore: 74,
-    performanceScore: 75,
-    correctnessScore: 76,
-  },
-  {
-    id: "8",
-    name: "Ryan Taylor",
-    entryCode: "AIV-2024-003",
-    avgScore: 72,
-    status: "완료",
-    trend: "보통",
-    sparklineData: [70, 71, 72, 71, 72],
-    testDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
-    promptScore: 70,
-    performanceScore: 72,
-    correctnessScore: 74,
-  },
-  {
-    id: "9",
-    name: "Nicole Garcia",
-    entryCode: "AIV-2024-002",
-    avgScore: 68,
-    status: "완료",
-    trend: "보통",
-    sparklineData: [65, 66, 67, 68, 68],
-    testDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
-    promptScore: 66,
-    performanceScore: 68,
-    correctnessScore: 70,
-  },
-  {
-    id: "10",
-    name: "Kevin Robinson",
-    entryCode: "AIV-2024-001",
-    avgScore: 55,
-    status: "완료",
-    trend: "낮음",
-    sparklineData: [62, 58, 55, 54, 55],
-    testDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
-    promptScore: 52,
-    performanceScore: 55,
-    correctnessScore: 58,
-  },
-  {
-    id: "11",
-    name: "Laura Thompson",
-    entryCode: "AIV-2024-003",
-    avgScore: 48,
-    status: "진행 중",
-    trend: "낮음",
-    sparklineData: [55, 52, 50, 49, 48],
-    testDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days ago
-    promptScore: 45,
-    performanceScore: 48,
-    correctnessScore: 51,
-  },
-  {
-    id: "12",
-    name: "James Anderson",
-    entryCode: "AIV-2024-002",
-    avgScore: 42,
-    status: "완료",
-    trend: "낮음",
-    sparklineData: [50, 48, 45, 43, 42],
-    testDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000), // 25 days ago
-    promptScore: 40,
-    performanceScore: 42,
-    correctnessScore: 44,
-  },
-]
+    sparklineData: [0, tokenRatio], // 토큰 사용 추이
+    testDate: new Date(),
+    promptScore: 0,
+    performanceScore: 0,
+    correctnessScore: 0,
+  }
+}
 
 function Sparkline({ data, trend }: { data: number[]; trend: Trend }) {
   const width = 100
@@ -230,7 +93,6 @@ function TrendIcon({ trend }: { trend: Trend }) {
 
 function StatusBadge({ status }: { status: Status }) {
   const styles = status === "완료" ? "bg-[#DCFCE7] text-[#16A34A]" : "bg-[#E0E7FF] text-[#6366F1]"
-
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles}`}>{status}</span>
 }
 
@@ -240,7 +102,6 @@ function TrendBadge({ trend }: { trend: Trend }) {
     "보통": "bg-[#F3F4F6] text-[#6B7280]",
     "낮음": "bg-[#FEE2E2] text-[#DC2626]",
   }
-
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`}>{trend}</span>
 }
 
@@ -273,14 +134,13 @@ function ParticipantCard({ participant }: { participant: Participant }) {
       <div className="mt-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div>
-            <p className="text-sm text-[#6B7280]">평균 점수</p>
+            <p className="text-sm text-[#6B7280]">제출 상태</p>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-[#1A1A1A]">{participant.avgScore}%</span>
+              <span className="text-base font-bold text-[#1A1A1A]">{participant.status}</span>
               <TrendIcon trend={participant.trend} />
             </div>
           </div>
         </div>
-
         <Sparkline data={participant.sparklineData} trend={participant.trend} />
       </div>
 
@@ -288,7 +148,7 @@ function ParticipantCard({ participant }: { participant: Participant }) {
         <Link
           href={{
             pathname: `/admin/results/${encodeURIComponent(participant.entryCode)}/${participant.id}`,
-            query: { from: "analytics" }, // 🔹 2번 루트 표시
+            query: { from: "analytics" },
           }}
           className="text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]"
         >
@@ -300,9 +160,60 @@ function ParticipantCard({ participant }: { participant: Participant }) {
 }
 
 export function AnalyticsContent() {
-  const [timeRange, setTimeRange] = useState("전체 기간")
-  const [testSession, setTestSession] = useState("모든 세션")
+  const [exams, setExams] = useState<Exam[]>([])
+  const [participants, setParticipants] = useState<Participant[]>([])
+  const [isLoadingExams, setIsLoadingExams] = useState(true)
+  const [isLoadingBoard, setIsLoadingBoard] = useState(false)
+  const [selectedExamId, setSelectedExamId] = useState<string>("all")
   const [toasts, setToasts] = useState<Toast[]>([])
+
+  // 시험 목록 로드
+  useEffect(() => {
+    async function loadExams() {
+      try {
+        const data = await getExams()
+        setExams(data)
+      } catch (e) {
+        console.error("Failed to load exams", e)
+      } finally {
+        setIsLoadingExams(false)
+      }
+    }
+    loadExams()
+  }, [])
+
+  // 선택된 시험 보드 로드
+  useEffect(() => {
+    async function loadBoard() {
+      if (isLoadingExams) return
+      setIsLoadingBoard(true)
+      try {
+        if (selectedExamId === "all") {
+          // 모든 시험의 보드를 병렬 조회
+          const boards = await Promise.all(
+            exams.map((e) =>
+              getBoard(e.id)
+                .then((entries) => entries.map((p) => mapBoardToParticipant(p, e.title)))
+                .catch(() => [] as Participant[])
+            )
+          )
+          setParticipants(boards.flat())
+        } else {
+          const examId = parseInt(selectedExamId, 10)
+          const exam = exams.find((e) => e.id === examId)
+          const board = await getBoard(examId)
+          setParticipants(board.map((p) => mapBoardToParticipant(p, exam?.title ?? selectedExamId)))
+        }
+      } catch (e) {
+        console.error("Failed to load board", e)
+        setParticipants([])
+      } finally {
+        setIsLoadingBoard(false)
+      }
+    }
+    loadBoard()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedExamId, isLoadingExams])
 
   const showToast = (title: string, description: string) => {
     const id = crypto.randomUUID()
@@ -318,13 +229,8 @@ export function AnalyticsContent() {
 
   const handleExport = () => {
     const csvContent =
-      "이름,입장 코드,평균 점수,상태,성과 수준,프롬프트 점수,성능 점수,정답률 점수\n" +
-      participantsData
-        .map(
-          (p) =>
-            `${p.name},${p.entryCode},${p.avgScore},${p.status},${p.trend},${p.promptScore},${p.performanceScore},${p.correctnessScore}`,
-        )
-        .join("\n")
+      "이름,시험,제출상태\n" +
+      participants.map((p) => `${p.name},${p.entryCode},${p.status}`).join("\n")
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
@@ -337,61 +243,14 @@ export function AnalyticsContent() {
     showToast("내보내기 시작", "통계 분석 결과가 CSV 파일로 다운로드되고 있습니다.")
   }
 
-  const filteredParticipants = useMemo(() => {
-    const now = new Date()
-
-    let dateThreshold: Date | null = null
-    switch (timeRange) {
-      case "최근 7일":
-        dateThreshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        break
-      case "최근 14일":
-        dateThreshold = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
-        break
-      case "최근 30일":
-        dateThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-        break
-      case "최근 90일":
-        dateThreshold = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-        break
-      default:
-        dateThreshold = null
-    }
-
-    return participantsData.filter((p) => {
-      const passesTimeFilter = dateThreshold === null || p.testDate >= dateThreshold
-      const passesSessionFilter = testSession === "모든 세션" || p.entryCode === testSession
-      return passesTimeFilter && passesSessionFilter
-    })
-  }, [timeRange, testSession])
-
-  const metrics = useMemo(() => {
-    if (filteredParticipants.length === 0) {
-      return {
-        promptScore: "–",
-        performanceScore: "–",
-        correctnessScore: "–",
-        userCount: "0",
-      }
-    }
-
-    const avgPrompt = filteredParticipants.reduce((sum, p) => sum + p.promptScore, 0) / filteredParticipants.length
-    const avgPerformance =
-      filteredParticipants.reduce((sum, p) => sum + p.performanceScore, 0) / filteredParticipants.length
-    const avgCorrectness =
-      filteredParticipants.reduce((sum, p) => sum + p.correctnessScore, 0) / filteredParticipants.length
-
-    return {
-      promptScore: avgPrompt.toFixed(1),
-      performanceScore: avgPerformance.toFixed(1),
-      correctnessScore: avgCorrectness.toFixed(1),
-      userCount: filteredParticipants.length.toString(),
-    }
-  }, [filteredParticipants])
-
-  const highPerformers = filteredParticipants.filter((p) => p.avgScore >= 85)
-  const midPerformers = filteredParticipants.filter((p) => p.avgScore >= 60 && p.avgScore < 85)
-  const lowPerformers = filteredParticipants.filter((p) => p.avgScore < 60)
+  const completedParticipants = useMemo(
+    () => participants.filter((p) => p.status === "완료"),
+    [participants]
+  )
+  const inProgressParticipants = useMemo(
+    () => participants.filter((p) => p.status === "진행 중"),
+    [participants]
+  )
 
   return (
     <div className="flex h-full flex-1 flex-col">
@@ -399,7 +258,7 @@ export function AnalyticsContent() {
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">통계 분석</h1>
           <p className="text-sm text-[#6B7280]">
-            모든 시험 세션의 성능, 정답률, 시스템 추세를 시각화합니다.
+            모든 시험 세션의 참가자 현황 및 제출 상태를 시각화합니다.
           </p>
         </div>
       </header>
@@ -409,29 +268,17 @@ export function AnalyticsContent() {
           <div className="flex items-center gap-3">
             <div className="relative">
               <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
-                className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+                value={selectedExamId}
+                onChange={(e) => setSelectedExamId(e.target.value)}
+                disabled={isLoadingExams}
+                className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] disabled:opacity-50"
               >
-                <option>최근 7일</option>
-                <option>최근 14일</option>
-                <option>최근 30일</option>
-                <option>최근 90일</option>
-                <option>전체 기간</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
-            </div>
-
-            <div className="relative">
-              <select
-                value={testSession}
-                onChange={(e) => setTestSession(e.target.value)}
-                className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
-              >
-                <option>모든 세션</option>
-                <option>AIV-2024-001</option>
-                <option>AIV-2024-002</option>
-                <option>AIV-2024-003</option>
+                <option value="all">모든 세션</option>
+                {exams.map((exam) => (
+                  <option key={exam.id} value={exam.id.toString()}>
+                    {exam.title}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
             </div>
@@ -446,65 +293,58 @@ export function AnalyticsContent() {
           </button>
         </div>
 
-        <div className="mb-8 grid grid-cols-4 gap-4">
-          <MetricCard
-            label="프롬프트 점수"
-            value={metrics.promptScore}
-            suffix={metrics.promptScore !== "–" ? "/ 100" : undefined}
-          />
-          <MetricCard
-            label="성능 점수"
-            value={metrics.performanceScore}
-            suffix={metrics.performanceScore !== "–" ? "/ 100" : undefined}
-          />
-          <MetricCard
-            label="정답률 점수"
-            value={metrics.correctnessScore}
-            suffix={metrics.correctnessScore !== "–" ? "/ 100" : undefined}
-          />
-          <MetricCard label="누적 사용자 수" value={metrics.userCount} />
+        {/* 메트릭 카드 — 점수는 채점 완료 후 집계됨 */}
+        <div className="mb-6 grid grid-cols-4 gap-4">
+          <MetricCard label="프롬프트 점수" value="–" />
+          <MetricCard label="성능 점수" value="–" />
+          <MetricCard label="정답률 점수" value="–" />
+          <MetricCard label="누적 사용자 수" value={isLoadingBoard ? "..." : participants.length.toString()} />
         </div>
 
-        {filteredParticipants.length === 0 && (
+        {/* 점수 미집계 안내 */}
+        <div className="mb-6 rounded-lg border border-[#E5E5E5] bg-[#F9FAFB] px-4 py-3">
+          <p className="text-sm text-[#6B7280]">
+            평가 점수는 채점 완료 후 집계됩니다. 현재는 참가자 현황 및 제출 상태를 기준으로 표시합니다.
+          </p>
+        </div>
+
+        {isLoadingBoard ? (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5E5E5] bg-white py-16">
+            <p className="text-lg font-medium text-[#6B7280]">불러오는 중...</p>
+          </div>
+        ) : participants.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5E5E5] bg-white py-16">
             <p className="text-lg font-medium text-[#6B7280]">조회된 참가자가 없습니다</p>
-            <p className="mt-1 text-sm text-[#9CA3AF]">필터 설정을 변경해 결과를 확인해보세요.</p>
+            <p className="mt-1 text-sm text-[#9CA3AF]">시험 세션을 선택하거나 참가자를 확인해보세요.</p>
           </div>
-        )}
+        ) : (
+          <>
+            {completedParticipants.length > 0 && (
+              <div className="mb-8">
+                <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">
+                  제출 완료 ({completedParticipants.length}명)
+                </h2>
+                <div className="grid grid-cols-2 gap-6">
+                  {completedParticipants.map((participant) => (
+                    <ParticipantCard key={participant.id} participant={participant} />
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {highPerformers.length > 0 && (
-          <div className="mb-8">
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">우수 참가자 (85%+)</h2>
-            <div className="grid grid-cols-2 gap-6">
-              {highPerformers.map((participant) => (
-                <ParticipantCard key={participant.id} participant={participant} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {midPerformers.length > 0 && (
-          <div className="mb-8">
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">중간 성과자 (60–84%)</h2>
-            <div className="grid grid-cols-2 gap-6">
-              {midPerformers.map((participant) => (
-                <ParticipantCard key={participant.id} participant={participant} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {lowPerformers.length > 0 && (
-          <div className="mb-8">
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">
-              저성과자 (&lt;60%)
-            </h2>
-            <div className="grid grid-cols-2 gap-6">
-              {lowPerformers.map((participant) => (
-                <ParticipantCard key={participant.id} participant={participant} />
-              ))}
-            </div>
-          </div>
+            {inProgressParticipants.length > 0 && (
+              <div className="mb-8">
+                <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">
+                  진행 중 ({inProgressParticipants.length}명)
+                </h2>
+                <div className="grid grid-cols-2 gap-6">
+                  {inProgressParticipants.map((participant) => (
+                    <ParticipantCard key={participant.id} participant={participant} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

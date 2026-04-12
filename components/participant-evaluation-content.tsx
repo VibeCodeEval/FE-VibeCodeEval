@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, User, Code, CheckCircle, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { getExams, getBoard } from "@/lib/api/admin"
 
 interface ParticipantEvaluationContentProps {
   entryCode: string
-  participantName: string;   // ✅ 새로 추가
+  participantName?: string   // 선택적 — URL query 또는 board에서 로드
   participantId: string
   onBack?: () => void;
 }
@@ -221,8 +223,44 @@ function downloadCSV() {
   URL.revokeObjectURL(url)
 }
 
-export function ParticipantEvaluationContent({ entryCode, participantId, onBack, }: ParticipantEvaluationContentProps) {
+export function ParticipantEvaluationContent({ entryCode, participantName: participantNameProp, participantId, onBack }: ParticipantEvaluationContentProps) {
+  const router = useRouter()
   const [toasts, setToasts] = useState<ToastItem[]>([])
+
+  // 실제 참가자 정보 (board에서 로드)
+  const [boardParticipantName, setBoardParticipantName] = useState<string | null>(null)
+  const [tokenUsed, setTokenUsed] = useState<number | null>(null)
+  const [submitted, setSubmitted] = useState<boolean | null>(null)
+  const [isLoadingBoard, setIsLoadingBoard] = useState(true)
+
+  useEffect(() => {
+    async function loadParticipantFromBoard() {
+      setIsLoadingBoard(true)
+      try {
+        const exams = await getExams()
+        const matched = exams.find((e) => e.entryCode === entryCode)
+        if (!matched) {
+          setIsLoadingBoard(false)
+          return
+        }
+        const board = await getBoard(matched.id)
+        const entry = board.find((p) => p.examParticipantId.toString() === participantId)
+        if (entry) {
+          setBoardParticipantName(entry.name)
+          setTokenUsed(entry.tokenUsed)
+          setSubmitted(entry.submitted)
+        }
+      } catch (e) {
+        console.error("Failed to load participant from board", e)
+      } finally {
+        setIsLoadingBoard(false)
+      }
+    }
+    loadParticipantFromBoard()
+  }, [entryCode, participantId])
+
+  // 이름 우선순위: prop > board > fallback
+  const displayName = participantNameProp || boardParticipantName || participantData.name
 
   const showToast = (title: string, description: string) => {
     const id = crypto.randomUUID()
@@ -287,34 +325,28 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E0EDFF]">
                 <User className="h-5 w-5 text-[#3B82F6]" strokeWidth={1.5} />
               </div>
-              <span className="text-base font-semibold text-[#1A1A1A]">{participantData.name}</span>
+              <span className="text-base font-semibold text-[#1A1A1A]">
+                {isLoadingBoard ? "..." : displayName}
+              </span>
             </div>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">입장 코드</span>
-            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{participantData.entryCode}</p>
+            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{entryCode}</p>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">평균 점수</span>
-            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{participantData.avgScore}%</p>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">토큰 사용량</span>
+            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">
+              {isLoadingBoard ? "..." : tokenUsed !== null ? tokenUsed.toLocaleString() : "–"}
+            </p>
           </div>
         </div>
 
         {/* Summary Cards - Row 2 */}
         <div className="mb-6 grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">시험 일시 및 소요 시간</span>
-            <p className="mt-3 text-base font-semibold text-[#1A1A1A]">
-              {(() => {
-                const dateParts = participantData.testDate.split("-")
-                const year = dateParts[0]
-                const month = parseInt(dateParts[1], 10)
-                const day = parseInt(dateParts[2], 10)
-                const durationMatch = participantData.duration.match(/(\d+)\s*minutes?/i)
-                const minutes = durationMatch ? durationMatch[1] : participantData.duration
-                return `${year}년 ${month}월 ${day}일 · ${minutes}분`
-              })()}
-            </p>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">참가자 ID</span>
+            <p className="mt-3 text-base font-semibold text-[#1A1A1A]">{participantId}</p>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 수준</span>
@@ -325,7 +357,13 @@ export function ParticipantEvaluationContent({ entryCode, participantId, onBack,
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출 상태</span>
             <div className="mt-3">
-              <StatusBadge status={participantData.status} />
+              {isLoadingBoard ? (
+                <span className="text-sm text-[#6B7280]">...</span>
+              ) : submitted !== null ? (
+                <StatusBadge status={submitted ? "Submitted" : "In Progress"} />
+              ) : (
+                <StatusBadge status={participantData.status} />
+              )}
             </div>
           </div>
         </div>

@@ -1,85 +1,23 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation";
 import { ArrowLeft, Eye, ChevronLeft, ChevronRight } from "lucide-react"
+import { getExams, getBoard, ExamineeBoardEntry } from "@/lib/api/admin"
 
 type TrendLevel = "High" | "Average" | "Low"
 
 interface ParticipantDetail {
   id: string
   name: string
-  avgScore: number
+  tokenUsed: number
+  tokenLimit: number
+  submitted: boolean
   trend: TrendLevel
 }
 
 interface ParticipantListContentProps {
   entryCode: string
-}
-
-const sampleParticipants: ParticipantDetail[] = [
-  { id: "1", name: "Alice Johnson", avgScore: 92, trend: "High" },
-  { id: "2", name: "Bob Smith", avgScore: 84, trend: "Average" },
-  { id: "3", name: "Carol Davis", avgScore: 70, trend: "Low" },
-  { id: "4", name: "David Lee", avgScore: 88, trend: "High" },
-  { id: "5", name: "Emma Wilson", avgScore: 91, trend: "High" },
-  { id: "6", name: "Frank Brown", avgScore: 76, trend: "Average" },
-  { id: "7", name: "Grace Kim", avgScore: 68, trend: "Low" },
-  { id: "8", name: "Henry Chen", avgScore: 85, trend: "Average" },
-  { id: "9", name: "Ivy Martinez", avgScore: 94, trend: "High" },
-  { id: "10", name: "Jack Thompson", avgScore: 72, trend: "Low" },
-  { id: "11", name: "Karen White", avgScore: 89, trend: "High" },
-  { id: "12", name: "Leo Garcia", avgScore: 78, trend: "Average" },
-  { id: "13", name: "Mia Robinson", avgScore: 65, trend: "Low" },
-  { id: "14", name: "Nathan Clark", avgScore: 90, trend: "High" },
-  { id: "15", name: "Olivia Hall", avgScore: 82, trend: "Average" },
-  { id: "16", name: "Peter Young", avgScore: 71, trend: "Low" },
-  { id: "17", name: "Quinn Adams", avgScore: 87, trend: "High" },
-  { id: "18", name: "Rachel King", avgScore: 79, trend: "Average" },
-  { id: "19", name: "Sam Wright", avgScore: 67, trend: "Low" },
-  { id: "20", name: "Tina Scott", avgScore: 93, trend: "High" },
-  { id: "21", name: "Uma Patel", avgScore: 81, trend: "Average" },
-  { id: "22", name: "Victor Lopez", avgScore: 69, trend: "Low" },
-  { id: "23", name: "Wendy Hill", avgScore: 86, trend: "High" },
-  { id: "24", name: "Xavier Moore", avgScore: 77, trend: "Average" },
-  { id: "25", name: "Yuki Tanaka", avgScore: 64, trend: "Low" },
-  { id: "26", name: "Zara Nelson", avgScore: 95, trend: "High" },
-  { id: "27", name: "Aaron Baker", avgScore: 80, trend: "Average" },
-  { id: "28", name: "Bella Carter", avgScore: 66, trend: "Low" },
-  { id: "29", name: "Chris Evans", avgScore: 91, trend: "High" },
-  { id: "30", name: "Diana Foster", avgScore: 83, trend: "Average" },
-  { id: "31", name: "Eric Green", avgScore: 73, trend: "Low" },
-  { id: "32", name: "Fiona Hughes", avgScore: 88, trend: "High" },
-  { id: "33", name: "George Irving", avgScore: 75, trend: "Average" },
-  { id: "34", name: "Hannah James", avgScore: 62, trend: "Low" },
-  { id: "35", name: "Ian Kelly", avgScore: 90, trend: "High" },
-  { id: "36", name: "Julia Lewis", avgScore: 84, trend: "Average" },
-  { id: "37", name: "Kevin Morgan", avgScore: 70, trend: "Low" },
-  { id: "38", name: "Luna Nash", avgScore: 92, trend: "High" },
-  { id: "39", name: "Mark Owen", avgScore: 78, trend: "Average" },
-  { id: "40", name: "Nina Price", avgScore: 68, trend: "Low" },
-  { id: "41", name: "Oscar Quinn", avgScore: 89, trend: "High" },
-  { id: "42", name: "Paula Reed", avgScore: 81, trend: "Average" },
-  { id: "43", name: "Quentin Stone", avgScore: 63, trend: "Low" },
-  { id: "44", name: "Rosa Turner", avgScore: 94, trend: "High" },
-  { id: "45", name: "Steve Underwood", avgScore: 76, trend: "Average" },
-  { id: "46", name: "Tara Vance", avgScore: 69, trend: "Low" },
-  { id: "47", name: "Ulysses Ward", avgScore: 87, trend: "High" },
-  { id: "48", name: "Vera Xavier", avgScore: 82, trend: "Average" },
-  { id: "49", name: "Will York", avgScore: 71, trend: "Low" },
-  { id: "50", name: "Xena Zhang", avgScore: 96, trend: "High" },
-  { id: "51", name: "Yosef Ali", avgScore: 79, trend: "Average" },
-  { id: "52", name: "Zoe Brooks", avgScore: 65, trend: "Low" },
-  { id: "53", name: "Adam Cole", avgScore: 91, trend: "High" },
-  { id: "54", name: "Beth Davis", avgScore: 85, trend: "Average" },
-]
-
-// Summary data - in real app this would be fetched based on entryCode
-const summaryData = {
-  entryCode: "AIV-2024-001",
-  totalParticipants: 54,
-  completed: 54,
 }
 
 function TrendBadge({ trend }: { trend: TrendLevel }) {
@@ -88,59 +26,88 @@ function TrendBadge({ trend }: { trend: TrendLevel }) {
     Average: "bg-[#FEF3C7] text-[#D97706]",
     Low: "bg-[#FEE2E2] text-[#DC2626]",
   }
-
   const trendText: Record<TrendLevel, string> = {
-    High: "높음",
-    Average: "보통",
-    Low: "낮음",
+    High: "완료",
+    Average: "진행 중",
+    Low: "미시작",
   }
-
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`}>{trendText[trend]}</span>
 }
 
+function getTrend(entry: ExamineeBoardEntry): TrendLevel {
+  if (entry.submitted) return "High"
+  if (entry.state === "ENTRANCE") return "Average"
+  return "Low"
+}
+
 export function ParticipantListContent({ entryCode }: ParticipantListContentProps) {
-  // Use the passed entryCode or fallback to sample data
-  const pathname = usePathname();
-
-  // URL (/admin/results/AIV-2024-001) 에서 마지막 세그먼트를 추출
-  const displayEntryCode = useMemo(() => {
-    if (!pathname) {
-      return entryCode || summaryData.entryCode;
-    }
-
-    const segments = pathname.split("/");
-    const fromPath = decodeURIComponent(segments[segments.length - 1] || "");
-
-    // 1순위: props로 받은 entryCode
-    // 2순위: URL에서 파싱한 값
-    // 3순위: 없으면 샘플 데이터/기본값
-    return entryCode || fromPath || summaryData.entryCode;
-  }, [pathname, entryCode]);
+  const [examId, setExamId] = useState<number | null>(null)
+  const [examTitle, setExamTitle] = useState<string>("")
+  const [participants, setParticipants] = useState<ParticipantDetail[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const pageSize = 10
   const [page, setPage] = useState(1)
 
-  const totalParticipants = sampleParticipants.length
-  const totalPages = Math.ceil(totalParticipants / pageSize)
+  // entryCode → examId 변환 후 board 조회
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true)
+      setError(null)
+      try {
+        // 1) 시험 목록에서 entryCode에 매핑된 examId 찾기
+        const exams = await getExams()
+        const matched = exams.find((e) => e.entryCode === entryCode)
+        if (!matched) {
+          // entryCode로 직접 매핑이 안 될 때 — 첫 번째 시험 또는 에러
+          setError("해당 입장 코드에 대한 시험을 찾을 수 없습니다.")
+          setIsLoading(false)
+          return
+        }
+
+        setExamId(matched.id)
+        setExamTitle(matched.title)
+
+        // 2) board 조회
+        const board = await getBoard(matched.id)
+        const mapped: ParticipantDetail[] = board.map((p) => ({
+          id: p.examParticipantId.toString(),
+          name: p.name,
+          tokenUsed: p.tokenUsed,
+          tokenLimit: p.tokenLimit,
+          submitted: p.submitted,
+          trend: getTrend(p),
+        }))
+        setParticipants(mapped)
+        setPage(1)
+      } catch (e) {
+        console.error("Failed to load participant list", e)
+        setError("참가자 목록을 불러오는 데 실패했습니다.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    load()
+  }, [entryCode])
+
+  const totalParticipants = participants.length
+  const totalPages = Math.max(1, Math.ceil(totalParticipants / pageSize))
   const startIndex = (page - 1) * pageSize
   const endIndex = startIndex + pageSize
-  const pageParticipants = sampleParticipants.slice(startIndex, endIndex)
+  const pageParticipants = participants.slice(startIndex, endIndex)
+  const completedCount = useMemo(() => participants.filter((p) => p.submitted).length, [participants])
 
-  const handlePrevPage = () => {
-    if (page > 1) setPage(page - 1)
-  }
-
-  const handleNextPage = () => {
-    if (page < totalPages) setPage(page + 1)
-  }
+  const handlePrevPage = () => setPage((p) => Math.max(1, p - 1))
+  const handleNextPage = () => setPage((p) => Math.min(totalPages, p + 1))
 
   return (
     <div className="flex h-full flex-1 flex-col">
       {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">참가자 목록 (입장 코드 요약)</h1>
-          <p className="text-sm text-[#6B7280]">해당 입장 코드의 참가자 점수 및 성과를 확인합니다.</p>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">참가자 목록</h1>
+          <p className="text-sm text-[#6B7280]">해당 입장 코드의 참가자 현황을 확인합니다.</p>
         </div>
       </header>
 
@@ -160,75 +127,99 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
         {/* Summary Card */}
         <div className="mb-6 shrink-0 rounded-xl border border-[#E5E5E5] bg-white px-12 py-6 shadow-sm">
           <div className="flex items-center gap-16">
-            {/* Entry Code */}
             <div className="flex flex-col gap-1">
               <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">입장 코드</span>
-              <span className="text-lg font-semibold text-[#1A1A1A]">{displayEntryCode}</span>
+              <span className="text-lg font-semibold text-[#1A1A1A]">{entryCode}</span>
             </div>
-
-            {/* Total Participants */}
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">시험명</span>
+              <span className="text-lg font-semibold text-[#1A1A1A]">{examTitle || "–"}</span>
+            </div>
             <div className="flex flex-col gap-1">
               <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">총 참가자 수</span>
-              <span className="text-lg font-semibold text-[#1A1A1A]">{summaryData.totalParticipants}</span>
+              <span className="text-lg font-semibold text-[#1A1A1A]">
+                {isLoading ? "..." : totalParticipants}
+              </span>
             </div>
-
-            {/* Completed */}
             <div className="flex flex-col gap-1">
               <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">완료 인원</span>
-              <span className="text-lg font-semibold text-[#1A1A1A]">{summaryData.completed}</span>
+              <span className="text-lg font-semibold text-[#1A1A1A]">
+                {isLoading ? "..." : completedCount}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Participant Table Container - Restructured for pagination inside card */}
+        {/* Error State */}
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        {/* Participant Table Container */}
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
           {/* Table Header */}
           <div className="grid shrink-0 grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-12 py-3">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">참가자</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">평균 점수</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 수준</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">토큰 사용량</span>
+            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출 상태</span>
             <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">상세 보기</span>
           </div>
 
-          {/* Table Body - Uses pageParticipants instead of full array */}
+          {/* Table Body */}
           <div className="flex-1 overflow-y-auto px-12">
-            {pageParticipants.map((participant, index) => (
-              <div
-                key={participant.id}
-                className={`grid grid-cols-[2fr_1fr_1fr_1fr] items-center gap-4 py-4 ${
-                  index !== pageParticipants.length - 1 ? "border-b border-[#E5E5E5]" : ""
-                }`}
-              >
-                <span className="text-sm font-medium text-[#1A1A1A]">{participant.name}</span>
-                <span className="text-center text-sm font-medium text-[#1A1A1A]">{participant.avgScore}%</span>
-                <div className="flex justify-center">
-                  <TrendBadge trend={participant.trend} />
-                </div>
-                <div className="flex justify-center">
-                  <Link
-                    href={{
-                      // 참가자 상세 페이지 경로: /admin/results/[entryCode]/[participantId]
-                      pathname: `/admin/results/${encodeURIComponent(displayEntryCode)}/${encodeURIComponent(participant.id)}`,
-                      // 여기에 우리가 넘기고 싶은 값들 추가
-                      query: {
-                        entryCode: displayEntryCode,       // 상단 카드에 보여줄 Entry Code
-                        participantName: participant.name, // 상단 카드에 보여줄 이름
-                        from: "results",                   // 기존에 쓰던 from 값 유지하고 싶으면 같이 전달
-                      },
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-md border-[#3B82F6] bg-white px-3 py-1.5 text-sm text-[#3B82F6] hover:bg-[#EFF6FF]"
-                  >
-                    <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
-                    상세 보기
-                  </Link>
-                </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <p className="text-sm text-[#6B7280]">불러오는 중...</p>
               </div>
-            ))}
+            ) : pageParticipants.length === 0 ? (
+              <div className="flex items-center justify-center py-16">
+                <p className="text-sm text-[#6B7280]">참가자가 없습니다.</p>
+              </div>
+            ) : (
+              pageParticipants.map((participant, index) => (
+                <div
+                  key={participant.id}
+                  className={`grid grid-cols-[2fr_1fr_1fr_1fr] items-center gap-4 py-4 ${
+                    index !== pageParticipants.length - 1 ? "border-b border-[#E5E5E5]" : ""
+                  }`}
+                >
+                  <span className="text-sm font-medium text-[#1A1A1A]">{participant.name}</span>
+                  <span className="text-center text-sm font-medium text-[#1A1A1A]">
+                    {participant.tokenUsed.toLocaleString()}
+                    {participant.tokenLimit > 0 && (
+                      <span className="ml-1 text-xs text-[#9CA3AF]">/ {participant.tokenLimit.toLocaleString()}</span>
+                    )}
+                  </span>
+                  <div className="flex justify-center">
+                    <TrendBadge trend={participant.trend} />
+                  </div>
+                  <div className="flex justify-center">
+                    <Link
+                      href={{
+                        pathname: `/admin/results/${encodeURIComponent(entryCode)}/${encodeURIComponent(participant.id)}`,
+                        query: {
+                          entryCode,
+                          participantName: participant.name,
+                          from: "results",
+                        },
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md border-[#3B82F6] bg-white px-3 py-1.5 text-sm text-[#3B82F6] hover:bg-[#EFF6FF]"
+                    >
+                      <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      상세 보기
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           <div className="flex shrink-0 items-center justify-between border-t border-[#E5E5E5] bg-white px-12 py-3">
             <p className="text-sm text-[#6B7280]">
-              총 {totalParticipants}명 중 {startIndex + 1}–{Math.min(endIndex, totalParticipants)}명 표시
+              총 {totalParticipants}명 중{" "}
+              {totalParticipants > 0 ? `${startIndex + 1}–${Math.min(endIndex, totalParticipants)}` : "0"}명 표시
             </p>
             <div className="flex items-center gap-2">
               <button

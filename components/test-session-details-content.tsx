@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link";
+import { getBoard } from "@/lib/api/admin";
 
 // Participant type
 type Participant = {
@@ -41,26 +42,20 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
   const fetchParticipants = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
-      const response = await fetch(`/api/admin/board?examId=${session.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-
-      if (data.code === 'COMMON200' && data.result) {
-        const mapped: Participant[] = data.result.map((p: any) => ({
-          id: p.examParticipantId,
-          name: p.name,
-          phoneNumber: p.phoneMasked,
-          connectionStatus: p.state === 'ENTRANCE' ? "Connected" : "Pending",
-          submissionStatus: p.submitted ? "Submitted" : (p.state === 'ENTRANCE' ? "In Progress" : "Not Started"),
-          tokenUsage: p.tokenUsed || 0
-        }));
-        setParticipants(mapped);
-      }
+      const board = await getBoard(session.id);
+      const mapped: Participant[] = board.map((p) => ({
+        id: p.examParticipantId,
+        name: p.name,
+        phoneNumber: p.phoneMasked,
+        connectionStatus: p.state === "ENTRANCE" ? "Connected" : "Pending",
+        submissionStatus: p.submitted
+          ? "Submitted"
+          : p.state === "ENTRANCE"
+          ? "In Progress"
+          : "Not Started",
+        tokenUsage: p.tokenUsed || 0,
+      }));
+      setParticipants(mapped);
     } catch (error) {
       console.error("Failed to fetch participants:", error);
     } finally {

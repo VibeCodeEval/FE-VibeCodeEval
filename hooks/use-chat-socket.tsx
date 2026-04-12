@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { getCookie } from '@/lib/auth/cookie-utils';
 
 interface Message {
   id: number;
@@ -10,7 +11,8 @@ interface Message {
 
 interface SendMessageResponse {
   sessionId: number;
-  turnId: number;
+  turnId: number | undefined; // BE는 @JsonProperty("turn")으로 직렬화하므로 "turn" 키로 옴
+  turn: number | undefined;   // BE JSON 실제 키
   role: string;
   content: string;
   tokenCount: number | null;
@@ -19,18 +21,42 @@ interface SendMessageResponse {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
+/** JWT 만료 여부 확인 (클라이언트 사이드) */
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
 export function useChatSocket(
   examId: number,
   participantId: number,
-  onMessageReceived: (message: Message, response: SendMessageResponse) => void
+  onMessageReceived: (message: Message, response: SendMessageResponse) => void,
+  onError?: (message: string) => void
 ) {
   const [isConnected, setIsConnected] = useState(false);
   const stompClientRef = useRef<Client | null>(null);
 
   useEffect(() => {
+    // STOMP CONNECT 시 JWT를 헤더로 전달해 서버 Principal(userId) 설정을 가능하게 함
+    // BE의 StompPrincipalInterceptor가 이 토큰을 파싱해 participantId를 Principal로 등록
+    // → convertAndSendToUser(participantId, "/queue/chat", response) 라우팅이 정상 동작
+    const token = getCookie('user_access_token');
+
+    // 만료된 토큰으로 연결 시 Principal이 설정되지 않아 convertAndSendToUser가 무음 실패함
+    if (!token || isTokenExpired(token)) {
+      console.warn('[STOMP Chat] JWT 토큰이 없거나 만료됨 - 재로그인 필요');
+      onError?.('세션이 만료되었습니다. 다시 로그인해주세요.');
+      return;
+    }
+
     const socket = new SockJS(`${API_BASE_URL}/ws`);
     const client = new Client({
       webSocketFactory: () => socket,
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       debug: (str) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('[STOMP Chat] ' + str);
@@ -45,15 +71,34 @@ export function useChatSocket(
       console.log('[STOMP Chat] Connected: ' + frame);
       setIsConnected(true);
 
+      // 에러 큐 구독 - BE에서 처리 실패 시 로딩 해제용
+      client.subscribe(`/user/queue/chat-error`, (message) => {
+        try {
+          const err = JSON.parse(message.body);
+          console.error('[STOMP Chat] 서버 에러:', err.message);
+          onError?.(err.message ?? 'AI 응답 처리 중 오류가 발생했습니다.');
+        } catch {
+          onError?.('AI 응답 처리 중 오류가 발생했습니다.');
+        }
+      });
+
       // 개인 큐 구독
       client.subscribe(`/user/queue/chat`, (message) => {
-        const response: SendMessageResponse = JSON.parse(message.body);
-        const newMessage: Message = {
-          id: Date.now(),
-          role: response.role.toLowerCase() as 'assistant' | 'user',
-          content: response.content,
-        };
-        onMessageReceived(newMessage, response);
+        try {
+          const response: SendMessageResponse = JSON.parse(message.body);
+          // BE는 @JsonProperty("turn")으로 직렬화 → "turn" 키로 옴, "AI" role 정규화
+          const role = response.role?.toLowerCase();
+          const normalizedRole: 'assistant' | 'user' =
+            role === 'user' ? 'user' : 'assistant';
+          const newMessage: Message = {
+            id: Date.now(),
+            role: normalizedRole,
+            content: response.content,
+          };
+          onMessageReceived(newMessage, response);
+        } catch (err) {
+          console.error('[STOMP Chat] 메시지 처리 실패:', err, message.body);
+        }
       });
     };
 

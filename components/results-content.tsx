@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getCookie } from "@/lib/auth/cookie-utils"
 import Link from "next/link"
 import { Search, Download, Eye, X, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -49,7 +50,7 @@ export function ResultsContent() {
   const fetchResults = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = getCookie('admin_access_token');
       const response = await fetch('/api/admin/exams', {
         headers: {
           'Authorization': `Bearer ${token}`,
