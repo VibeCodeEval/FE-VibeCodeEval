@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { getCookie } from '@/lib/auth/cookie-utils';
 
 interface Message {
   id: number;
@@ -43,7 +44,7 @@ export function useChatSocket(
     // STOMP CONNECT 시 JWT를 헤더로 전달해 서버 Principal(userId) 설정을 가능하게 함
     // BE의 StompPrincipalInterceptor가 이 토큰을 파싱해 participantId를 Principal로 등록
     // → convertAndSendToUser(participantId, "/queue/chat", response) 라우팅이 정상 동작
-    const token = typeof window !== 'undefined' ? localStorage.getItem('user_access_token') : null;
+    const token = getCookie('user_access_token');
 
     // 만료된 토큰으로 연결 시 Principal이 설정되지 않아 convertAndSendToUser가 무음 실패함
     if (!token || isTokenExpired(token)) {
