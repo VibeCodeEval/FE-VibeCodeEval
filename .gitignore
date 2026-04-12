@@ -47,3 +47,5 @@ Thumbs.db
 
 # CLAUDE
 .claude/
+
+.env.local

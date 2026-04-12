@@ -1,4 +1,5 @@
 // Chat API 호출 함수들
+import { getCookie } from '../auth/cookie-utils';
 
 // 커스텀 에러 클래스
 export class ChatError extends Error {
@@ -28,7 +29,7 @@ function getApiBaseUrl(): string {
 
 // Authorization 헤더 가져오기 (사용자 토큰)
 function getUserAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('user_access_token') : null;
+  const token = getCookie('user_access_token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };

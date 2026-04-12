@@ -1,4 +1,5 @@
 // Admin API 호출 함수들
+import { getCookie, removeCookie } from '../auth/cookie-utils';
 
 // 커스텀 에러 클래스: 로그인 실패와 네트워크 에러를 구분
 export class LoginFailedError extends Error {
@@ -28,7 +29,7 @@ function getApiBaseUrl(): string {
 
 // Authorization 헤더 가져오기
 function getAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
+  const token = getCookie('admin_access_token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -665,9 +666,7 @@ export async function logoutAdmin(): Promise<void> {
     }
   } finally {
     // 항상 프론트엔드 세션 정리
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('admin_access_token');
-    }
+    removeCookie('admin_access_token');
   }
 }
 
@@ -1794,7 +1793,7 @@ export function streamScoringResult(
   onDone?: () => void
 ): () => void {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
+  const token = getCookie('admin_access_token');
 
   // SSE는 EventSource를 사용하며, 커스텀 헤더 지원이 없으므로 쿼리 파라미터로 토큰 전달
   // 서버 측에서 쿼리 파라미터 토큰을 허용해야 함. 불가 시 fetch + ReadableStream으로 대체

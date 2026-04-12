@@ -1,7 +1,8 @@
 // Submission API 호출 함수들
+import { getCookie } from '../auth/cookie-utils';
 
 function getAdminAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
+  const token = getCookie('admin_access_token');
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -13,7 +14,7 @@ function getApiBaseUrl(): string {
 }
 
 function getUserAuthHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('user_access_token') : null;
+  const token = getCookie('user_access_token');
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -178,11 +179,9 @@ export function streamScoringResult(
   callbacks: ScoringStreamCallbacks
 ): () => void {
   const controller = new AbortController();
-  const apiBaseUrl = typeof window !== 'undefined'
-    ? (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080')
-    : 'http://localhost:8080';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
   const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}/stream`;
-  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
+  const token = getCookie('admin_access_token');
 
   async function connect() {
     try {

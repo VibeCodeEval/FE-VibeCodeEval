@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { getCookie } from "@/lib/auth/cookie-utils"
 import { Search, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
@@ -36,7 +37,7 @@ export function ProblemsContent() {
   const fetchProblems = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = getCookie('admin_access_token');
       const response = await fetch('/api/admin/problems', {
         headers: {
           'Authorization': `Bearer ${token}`,
