@@ -39,6 +39,8 @@ export function useChatSocket(
 ) {
   const [isConnected, setIsConnected] = useState(false);
   const stompClientRef = useRef<Client | null>(null);
+  // 셀렉터로 구독: accessToken 변경 시 effect 재실행 → 로그인 후 소켓 연결 보장
+  const accessToken = useExamSessionStore((state) => state.accessToken);
 
   // 콜백을 ref로 관리: 최신 함수 참조를 유지하면서 STOMP 재연결을 방지
   const onMessageReceivedRef = useRef(onMessageReceived);
@@ -50,7 +52,7 @@ export function useChatSocket(
     // STOMP CONNECT 시 JWT를 헤더로 전달해 서버 Principal(userId) 설정을 가능하게 함
     // BE의 StompPrincipalInterceptor가 이 토큰을 파싱해 participantId를 Principal로 등록
     // → convertAndSendToUser(participantId, "/queue/chat", response) 라우팅이 정상 동작
-    const token = useExamSessionStore.getState().accessToken;
+    const token = accessToken;
 
     // 만료된 토큰으로 연결 시 Principal이 설정되지 않아 convertAndSendToUser가 무음 실패함
     if (!token || isTokenExpired(token)) {
@@ -126,7 +128,7 @@ export function useChatSocket(
         stompClientRef.current.deactivate();
       }
     };
-  }, [examId, participantId]); // 콜백은 ref로 관리하므로 deps에서 제거
+  }, [examId, participantId, accessToken]); // 콜백은 ref로 관리하므로 deps에서 제거; accessToken 변경 시 재연결
 
   const sendMessage = useCallback((content: string, turn: number) => {
     if (stompClientRef.current && isConnected) {

@@ -18,7 +18,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { useRouter } from "next/navigation";
 import { deleteExam, getBoard, getExams, type Exam, type ExamineeBoardEntry } from "@/lib/api/admin";
 
 export interface TestSession {
@@ -69,7 +68,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
         sessionId: exam.title,
         createdBy: "Admin",
         createdAt: exam.startsAt ? exam.startsAt.split("T")[0] : "-",
-        status: exam.state === "RUNNING" ? "Active" : "Completed",
+        status: ["RUNNING", "IN_PROGRESS"].includes(exam.state) ? "Active" : "Completed",
         participants: exam.participantCount,
       }))
       setTestSessions(mapped)

@@ -1,9 +1,5 @@
 // Submission API 호출 함수들
 
-function getAdminAuthHeaders(): HeadersInit {
-  return { 'Content-Type': 'application/json' };
-}
-
 function getApiBaseUrl(): string {
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 }
