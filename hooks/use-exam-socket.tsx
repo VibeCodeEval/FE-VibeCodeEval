@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { getCookie } from '@/lib/auth/cookie-utils';
+import { useExamSessionStore } from '@/lib/stores/exam-session-store';
 
 export type ExamState = 'WAITING' | 'RUNNING' | 'ENDED';
 
@@ -42,7 +42,7 @@ export function useExamSocket(
   useEffect(() => {
     if (!examId) return;
 
-    const token = getCookie('user_access_token');
+    const token = useExamSessionStore.getState().accessToken;
 
     const socket = new SockJS(`${API_BASE_URL}/ws`);
     const client = new Client({
