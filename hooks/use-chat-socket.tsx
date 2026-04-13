@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { getCookie } from '@/lib/auth/cookie-utils';
+import { useExamSessionStore } from '@/lib/stores/exam-session-store';
 
 interface Message {
   id: number;
@@ -39,17 +39,25 @@ export function useChatSocket(
 ) {
   const [isConnected, setIsConnected] = useState(false);
   const stompClientRef = useRef<Client | null>(null);
+  // 셀렉터로 구독: accessToken 변경 시 effect 재실행 → 로그인 후 소켓 연결 보장
+  const accessToken = useExamSessionStore((state) => state.accessToken);
+
+  // 콜백을 ref로 관리: 최신 함수 참조를 유지하면서 STOMP 재연결을 방지
+  const onMessageReceivedRef = useRef(onMessageReceived);
+  const onErrorRef = useRef(onError);
+  useEffect(() => { onMessageReceivedRef.current = onMessageReceived; }, [onMessageReceived]);
+  useEffect(() => { onErrorRef.current = onError; }, [onError]);
 
   useEffect(() => {
     // STOMP CONNECT 시 JWT를 헤더로 전달해 서버 Principal(userId) 설정을 가능하게 함
     // BE의 StompPrincipalInterceptor가 이 토큰을 파싱해 participantId를 Principal로 등록
     // → convertAndSendToUser(participantId, "/queue/chat", response) 라우팅이 정상 동작
-    const token = getCookie('user_access_token');
+    const token = accessToken;
 
     // 만료된 토큰으로 연결 시 Principal이 설정되지 않아 convertAndSendToUser가 무음 실패함
     if (!token || isTokenExpired(token)) {
       console.warn('[STOMP Chat] JWT 토큰이 없거나 만료됨 - 재로그인 필요');
-      onError?.('세션이 만료되었습니다. 다시 로그인해주세요.');
+      onErrorRef.current?.('세션이 만료되었습니다. 다시 로그인해주세요.');
       return;
     }
 
@@ -76,9 +84,9 @@ export function useChatSocket(
         try {
           const err = JSON.parse(message.body);
           console.error('[STOMP Chat] 서버 에러:', err.message);
-          onError?.(err.message ?? 'AI 응답 처리 중 오류가 발생했습니다.');
+          onErrorRef.current?.(err.message ?? 'AI 응답 처리 중 오류가 발생했습니다.');
         } catch {
-          onError?.('AI 응답 처리 중 오류가 발생했습니다.');
+          onErrorRef.current?.('AI 응답 처리 중 오류가 발생했습니다.');
         }
       });
 
@@ -95,7 +103,7 @@ export function useChatSocket(
             role: normalizedRole,
             content: response.content,
           };
-          onMessageReceived(newMessage, response);
+          onMessageReceivedRef.current(newMessage, response);
         } catch (err) {
           console.error('[STOMP Chat] 메시지 처리 실패:', err, message.body);
         }
@@ -120,7 +128,7 @@ export function useChatSocket(
         stompClientRef.current.deactivate();
       }
     };
-  }, [examId, participantId, onMessageReceived]);
+  }, [examId, participantId, accessToken]); // 콜백은 ref로 관리하므로 deps에서 제거; accessToken 변경 시 재연결
 
   const sendMessage = useCallback((content: string, turn: number) => {
     if (stompClientRef.current && isConnected) {

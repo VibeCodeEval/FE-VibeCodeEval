@@ -1,5 +1,4 @@
 // Exam API 호출 함수들
-import { getCookie } from '../auth/cookie-utils';
 
 // 클라이언트 컴포넌트에서 환경 변수 접근을 위한 헬퍼 함수
 function getApiBaseUrl(): string {
@@ -7,16 +6,8 @@ function getApiBaseUrl(): string {
   return baseUrl;
 }
 
-// Authorization 헤더 가져오기 (사용자 토큰)
 function getUserAuthHeaders(): HeadersInit {
-  const token = getCookie('user_access_token');
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
+  return { 'Content-Type': 'application/json' };
 }
 
 // ─── 문제 배정 응답 타입 ───────────────────────────────────────────────────────

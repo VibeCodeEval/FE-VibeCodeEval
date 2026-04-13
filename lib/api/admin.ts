@@ -1,5 +1,4 @@
 // Admin API 호출 함수들
-import { getCookie, removeCookie } from '../auth/cookie-utils';
 
 // 커스텀 에러 클래스: 로그인 실패와 네트워크 에러를 구분
 export class LoginFailedError extends Error {
@@ -27,16 +26,9 @@ function getApiBaseUrl(): string {
   return baseUrl;
 }
 
-// Authorization 헤더 가져오기
+// Authorization 헤더 가져오기 (HttpOnly 쿠키가 자동 전송되므로 헤더 불필요)
 function getAuthHeaders(): HeadersInit {
-  const token = getCookie('admin_access_token');
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
+  return { 'Content-Type': 'application/json' };
 }
 
 // BaseResponse 타입
@@ -131,6 +123,15 @@ export interface ChangeAdminPasswordRequest {
   newPassword: string;
 }
 
+export interface AdminProblem {
+  id: number;
+  title: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  tags: string | string[] | null;
+  status: string;
+  createdAt: string;
+}
+
 /**
  * 관리자 로그인 API 호출
  */
@@ -150,7 +151,7 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminLogin
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -214,6 +215,40 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminLogin
 }
 
 /**
+ * 문제 목록 조회 API 호출
+ */
+export async function getProblems(): Promise<AdminProblem[]> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    const data: BaseResponse<AdminProblem[]> = await response.json();
+
+    if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+      throw new LoginFailedError(data.message || '문제 목록 조회에 실패했습니다.', response.status, data.code);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('문제 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
  * 모든 관리자 조회 API 호출 (마스터 전용)
  */
 export async function getAllAdmins(): Promise<AdminListResponse> {
@@ -229,7 +264,7 @@ export async function getAllAdmins(): Promise<AdminListResponse> {
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -336,7 +371,7 @@ export async function updateAdminNumber(
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -442,7 +477,7 @@ export async function issueAdminNumber(request: AdminNumberIssueRequest): Promis
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -544,7 +579,7 @@ export async function signUpAdmin(request: AdminSignupRequest): Promise<void> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -641,7 +676,7 @@ export async function logoutAdmin(): Promise<void> {
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -665,8 +700,7 @@ export async function logoutAdmin(): Promise<void> {
       console.warn('[Admin Logout] 네트워크 오류 또는 예상치 못한 오류:', error);
     }
   } finally {
-    // 항상 프론트엔드 세션 정리
-    removeCookie('admin_access_token');
+    // admin_access_token HttpOnly 쿠키는 백엔드 logout 응답에서 삭제됨
   }
 }
 
@@ -686,7 +720,7 @@ export async function getMe(): Promise<MeResponse> {
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -784,7 +818,7 @@ export async function changeAdminPassword(request: ChangeAdminPasswordRequest): 
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -908,6 +942,8 @@ export interface Exam {
   endsAt: string;   // ISO 8601 형식
   version: number;
   createdBy: number;
+  participantCount: number;
+  completedCount: number;
   entryCode?: string; // 입장 코드 (선택적)
 }
 
@@ -950,7 +986,7 @@ export async function createExam(request: CreateExamRequest): Promise<Exam> {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1050,7 +1086,7 @@ export async function getExams(): Promise<Exam[]> {
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1150,7 +1186,7 @@ export async function createEntryCode(request: CreateEntryCodeRequest): Promise<
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1250,7 +1286,7 @@ export async function deleteExam(examId: number): Promise<void> {
     const response = await fetch(url, {
       method: 'DELETE',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1348,7 +1384,7 @@ export async function startExam(examId: number): Promise<void> {
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1448,7 +1484,7 @@ export async function endExam(examId: number): Promise<void> {
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1555,7 +1591,7 @@ export async function getEntryCodes(examId: number, isActive?: boolean): Promise
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1676,7 +1712,7 @@ export async function extendExam(examId: number, minutes: number): Promise<void>
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ minutes }),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -1699,7 +1735,7 @@ export async function updateEntryCode(code: string, isActive: boolean): Promise<
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify({ isActive }),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   const data: BaseResponse<EntryCodeResponse> = await response.json();
@@ -1720,7 +1756,7 @@ export async function deleteEntryCode(code: string): Promise<void> {
   const response = await fetch(url, {
     method: 'DELETE',
     headers: getAuthHeaders(),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -1742,7 +1778,7 @@ export async function getMetrics(examId: number): Promise<AdminMetrics> {
   const response = await fetch(url, {
     method: 'GET',
     headers: getAuthHeaders(),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   const data: BaseResponse<AdminMetrics> = await response.json();
@@ -1763,7 +1799,7 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
   const response = await fetch(url, {
     method: 'GET',
     headers: getAuthHeaders(),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   const data: BaseResponse<ExamineeBoardEntry[]> = await response.json();
@@ -1774,81 +1810,5 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
 }
 
 // ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────
-
-export interface ScoringEvent {
-  type: 'case_result' | 'final_score';
-  data: unknown;
-}
-
-/**
- * 채점 결과 SSE 스트리밍 구독
- * GET /api/admin/submissions/{submissionId}/stream
- *
- * @returns cleanup 함수 (구독 해제 시 호출)
- */
-export function streamScoringResult(
-  submissionId: number,
-  onEvent: (event: ScoringEvent) => void,
-  onError?: (err: Event) => void,
-  onDone?: () => void
-): () => void {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-  const token = getCookie('admin_access_token');
-
-  // SSE는 EventSource를 사용하며, 커스텀 헤더 지원이 없으므로 쿼리 파라미터로 토큰 전달
-  // 서버 측에서 쿼리 파라미터 토큰을 허용해야 함. 불가 시 fetch + ReadableStream으로 대체
-  const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
-
-  // fetch + ReadableStream 방식 (Authorization 헤더 지원)
-  let aborted = false;
-  const controller = new AbortController();
-
-  fetch(url.replace(/\?token=.*/, ''), {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-      Accept: 'text/event-stream',
-    },
-    signal: controller.signal,
-  }).then(async (response) => {
-    if (!response.body) {
-      onError?.(new Event('no body'));
-      return;
-    }
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (!aborted) {
-      const { done, value } = await reader.read();
-      if (done) {
-        onDone?.();
-        break;
-      }
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          try {
-            const parsed = JSON.parse(line.slice(5).trim());
-            onEvent(parsed);
-          } catch {
-            // non-JSON data line 무시
-          }
-        } else if (line === '' && buffer === '') {
-          // keep-alive 빈 라인
-        }
-      }
-    }
-  }).catch((err) => {
-    if (!aborted) {
-      onError?.(err);
-    }
-  });
-
-  return () => {
-    aborted = true;
-    controller.abort();
-  };
-}
+// streamScoringResult는 lib/api/submissions.ts 에서 정의·export됩니다.
+// 이전에 이 파일에 존재하던 구버전 구현은 submissions.ts 의 콜백 기반 버전으로 통합되었습니다.
