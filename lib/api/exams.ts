@@ -159,6 +159,39 @@ export async function getExamState(examId: number): Promise<GetExamStateResponse
   }
 }
 
+// 참가자 세션 정보 응답 타입
+export interface ParticipantSessionResponse {
+  participantId: number;
+  examId: number;
+  tokenLimit: number;
+  tokenUsed: number;
+  specId: number | null;
+  assignedProblemId: number | null;
+}
+
+/**
+ * 현재 참가자의 세션 정보 조회 (대기→시험 전환 시 최신 tokenLimit 갱신용)
+ * GET /api/exams/{examId}/participants/me
+ */
+export async function getParticipantSession(examId: number): Promise<ParticipantSessionResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/exams/${examId}/participants/me`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getUserAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<ParticipantSessionResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    const err: any = new Error(data.message || '세션 정보 조회에 실패했습니다.');
+    err.status = response.status;
+    throw err;
+  }
+  return data.result;
+}
+
 /**
  * 참가자에게 배정된 문제 조회 API
  * GET /api/exams/{examId}/assignment

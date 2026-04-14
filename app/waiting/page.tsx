@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
-import { getExamState } from "@/lib/api/exams";
+import { getExamState, getParticipantSession } from "@/lib/api/exams";
 
 export default function WaitingPage() {
   const router = useRouter();
@@ -29,7 +29,14 @@ export default function WaitingPage() {
         const state = res.state;
 
         if (state === "RUNNING") {
-          // 시험이 시작된 경우에만 시험 화면으로 이동
+          // 시험 시작 후 최신 세션 정보(tokenLimit 등)를 재조회해 store 갱신
+          try {
+            const session = await getParticipantSession(examId);
+            useExamSessionStore.setState({ tokenLimit: session.tokenLimit });
+          } catch (sessionErr) {
+            // 세션 갱신 실패해도 화면 이동은 진행 (기존 값 유지)
+            console.warn("[WaitingPage] getParticipantSession 실패, 기존 tokenLimit 유지:", sessionErr);
+          }
           router.push("/test");
         } else {
           // WAITING, ENDED 등의 상태에서는 아무것도 하지 않고 그대로 대기

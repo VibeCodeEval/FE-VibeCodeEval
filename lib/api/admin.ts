@@ -31,6 +31,19 @@ function getAuthHeaders(): HeadersInit {
   return { 'Content-Type': 'application/json' };
 }
 
+/**
+ * 401 Unauthorized 처리 공통 함수
+ * access token이 만료된 경우 로그인 페이지로 리다이렉트한다.
+ * window.location을 사용해 Next.js 라우터 없이도 동작한다.
+ */
+export function handleAdminAuthError(status: number): void {
+  if (status === 401 && typeof window !== 'undefined') {
+    // 쿠키 기반 인증이므로 클라이언트 쿠키 정리 후 홈으로 이동
+    // (HttpOnly 쿠키는 BE 로그아웃 엔드포인트가 삭제하므로 여기서는 홈 이동만 처리)
+    window.location.href = '/?auth_expired=1';
+  }
+}
+
 // BaseResponse 타입
 export interface BaseResponse<T> {
   timestamp: string;
@@ -954,6 +967,7 @@ export interface CreateEntryCodeRequest {
   problemSetId?: number;
   expiresAt?: string; // ISO 8601 형식
   maxUses?: number;
+  tokenLimit?: number;
 }
 
 export interface EntryCodeResponse {
@@ -963,6 +977,7 @@ export interface EntryCodeResponse {
   problemSetId?: number | null;
   expiresAt?: string | null; // ISO 8601 형식
   maxUses: number;
+  tokenLimit: number;
   usedCount: number;
   isActive: boolean;
   createdAt: string; // ISO 8601 형식
@@ -1312,9 +1327,10 @@ export async function deleteExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 삭제에 실패했습니다.';
-      
+
       if (response.status === 401) {
         errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+        handleAdminAuthError(response.status);
       } else if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
@@ -1410,11 +1426,12 @@ export async function startExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 시작에 실패했습니다.';
-      
+
       if (response.status === 400) {
         errorMessage = data.message || '시험을 시작할 수 없습니다. (이미 시작된 시험일 수 있습니다.)';
       } else if (response.status === 401) {
         errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+        handleAdminAuthError(response.status);
       } else if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
@@ -1510,11 +1527,12 @@ export async function endExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 종료에 실패했습니다.';
-      
+
       if (response.status === 400) {
         errorMessage = data.message || '시험을 종료할 수 없습니다. (이미 종료된 시험일 수 있습니다.)';
       } else if (response.status === 401) {
         errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+        handleAdminAuthError(response.status);
       } else if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
