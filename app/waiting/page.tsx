@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
-import { getExamState } from "@/lib/api/exams";
+import { getExamState, getParticipantSession } from "@/lib/api/exams";
 
 export default function WaitingPage() {
   const router = useRouter();
@@ -18,27 +18,38 @@ export default function WaitingPage() {
     }
 
     let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval>;
 
     const checkState = async () => {
       try {
         const res = await getExamState(examId);
         if (cancelled) return;
 
-        // 시험이 시작되었다고 판단할 상태 값 확인
-        // RUNNING 상태일 때 시험 화면으로 이동
         const state = res.state;
 
         if (state === "RUNNING") {
-          // 시험이 시작된 경우에만 시험 화면으로 이동
+          // RUNNING 확정 시점에 interval을 즉시 정리해 중복 실행 방지
+          clearInterval(intervalId);
+
+          // 시험 시작 후 최신 세션 정보(tokenLimit 등)를 재조회해 store 갱신
+          try {
+            const session = await getParticipantSession(examId);
+            // 비동기 대기 중 unmount가 발생했을 수 있으므로 재확인
+            if (cancelled) return;
+            useExamSessionStore.setState({ tokenLimit: session.tokenLimit });
+          } catch (sessionErr) {
+            // 세션 갱신 실패해도 화면 이동은 진행 (기존 값 유지)
+            console.warn("[WaitingPage] getParticipantSession 실패, 기존 tokenLimit 유지:", sessionErr);
+          }
+
+          if (cancelled) return;
           router.push("/test");
         } else {
           // WAITING, ENDED 등의 상태에서는 아무것도 하지 않고 그대로 대기
-          // 에러 메시지 초기화 (정상 대기 상태)
           setErrorMessage(null);
         }
       } catch (err) {
         console.error("[WaitingPage] getExamState error:", err);
-        // 서버 에러가 나도 대기 화면은 유지하되, 에러 메시지만 살짝 보여줌
         setErrorMessage(
           "시험 상태를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요."
         );
@@ -49,7 +60,7 @@ export default function WaitingPage() {
     checkState();
 
     // 그 이후에는 5초마다 상태를 폴링
-    const intervalId = setInterval(checkState, 5000);
+    intervalId = setInterval(checkState, 5000);
 
     return () => {
       cancelled = true;

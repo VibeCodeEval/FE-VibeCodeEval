@@ -31,6 +31,54 @@ function getAuthHeaders(): HeadersInit {
   return { 'Content-Type': 'application/json' };
 }
 
+/**
+ * 401 Unauthorized 처리 공통 함수
+ * access token이 만료된 경우 홈으로 리다이렉트한다.
+ * window.location을 사용해 Next.js 라우터 없이도 동작한다.
+ */
+export function handleAdminAuthError(status: number): void {
+  if (status === 401 && typeof window !== 'undefined') {
+    // 쿠키 기반 인증이며 HttpOnly 쿠키 삭제는 BE에서 처리한다.
+    // 여기서는 인증 만료 상태를 표시하며 홈으로 이동만 처리한다.
+    window.location.href = '/?auth_expired=1';
+  }
+}
+
+/**
+ * admin refresh token으로 access token을 재발급한다.
+ * BE가 새 access_token / refresh_token 쿠키를 Set-Cookie로 내려준다.
+ * 성공 여부(boolean)를 반환한다.
+ */
+export async function reissueAdminToken(): Promise<boolean> {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/api/auth/admin/reissue`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * fetch를 실행하고, 401 응답 시 토큰 재발급 후 1회 재시도한다.
+ * 재발급도 실패하면 로그인 페이지로 리다이렉트하고 LoginFailedError를 던진다.
+ */
+async function fetchAdminWithRetry(url: string, options: RequestInit): Promise<Response> {
+  let response = await fetch(url, options);
+  if (response.status === 401) {
+    const refreshed = await reissueAdminToken();
+    if (refreshed) {
+      response = await fetch(url, options);
+    } else {
+      handleAdminAuthError(401);
+      throw new LoginFailedError('인증이 필요합니다. 다시 로그인해주세요.', 401);
+    }
+  }
+  return response;
+}
+
 // BaseResponse 타입
 export interface BaseResponse<T> {
   timestamp: string;
@@ -954,6 +1002,7 @@ export interface CreateEntryCodeRequest {
   problemSetId?: number;
   expiresAt?: string; // ISO 8601 형식
   maxUses?: number;
+  tokenLimit?: number;
 }
 
 export interface EntryCodeResponse {
@@ -963,6 +1012,7 @@ export interface EntryCodeResponse {
   problemSetId?: number | null;
   expiresAt?: string | null; // ISO 8601 형식
   maxUses: number;
+  tokenLimit: number;
   usedCount: number;
   isActive: boolean;
   createdAt: string; // ISO 8601 형식
@@ -1283,18 +1333,19 @@ export async function deleteExam(examId: number): Promise<void> {
   }
 
   try {
-    const response = await fetch(url, {
+    const fetchOptions = {
       method: 'DELETE',
       headers: getAuthHeaders(),
-      credentials: 'include',
-    });
+      credentials: 'include' as RequestCredentials,
+    };
+    const response = await fetchAdminWithRetry(url, fetchOptions);
 
     if (isDev) {
       console.log('[Delete Exam] 응답 상태:', response.status, response.statusText);
     }
 
     let data: BaseResponse<null>;
-    
+
     try {
       data = await response.json();
     } catch (jsonError) {
@@ -1312,10 +1363,8 @@ export async function deleteExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 삭제에 실패했습니다.';
-      
-      if (response.status === 401) {
-        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
-      } else if (response.status === 403) {
+
+      if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
         errorMessage = '시험을 찾을 수 없습니다.';
@@ -1381,18 +1430,19 @@ export async function startExam(examId: number): Promise<void> {
   }
 
   try {
-    const response = await fetch(url, {
+    const fetchOptions = {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'include',
-    });
+      credentials: 'include' as RequestCredentials,
+    };
+    const response = await fetchAdminWithRetry(url, fetchOptions);
 
     if (isDev) {
       console.log('[Start Exam] 응답 상태:', response.status, response.statusText);
     }
 
     let data: BaseResponse<null>;
-    
+
     try {
       data = await response.json();
     } catch (jsonError) {
@@ -1410,11 +1460,9 @@ export async function startExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 시작에 실패했습니다.';
-      
+
       if (response.status === 400) {
         errorMessage = data.message || '시험을 시작할 수 없습니다. (이미 시작된 시험일 수 있습니다.)';
-      } else if (response.status === 401) {
-        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
       } else if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
@@ -1481,18 +1529,19 @@ export async function endExam(examId: number): Promise<void> {
   }
 
   try {
-    const response = await fetch(url, {
+    const fetchOptions = {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'include',
-    });
+      credentials: 'include' as RequestCredentials,
+    };
+    const response = await fetchAdminWithRetry(url, fetchOptions);
 
     if (isDev) {
       console.log('[End Exam] 응답 상태:', response.status, response.statusText);
     }
 
     let data: BaseResponse<null>;
-    
+
     try {
       data = await response.json();
     } catch (jsonError) {
@@ -1510,11 +1559,9 @@ export async function endExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 종료에 실패했습니다.';
-      
+
       if (response.status === 400) {
         errorMessage = data.message || '시험을 종료할 수 없습니다. (이미 종료된 시험일 수 있습니다.)';
-      } else if (response.status === 401) {
-        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
       } else if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
