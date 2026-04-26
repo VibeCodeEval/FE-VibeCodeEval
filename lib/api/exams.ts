@@ -161,7 +161,7 @@ export async function getExamState(examId: number): Promise<GetExamStateResponse
 
 // 참가자 세션 정보 응답 타입
 export interface ParticipantSessionResponse {
-  participantId: number;
+  examParticipantId: number;
   examId: number;
   tokenLimit: number;
   tokenUsed: number;
