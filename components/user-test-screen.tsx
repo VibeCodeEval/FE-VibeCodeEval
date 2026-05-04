@@ -10,7 +10,7 @@ import { AiAssistantSidebar } from "@/components/ai-assistant-sidebar"
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
-import { getExamState, ExamState, GetExamStateResponse } from "@/lib/api/exams";
+import { getExamState, getParticipantSession, ExamState, GetExamStateResponse } from "@/lib/api/exams";
 import { RemainingTimer } from "@/components/remaining-timer";
 import { useExamSocket, ExamStateEvent } from "@/hooks/use-exam-socket";
 import { streamScoringResult, FinalScoreEvent, SubmissionStatus } from "@/lib/api/submissions";
@@ -85,6 +85,18 @@ export default function UserTestScreen() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+
+  // ── 새로고침 후에도 서버 기준 세션(토큰 한도 등) 동기화 ───────────────────────
+  useEffect(() => {
+    if (!examId) return;
+    getParticipantSession(examId)
+      .then((session) => {
+        useExamSessionStore.setState({ tokenLimit: session.tokenLimit });
+      })
+      .catch(() => {
+        // 쿠키 만료·세션 없음 등은 기존 persist 값 유지
+      });
+  }, [examId]);
 
   // ── 초기 토큰 사용량 로드 (getChatHistory.totalTokens) ──────────────────────
   useEffect(() => {
@@ -222,6 +234,19 @@ export default function UserTestScreen() {
   const handleGoHome = () => {
     router.push("/");
   };
+
+  if (!examId || !participantId) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F5F5F5] p-6">
+        <p className="max-w-md text-center text-sm text-[#6B7280]">
+          저장된 시험 세션이 없습니다. 시험에 다시 입장해 주세요.
+        </p>
+        <Button type="button" className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white" onClick={() => router.push("/")}>
+          입장 화면으로
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">

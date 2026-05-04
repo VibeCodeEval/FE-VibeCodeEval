@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import { getExamState, getParticipantSession } from "@/lib/api/exams";
+import { ExamSessionPersistGate } from "@/components/exam-session-persist-gate";
 
-export default function WaitingPage() {
+function WaitingPageInner() {
   const router = useRouter();
   const examId = useExamSessionStore((state: { examId: number | null }) => state.examId);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -92,5 +93,13 @@ export default function WaitingPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function WaitingPage() {
+  return (
+    <ExamSessionPersistGate>
+      <WaitingPageInner />
+    </ExamSessionPersistGate>
   );
 }
