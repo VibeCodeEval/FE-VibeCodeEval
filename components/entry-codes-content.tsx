@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createExam, getExams, createEntryCode, deleteExam, getEntryCodes, startExam, endExam, extendExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { createExam, getExams, deleteExam, getEntryCodes, startExam, endExam, extendExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
 import { useToast } from "@/hooks/use-toast"
 
 
@@ -213,40 +213,12 @@ export function EntryCodesContent() {
       const createdExam = await createExam(payload)
       console.log("Exam created:", createdExam)
 
-      // 시험 생성 후 자동으로 입장 코드 생성
-      let entryCodeValue: string | undefined = undefined
-      try {
-        const entryCodeResponse = await createEntryCode({
-          label: undefined,
-          examId: createdExam.id,
-          problemSetId: 0,
-          expiresAt: undefined,
-          maxUses: 0,
-        })
-        entryCodeValue = entryCodeResponse.code
-        console.log("Entry code created:", entryCodeValue)
-      } catch (entryCodeError) {
-        console.error("Failed to create entry code", entryCodeError)
-        // 입장 코드 생성 실패해도 시험 생성은 성공으로 처리
-        toast({
-          title: "입장 코드 생성 실패",
-          description: "시험은 생성되었지만 입장 코드 생성에 실패했습니다. 나중에 수동으로 생성해주세요.",
-          variant: "destructive",
-        })
-      }
-
-      // 입장 코드가 포함된 시험 객체 생성
-      const examWithEntryCode: Exam = {
-        ...createdExam,
-        entryCode: entryCodeValue,
-      }
-
       // 시험 목록에 새로 생성된 시험 추가
       setExams((prev) => {
         if (prev === null) {
-          return [examWithEntryCode]
+          return [createdExam]
         }
-        return [examWithEntryCode, ...prev]
+        return [createdExam, ...prev]
       })
 
       // 모달 닫기
