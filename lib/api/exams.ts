@@ -169,6 +169,63 @@ export interface ParticipantSessionResponse {
   assignedProblemId: number | null;
 }
 
+// 활성 시험 세션 복구 응답 타입
+export interface ActiveSessionResponse {
+  examId: number;
+  examParticipantId: number;
+  assignedProblemId: number | null;
+  specId: number | null;
+  examState: ExamState;
+  startsAt: string;
+  endsAt: string;
+  serverTime: string;
+  tokenLimit: number;
+  tokenUsed: number;
+}
+
+/**
+ * 현재 로그인한 참가자의 활성 시험 세션 조회
+ * GET /api/exams/active-session
+ */
+export async function getActiveSession(): Promise<ActiveSessionResponse | null> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/exams/active-session`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Get Active Session] API 호출:', url);
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getUserAuthHeaders(),
+    credentials: 'include',
+  });
+
+  let data: BaseResponse<ActiveSessionResponse>;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error('활성 세션 응답을 파싱할 수 없습니다.');
+  }
+
+  if (!response.ok) {
+    // 활성 세션이 없는 경우(null)로 처리
+    if (response.status === 404 || data.code === 'EXAM404_5') {
+      return null;
+    }
+    const err: any = new Error(data.message || '활성 세션 조회에 실패했습니다.');
+    err.status = response.status;
+    throw err;
+  }
+
+  if (data.code !== 'COMMON200' || !data.result) {
+    return null;
+  }
+
+  return data.result;
+}
+
 /**
  * 현재 참가자의 세션 정보 조회 (대기→시험 전환 시 최신 tokenLimit 갱신용)
  * GET /api/exams/{examId}/participants/me
