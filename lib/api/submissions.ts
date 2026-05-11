@@ -1,24 +1,11 @@
 // Submission API 호출 함수들
-import { getCookie } from '../auth/cookie-utils';
-
-function getAdminAuthHeaders(): HeadersInit {
-  const token = getCookie('admin_access_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
 
 function getApiBaseUrl(): string {
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 }
 
 function getUserAuthHeaders(): HeadersInit {
-  const token = getCookie('user_access_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+  return { 'Content-Type': 'application/json' };
 }
 
 export interface BaseResponse<T> {
@@ -181,16 +168,12 @@ export function streamScoringResult(
   const controller = new AbortController();
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
   const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}/stream`;
-  const token = getCookie('admin_access_token');
 
   async function connect() {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          Accept: 'text/event-stream',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { Accept: 'text/event-stream' },
         credentials: 'include',
         signal: controller.signal,
       });

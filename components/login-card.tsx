@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation"
 import { adminLogin, LoginFailedError, NetworkError } from "@/lib/api/admin"
 import { enterExam, AuthError } from "@/lib/api/auth"
 import { isMasterAdmin, saveAuthInfo } from "@/lib/auth/utils"
-import { setCookie } from "@/lib/auth/cookie-utils"
 import { useExamSessionStore } from "@/lib/stores/exam-session-store"
 
 type TabType = "user" | "admin"
@@ -28,7 +27,6 @@ export default function LoginCard() {
   const [userError, setUserError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-  const setSession = useExamSessionStore((state: { setSession: (examId: number, participantId: number, tokenLimit?: number) => void }) => state.setSession);
 
 
   const handleClick = async () => {
@@ -55,17 +53,18 @@ export default function LoginCard() {
         phone: phoneNumber.trim(),
       });
 
-      // examId와 participantId를 전역 상태에 저장
+      // examId, participantId, accessToken을 한 번에 업데이트 (중간 상태로 소켓 훅이 null 토큰으로 마운트되는 것을 방지)
+      // STOMP용 accessToken은 Zustand에 저장 (HttpOnly 쿠키는 JS 접근 불가)
       const examId = response.exam?.id;
       const participantId = response.participant?.id;
 
-      if (examId && participantId) {
-        setSession(examId, participantId, response.session?.tokenLimit);
-      }
-
-      // accessToken 저장
-      if (response.accessToken) {
-        setCookie('user_access_token', response.accessToken);
+      if (examId && participantId && response.accessToken) {
+        useExamSessionStore.setState({
+          examId,
+          participantId,
+          tokenLimit: response.session?.tokenLimit ?? 20000,
+          accessToken: response.accessToken,
+        });
       }
 
       // ✅ API 성공 시에만 대기 화면으로 이동

@@ -1,5 +1,4 @@
 // Exam API 호출 함수들
-import { getCookie } from '../auth/cookie-utils';
 
 // 클라이언트 컴포넌트에서 환경 변수 접근을 위한 헬퍼 함수
 function getApiBaseUrl(): string {
@@ -7,16 +6,8 @@ function getApiBaseUrl(): string {
   return baseUrl;
 }
 
-// Authorization 헤더 가져오기 (사용자 토큰)
 function getUserAuthHeaders(): HeadersInit {
-  const token = getCookie('user_access_token');
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
+  return { 'Content-Type': 'application/json' };
 }
 
 // ─── 문제 배정 응답 타입 ───────────────────────────────────────────────────────
@@ -166,6 +157,39 @@ export async function getExamState(examId: number): Promise<GetExamStateResponse
     }
     throw new Error('시험 상태 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   }
+}
+
+// 참가자 세션 정보 응답 타입
+export interface ParticipantSessionResponse {
+  examParticipantId: number;
+  examId: number;
+  tokenLimit: number;
+  tokenUsed: number;
+  specId: number | null;
+  assignedProblemId: number | null;
+}
+
+/**
+ * 현재 참가자의 세션 정보 조회 (대기→시험 전환 시 최신 tokenLimit 갱신용)
+ * GET /api/exams/{examId}/participants/me
+ */
+export async function getParticipantSession(examId: number): Promise<ParticipantSessionResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/exams/${examId}/participants/me`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getUserAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<ParticipantSessionResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    const err: any = new Error(data.message || '세션 정보 조회에 실패했습니다.');
+    err.status = response.status;
+    throw err;
+  }
+  return data.result;
 }
 
 /**

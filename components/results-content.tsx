@@ -1,22 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getCookie } from "@/lib/auth/cookie-utils"
 import Link from "next/link"
 import { Search, Download, Eye, X, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
-
-interface ResultEntry {
-  id: string
-  entryCode: string
-  total: number
-  completed: number
-}
-
-interface Toast {
-  id: string
-  title: string
-  description: string
-}
+import { getExams, type Exam } from "@/lib/api/admin"
 
 interface ResultEntry {
   id: string
@@ -48,36 +35,26 @@ export function ResultsContent() {
   }
 
   const fetchResults = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const token = getCookie('admin_access_token');
-      const response = await fetch('/api/admin/exams', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-
-      if (data.code === 'COMMON200' && data.result) {
-        const mapped: ResultEntry[] = data.result.map((exam: any) => ({
-          id: String(exam.id),
-          entryCode: exam.title,
-          total: exam.participantCount || 0,
-          completed: exam.status === 'COMPLETED' ? (exam.participantCount || 0) : 0 // 실제 완료 인원은 별도 API 필요
-        }));
-        setResults(mapped);
-      }
+      const exams = await getExams()
+      const mapped: ResultEntry[] = exams.map((exam: Exam) => ({
+        id: String(exam.id),
+        entryCode: exam.title,
+        total: exam.participantCount,
+        completed: exam.completedCount,
+      }))
+      setResults(mapped)
     } catch (error) {
-      console.error("Failed to fetch results:", error);
+      console.error("Failed to fetch results:", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchResults();
-  }, []);
+    fetchResults()
+  }, [])
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -91,7 +68,7 @@ export function ResultsContent() {
   }
 
   const filteredResults = results.filter((result) => result.entryCode.toLowerCase().includes(searchQuery.toLowerCase()))
-  
+
   const totalPages = Math.ceil(filteredResults.length / pageSize)
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = currentPage * pageSize

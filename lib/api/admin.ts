@@ -1,5 +1,4 @@
 // Admin API 호출 함수들
-import { getCookie, removeCookie } from '../auth/cookie-utils';
 
 // 커스텀 에러 클래스: 로그인 실패와 네트워크 에러를 구분
 export class LoginFailedError extends Error {
@@ -27,16 +26,57 @@ function getApiBaseUrl(): string {
   return baseUrl;
 }
 
-// Authorization 헤더 가져오기
+// Authorization 헤더 가져오기 (HttpOnly 쿠키가 자동 전송되므로 헤더 불필요)
 function getAuthHeaders(): HeadersInit {
-  const token = getCookie('admin_access_token');
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  return { 'Content-Type': 'application/json' };
+}
+
+/**
+ * 401 Unauthorized 처리 공통 함수
+ * access token이 만료된 경우 홈으로 리다이렉트한다.
+ * window.location을 사용해 Next.js 라우터 없이도 동작한다.
+ */
+export function handleAdminAuthError(status: number): void {
+  if (status === 401 && typeof window !== 'undefined') {
+    // 쿠키 기반 인증이며 HttpOnly 쿠키 삭제는 BE에서 처리한다.
+    // 여기서는 인증 만료 상태를 표시하며 홈으로 이동만 처리한다.
+    window.location.href = '/?auth_expired=1';
   }
-  return headers;
+}
+
+/**
+ * admin refresh token으로 access token을 재발급한다.
+ * BE가 새 access_token / refresh_token 쿠키를 Set-Cookie로 내려준다.
+ * 성공 여부(boolean)를 반환한다.
+ */
+export async function reissueAdminToken(): Promise<boolean> {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/api/auth/admin/reissue`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * fetch를 실행하고, 401 응답 시 토큰 재발급 후 1회 재시도한다.
+ * 재발급도 실패하면 로그인 페이지로 리다이렉트하고 LoginFailedError를 던진다.
+ */
+async function fetchAdminWithRetry(url: string, options: RequestInit): Promise<Response> {
+  let response = await fetch(url, options);
+  if (response.status === 401) {
+    const refreshed = await reissueAdminToken();
+    if (refreshed) {
+      response = await fetch(url, options);
+    } else {
+      handleAdminAuthError(401);
+      throw new LoginFailedError('인증이 필요합니다. 다시 로그인해주세요.', 401);
+    }
+  }
+  return response;
 }
 
 // BaseResponse 타입
@@ -131,6 +171,15 @@ export interface ChangeAdminPasswordRequest {
   newPassword: string;
 }
 
+export interface AdminProblem {
+  id: number;
+  title: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  tags: string | string[] | null;
+  status: string;
+  createdAt: string;
+}
+
 /**
  * 관리자 로그인 API 호출
  */
@@ -150,7 +199,7 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminLogin
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -214,6 +263,40 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminLogin
 }
 
 /**
+ * 문제 목록 조회 API 호출
+ */
+export async function getProblems(): Promise<AdminProblem[]> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    const data: BaseResponse<AdminProblem[]> = await response.json();
+
+    if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+      throw new LoginFailedError(data.message || '문제 목록 조회에 실패했습니다.', response.status, data.code);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('문제 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
  * 모든 관리자 조회 API 호출 (마스터 전용)
  */
 export async function getAllAdmins(): Promise<AdminListResponse> {
@@ -229,7 +312,7 @@ export async function getAllAdmins(): Promise<AdminListResponse> {
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -336,7 +419,7 @@ export async function updateAdminNumber(
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -442,7 +525,7 @@ export async function issueAdminNumber(request: AdminNumberIssueRequest): Promis
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -544,7 +627,7 @@ export async function signUpAdmin(request: AdminSignupRequest): Promise<void> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -641,7 +724,7 @@ export async function logoutAdmin(): Promise<void> {
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -665,8 +748,7 @@ export async function logoutAdmin(): Promise<void> {
       console.warn('[Admin Logout] 네트워크 오류 또는 예상치 못한 오류:', error);
     }
   } finally {
-    // 항상 프론트엔드 세션 정리
-    removeCookie('admin_access_token');
+    // admin_access_token HttpOnly 쿠키는 백엔드 logout 응답에서 삭제됨
   }
 }
 
@@ -686,7 +768,7 @@ export async function getMe(): Promise<MeResponse> {
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -784,7 +866,7 @@ export async function changeAdminPassword(request: ChangeAdminPasswordRequest): 
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -908,6 +990,8 @@ export interface Exam {
   endsAt: string;   // ISO 8601 형식
   version: number;
   createdBy: number;
+  participantCount: number;
+  completedCount: number;
   entryCode?: string; // 입장 코드 (선택적)
 }
 
@@ -918,6 +1002,7 @@ export interface CreateEntryCodeRequest {
   problemSetId?: number;
   expiresAt?: string; // ISO 8601 형식
   maxUses?: number;
+  tokenLimit?: number;
 }
 
 export interface EntryCodeResponse {
@@ -927,6 +1012,7 @@ export interface EntryCodeResponse {
   problemSetId?: number | null;
   expiresAt?: string | null; // ISO 8601 형식
   maxUses: number;
+  tokenLimit: number;
   usedCount: number;
   isActive: boolean;
   createdAt: string; // ISO 8601 형식
@@ -950,7 +1036,7 @@ export async function createExam(request: CreateExamRequest): Promise<Exam> {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1050,7 +1136,7 @@ export async function getExams(): Promise<Exam[]> {
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1150,7 +1236,7 @@ export async function createEntryCode(request: CreateEntryCodeRequest): Promise<
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1247,18 +1333,19 @@ export async function deleteExam(examId: number): Promise<void> {
   }
 
   try {
-    const response = await fetch(url, {
+    const fetchOptions = {
       method: 'DELETE',
       headers: getAuthHeaders(),
-      credentials: 'omit',
-    });
+      credentials: 'include' as RequestCredentials,
+    };
+    const response = await fetchAdminWithRetry(url, fetchOptions);
 
     if (isDev) {
       console.log('[Delete Exam] 응답 상태:', response.status, response.statusText);
     }
 
     let data: BaseResponse<null>;
-    
+
     try {
       data = await response.json();
     } catch (jsonError) {
@@ -1276,10 +1363,8 @@ export async function deleteExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 삭제에 실패했습니다.';
-      
-      if (response.status === 401) {
-        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
-      } else if (response.status === 403) {
+
+      if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
         errorMessage = '시험을 찾을 수 없습니다.';
@@ -1345,18 +1430,19 @@ export async function startExam(examId: number): Promise<void> {
   }
 
   try {
-    const response = await fetch(url, {
+    const fetchOptions = {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'omit',
-    });
+      credentials: 'include' as RequestCredentials,
+    };
+    const response = await fetchAdminWithRetry(url, fetchOptions);
 
     if (isDev) {
       console.log('[Start Exam] 응답 상태:', response.status, response.statusText);
     }
 
     let data: BaseResponse<null>;
-    
+
     try {
       data = await response.json();
     } catch (jsonError) {
@@ -1374,11 +1460,9 @@ export async function startExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 시작에 실패했습니다.';
-      
+
       if (response.status === 400) {
         errorMessage = data.message || '시험을 시작할 수 없습니다. (이미 시작된 시험일 수 있습니다.)';
-      } else if (response.status === 401) {
-        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
       } else if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
@@ -1445,18 +1529,19 @@ export async function endExam(examId: number): Promise<void> {
   }
 
   try {
-    const response = await fetch(url, {
+    const fetchOptions = {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'omit',
-    });
+      credentials: 'include' as RequestCredentials,
+    };
+    const response = await fetchAdminWithRetry(url, fetchOptions);
 
     if (isDev) {
       console.log('[End Exam] 응답 상태:', response.status, response.statusText);
     }
 
     let data: BaseResponse<null>;
-    
+
     try {
       data = await response.json();
     } catch (jsonError) {
@@ -1474,11 +1559,9 @@ export async function endExam(examId: number): Promise<void> {
 
     if (!response.ok) {
       let errorMessage = data.message || '시험 종료에 실패했습니다.';
-      
+
       if (response.status === 400) {
         errorMessage = data.message || '시험을 종료할 수 없습니다. (이미 종료된 시험일 수 있습니다.)';
-      } else if (response.status === 401) {
-        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
       } else if (response.status === 403) {
         errorMessage = '권한이 없습니다.';
       } else if (response.status === 404) {
@@ -1555,7 +1638,7 @@ export async function getEntryCodes(examId: number, isActive?: boolean): Promise
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-      credentials: 'omit',
+      credentials: 'include',
     });
 
     if (isDev) {
@@ -1676,7 +1759,7 @@ export async function extendExam(examId: number, minutes: number): Promise<void>
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ minutes }),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -1699,7 +1782,7 @@ export async function updateEntryCode(code: string, isActive: boolean): Promise<
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify({ isActive }),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   const data: BaseResponse<EntryCodeResponse> = await response.json();
@@ -1720,7 +1803,7 @@ export async function deleteEntryCode(code: string): Promise<void> {
   const response = await fetch(url, {
     method: 'DELETE',
     headers: getAuthHeaders(),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -1742,7 +1825,7 @@ export async function getMetrics(examId: number): Promise<AdminMetrics> {
   const response = await fetch(url, {
     method: 'GET',
     headers: getAuthHeaders(),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   const data: BaseResponse<AdminMetrics> = await response.json();
@@ -1763,7 +1846,7 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
   const response = await fetch(url, {
     method: 'GET',
     headers: getAuthHeaders(),
-    credentials: 'omit',
+    credentials: 'include',
   });
 
   const data: BaseResponse<ExamineeBoardEntry[]> = await response.json();
@@ -1774,81 +1857,5 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
 }
 
 // ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────
-
-export interface ScoringEvent {
-  type: 'case_result' | 'final_score';
-  data: unknown;
-}
-
-/**
- * 채점 결과 SSE 스트리밍 구독
- * GET /api/admin/submissions/{submissionId}/stream
- *
- * @returns cleanup 함수 (구독 해제 시 호출)
- */
-export function streamScoringResult(
-  submissionId: number,
-  onEvent: (event: ScoringEvent) => void,
-  onError?: (err: Event) => void,
-  onDone?: () => void
-): () => void {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-  const token = getCookie('admin_access_token');
-
-  // SSE는 EventSource를 사용하며, 커스텀 헤더 지원이 없으므로 쿼리 파라미터로 토큰 전달
-  // 서버 측에서 쿼리 파라미터 토큰을 허용해야 함. 불가 시 fetch + ReadableStream으로 대체
-  const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
-
-  // fetch + ReadableStream 방식 (Authorization 헤더 지원)
-  let aborted = false;
-  const controller = new AbortController();
-
-  fetch(url.replace(/\?token=.*/, ''), {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-      Accept: 'text/event-stream',
-    },
-    signal: controller.signal,
-  }).then(async (response) => {
-    if (!response.body) {
-      onError?.(new Event('no body'));
-      return;
-    }
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (!aborted) {
-      const { done, value } = await reader.read();
-      if (done) {
-        onDone?.();
-        break;
-      }
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          try {
-            const parsed = JSON.parse(line.slice(5).trim());
-            onEvent(parsed);
-          } catch {
-            // non-JSON data line 무시
-          }
-        } else if (line === '' && buffer === '') {
-          // keep-alive 빈 라인
-        }
-      }
-    }
-  }).catch((err) => {
-    if (!aborted) {
-      onError?.(err);
-    }
-  });
-
-  return () => {
-    aborted = true;
-    controller.abort();
-  };
-}
+// streamScoringResult는 lib/api/submissions.ts 에서 정의·export됩니다.
+// 이전에 이 파일에 존재하던 구버전 구현은 submissions.ts 의 콜백 기반 버전으로 통합되었습니다.
