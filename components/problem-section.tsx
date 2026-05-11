@@ -14,7 +14,11 @@ export function ProblemSection({ examId }: ProblemSectionProps) {
   useEffect(() => {
     getAssignment(examId)
       .then(setAssignment)
-      .catch(() => {/* 로드 실패 시 null 유지 */})
+      .catch((err) => {
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[ProblemSection] getAssignment failed:", err)
+        }
+      })
       .finally(() => setLoading(false))
   }, [examId])
 
