@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation"
 import {
   getExams,
   getBoard,
+  getAdminSubmissionDetail,
   formatBoardSubmissionLabelKo,
   type Exam,
   type ExamineeBoardEntry,
+  type AdminSubmissionDetailResponse,
 } from "@/lib/api/admin"
-import { getSubmission, type SubmissionDetailResponse } from "@/lib/api/submissions"
 
 interface ParticipantEvaluationContentProps {
   entryCode: string
@@ -78,6 +79,16 @@ function formatScore(n: number | null | undefined): string {
   return `${Number(n).toFixed(1)}`
 }
 
+function formatRubricDisplay(raw: string): string {
+  const trimmed = raw.trim()
+  if (!trimmed) return ""
+  try {
+    return JSON.stringify(JSON.parse(trimmed), null, 2)
+  } catch {
+    return trimmed
+  }
+}
+
 export function ParticipantEvaluationContent({
   entryCode,
   participantName: participantNameProp,
@@ -92,7 +103,7 @@ export function ParticipantEvaluationContent({
   const [boardError, setBoardError] = useState<string | null>(null)
   const [isLoadingBoard, setIsLoadingBoard] = useState(true)
 
-  const [submissionDetail, setSubmissionDetail] = useState<SubmissionDetailResponse | null>(null)
+  const [submissionDetail, setSubmissionDetail] = useState<AdminSubmissionDetailResponse | null>(null)
   const [submissionDetailError, setSubmissionDetailError] = useState<string | null>(null)
   const [isLoadingSubmission, setIsLoadingSubmission] = useState(false)
 
@@ -133,20 +144,21 @@ export function ParticipantEvaluationContent({
   const submissionId = boardEntry?.submissionId ?? null
 
   useEffect(() => {
-    if (!submissionId) {
+    if (submissionId == null) {
       setSubmissionDetail(null)
       setSubmissionDetailError(null)
       return
     }
+    const submissionIdNum = submissionId
     let cancelled = false
     async function loadSubmission() {
       setIsLoadingSubmission(true)
       setSubmissionDetailError(null)
       try {
-        const detail = await getSubmission(submissionId)
+        const detail = await getAdminSubmissionDetail(submissionIdNum)
         if (!cancelled) setSubmissionDetail(detail)
       } catch (e: unknown) {
-        console.error("getSubmission failed", e)
+        console.error("getAdminSubmissionDetail failed", e)
         if (!cancelled) {
           setSubmissionDetail(null)
           setSubmissionDetailError(
@@ -210,6 +222,8 @@ export function ParticipantEvaluationContent({
       `ExamParticipantId,${participantId}`,
       `ExamId,${examId ?? ""}`,
       `SubmissionId,${submissionId ?? ""}`,
+      `HasSubmissionCode,${submissionDetail?.codeInline?.trim() ? "yes" : "no"}`,
+      `HasRubricJson,${submissionDetail?.rubricJson?.trim() ? "yes" : "no"}`,
       `BoardStatus,${submissionStatusLabel ?? ""}`,
       `PromptScore,${scoreFromDetail?.prompt ?? ""}`,
       `PerfScore,${scoreFromDetail?.perf ?? ""}`,
@@ -243,7 +257,7 @@ export function ParticipantEvaluationContent({
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">참가자 평가 상세</h1>
           <p className="text-sm text-[#6B7280]">
-            보드·제출 API에서 불러온 데이터입니다. 미제공 필드는 안내 문구로 표시됩니다.
+            보드 API와 관리자 전용 제출 상세 API에서 불러온 데이터입니다. 미제공 필드는 안내 문구로 표시됩니다.
           </p>
         </div>
       </header>
@@ -349,14 +363,14 @@ export function ParticipantEvaluationContent({
                 {detailScoresMeaningful ? formatScore(scoreFromDetail?.prompt ?? null) : "–"}
               </p>
               <p className="mt-1 text-sm font-medium text-[#374151]">프롬프트 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">GET /api/submissions/… 의 score.prompt</p>
+              <p className="mt-1 text-xs text-[#6B7280]">관리자 제출 상세 API의 score.prompt</p>
             </div>
             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
               <p className="text-3xl font-bold text-[#1A1A1A]">
                 {detailScoresMeaningful ? formatScore(scoreFromDetail?.perf ?? null) : "–"}
               </p>
               <p className="mt-1 text-sm font-medium text-[#374151]">성능 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">GET /api/submissions/… 의 score.perf</p>
+              <p className="mt-1 text-xs text-[#6B7280]">관리자 제출 상세 API의 score.perf</p>
             </div>
             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
               <p className="text-3xl font-bold text-[#1A1A1A]">
@@ -365,7 +379,7 @@ export function ParticipantEvaluationContent({
               <p className="mt-1 text-sm font-medium text-[#374151]">정답률 점수</p>
               <p className="mt-1 text-xs text-[#6B7280]">
                 {detailScoresMeaningful
-                  ? "상세 API score.correctness"
+                  ? "관리자 제출 상세 API score.correctness"
                   : showBoardTotalOnly
                     ? "항목별 값 없음 — 아래 총점만 보드 참고"
                     : "데이터 없음"}
@@ -374,7 +388,7 @@ export function ParticipantEvaluationContent({
           </div>
           {detailScoresMeaningful && (
             <p className="mt-3 text-center text-sm font-semibold text-[#1A1A1A]">
-              총점 {formatScore(scoreFromDetail?.total ?? null)} (상세 API)
+              총점 {formatScore(scoreFromDetail?.total ?? null)} (관리자 제출 상세 API)
             </p>
           )}
           {!detailScoresMeaningful && showBoardTotalOnly && (
@@ -399,10 +413,17 @@ export function ParticipantEvaluationContent({
                 <LanguageBadge language={langDisplay} />
               </div>
               <div className="max-h-[400px] flex-1 overflow-y-auto p-4">
-                <p className="text-sm leading-relaxed text-[#6B7280]">
-                  현재 <code className="rounded bg-[#F3F4F6] px-1">GET /api/submissions/{"{id}"}</code> 응답에
-                  제출 소스 코드 필드가 포함되어 있지 않습니다. 백엔드에 코드 필드가 추가되면 여기에 표시할 수 있습니다.
-                </p>
+                {isLoadingSubmission ? (
+                  <p className="text-sm text-[#6B7280]">불러오는 중…</p>
+                ) : submissionDetail?.codeInline != null && submissionDetail.codeInline.trim() !== "" ? (
+                  <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[#1A1A1A]">
+                    {submissionDetail.codeInline}
+                  </pre>
+                ) : submissionDetail ? (
+                  <p className="text-sm text-[#6B7280]">저장된 제출 코드가 없습니다.</p>
+                ) : (
+                  <p className="text-sm text-[#6B7280]">제출 상세를 불러오면 표시됩니다.</p>
+                )}
               </div>
             </div>
             <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
@@ -410,10 +431,19 @@ export function ParticipantEvaluationContent({
                 <span className="text-sm font-medium text-[#374151]">AI 피드백 (루브릭·턴 평가)</span>
               </div>
               <div className="max-h-[400px] flex-1 overflow-y-auto p-5">
-                <p className="text-sm leading-relaxed text-[#6B7280]">
-                  Spring 관리자 API에는 <code className="rounded bg-[#F3F4F6] px-1">prompt_evaluations</code> 본문이
-                  아직 노출되지 않습니다. AI 평가 텍스트는 별도 내부/분석 API가 마련되면 연결할 수 있습니다.
-                </p>
+                {isLoadingSubmission ? (
+                  <p className="text-sm text-[#6B7280]">불러오는 중…</p>
+                ) : submissionDetail?.rubricJson != null && submissionDetail.rubricJson.trim() !== "" ? (
+                  <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[#1A1A1A]">
+                    {formatRubricDisplay(submissionDetail.rubricJson)}
+                  </pre>
+                ) : submissionDetail ? (
+                  <p className="text-sm text-[#6B7280]">
+                    채점 루브릭 JSON(<code className="rounded bg-[#F3F4F6] px-1">scores.rubric_json</code>)이 아직 없습니다.
+                  </p>
+                ) : (
+                  <p className="text-sm text-[#6B7280]">제출 상세를 불러오면 표시됩니다.</p>
+                )}
               </div>
             </div>
           </div>

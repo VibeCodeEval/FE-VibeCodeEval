@@ -1891,6 +1891,71 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
   return data.result ?? [];
 }
 
+/** 관리자 제출 상세 API와 동일한 상태 값 (백엔드 SubmissionStatus) */
+export type AdminSubmissionStatusDto = 'QUEUED' | 'RUNNING' | 'DONE' | 'FAILED';
+
+export interface AdminSubmissionScoreInfo {
+  prompt: number | null;
+  perf: number | null;
+  correctness: number | null;
+  total: number | null;
+}
+
+export interface AdminSubmissionMetricsInfo {
+  timeMsMedian: number | null;
+  memKbPeak: number | null;
+  loc: number | null;
+}
+
+export interface AdminSubmissionGroupInfo {
+  name: string;
+  pass: number;
+  total: number;
+  weight: number;
+}
+
+export interface AdminSubmissionTestCaseInfo {
+  passRateWeighted: number | null;
+  groups: AdminSubmissionGroupInfo[];
+}
+
+/**
+ * GET /api/admin/submissions/{submissionId} 응답 (코드·루브릭 포함, ADMIN/MASTER 전용)
+ */
+export interface AdminSubmissionDetailResponse {
+  submissionId: number;
+  status: AdminSubmissionStatusDto;
+  lang: string;
+  codeInline: string | null;
+  metrics: AdminSubmissionMetricsInfo | null;
+  tc: AdminSubmissionTestCaseInfo | null;
+  score: AdminSubmissionScoreInfo | null;
+  rubricJson: string | null;
+}
+
+/**
+ * 관리자 전용 제출 상세 조회 (제출 코드·rubricJson 포함)
+ * GET /api/admin/submissions/{submissionId}
+ */
+export async function getAdminSubmissionDetail(
+  submissionId: number
+): Promise<AdminSubmissionDetailResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}`;
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<AdminSubmissionDetailResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(data.message || '제출 상세(관리자) 조회에 실패했습니다.', response.status);
+  }
+  return data.result;
+}
+
 // ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────
 // streamScoringResult는 lib/api/submissions.ts 에서 정의·export됩니다.
 // 이전에 이 파일에 존재하던 구버전 구현은 submissions.ts 의 콜백 기반 버전으로 통합되었습니다.
