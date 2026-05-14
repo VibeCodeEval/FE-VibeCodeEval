@@ -5,7 +5,7 @@ import { Clock, Coins } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button"
 import { ProblemSection } from "@/components/problem-section"
-import { CodeEditorSection } from "@/components/code-editor-section"
+import { CodeEditorSection, type CodeEditorSectionHandle } from "@/components/code-editor-section"
 import { AiAssistantSidebar } from "@/components/ai-assistant-sidebar"
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
@@ -85,6 +85,10 @@ export default function UserTestScreen() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+  /** 헤더 제출 확인 모달에서 POST 제출 중 */
+  const [isModalSubmitting, setIsModalSubmitting] = useState(false)
+
+  const codeEditorRef = useRef<CodeEditorSectionHandle>(null)
 
   // ── 초기 토큰 사용량 로드 (getChatHistory.totalTokens) ──────────────────────
   useEffect(() => {
@@ -307,6 +311,7 @@ export default function UserTestScreen() {
 
             {/* Code Editor Section */}
             <CodeEditorSection
+              ref={codeEditorRef}
               isReadOnly={isExamEnded}
               examId={examId}
               onSubmitted={handleCodeSubmitted}
@@ -342,12 +347,21 @@ export default function UserTestScreen() {
               </Button>
               <Button
                 className="px-8 bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
-                onClick={() => {
-                  setIsSubmitModalOpen(false);
-                  setShowFinishedModal(true);
+                disabled={isModalSubmitting}
+                onClick={async () => {
+                  setIsModalSubmitting(true)
+                  try {
+                    const ok = await codeEditorRef.current?.submit()
+                    if (ok) {
+                      setIsSubmitModalOpen(false)
+                      setShowFinishedModal(true)
+                    }
+                  } finally {
+                    setIsModalSubmitting(false)
+                  }
                 }}
               >
-                네
+                {isModalSubmitting ? "제출 중…" : "네"}
               </Button>
             </div>
           </div>

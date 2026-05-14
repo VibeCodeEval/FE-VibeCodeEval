@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { submitCode, SubmissionStatus } from "@/lib/api/submissions"
 
@@ -77,11 +77,20 @@ interface CodeEditorSectionProps {
   onSubmitted?: (submissionId: number) => void;
 }
 
-export function CodeEditorSection({
+/** 부모(헤더 제출 확인 모달 등)에서 POST 제출을 트리거할 때 사용 */
+export type CodeEditorSectionHandle = {
+  /** POST /api/exams/{examId}/submissions — 성공 시 true */
+  submit: () => Promise<boolean>;
+};
+
+export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorSectionProps>(function CodeEditorSection(
+  {
   isReadOnly = false,
   examId,
   onSubmitted,
-}: CodeEditorSectionProps) {
+}: CodeEditorSectionProps,
+  ref
+) {
   const [language, setLanguage] = useState("python")
   const [languageCodes, setLanguageCodes] = useState<Record<string, string>>({
     python: defaultCodeTemplates.python,
@@ -128,15 +137,15 @@ export function CodeEditorSection({
     }
   };
 
-  /** 코드 제출 핸들러 */
-  const handleSubmit = async () => {
+  /** 코드 제출 — 에디터 버튼·부모 ref 동시 사용 */
+  const handleSubmit = useCallback(async (): Promise<boolean> => {
     if (!examId) {
       setSubmitError("시험 정보가 없습니다.")
-      return
+      return false
     }
     if (!code.trim()) {
       setSubmitError("코드를 작성해주세요.")
-      return
+      return false
     }
 
     setIsSubmitting(true)
@@ -147,13 +156,23 @@ export function CodeEditorSection({
       const result = await submitCode(examId, { lang: language, code })
       setSubmitStatus(result.status)
       onSubmitted?.(result.submissionId)
+      return true
     } catch (err: any) {
       setSubmitError(err.message || "코드 제출에 실패했습니다.")
       setSubmitStatus(null)
+      return false
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [examId, language, code, onSubmitted])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: () => handleSubmit(),
+    }),
+    [handleSubmit]
+  )
 
   const MIN_LINES = 15;
   const actualLineCount = code.split("\n").length || 1;
@@ -181,7 +200,8 @@ export function CodeEditorSection({
           {/* 제출 버튼 — isReadOnly일 때 숨김 */}
           {!isReadOnly && examId && (
             <button
-              onClick={handleSubmit}
+              type="button"
+              onClick={() => void handleSubmit()}
               disabled={isSubmitting}
               className="h-8 px-4 text-sm font-medium rounded-md bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
@@ -257,4 +277,4 @@ export function CodeEditorSection({
       </div>
     </div>
   )
-}
+})

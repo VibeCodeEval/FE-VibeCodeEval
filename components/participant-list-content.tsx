@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { ArrowLeft, Eye, ChevronLeft, ChevronRight } from "lucide-react"
-import { getExams, getBoard, ExamineeBoardEntry } from "@/lib/api/admin"
+import { getExams, getBoard, ExamineeBoardEntry, type Exam } from "@/lib/api/admin"
 
 type TrendLevel = "High" | "Average" | "Low"
 
@@ -18,6 +18,31 @@ interface ParticipantDetail {
 
 interface ParticipantListContentProps {
   entryCode: string
+}
+
+/**
+ * /admin/results/[segment] 세그먼트로 시험을 찾습니다.
+ * - API entryCode와 일치(있을 때)
+ * - 시험 제목과 일치(평가 결과 목록이 title을 URL에 넣는 기존 동작)
+ * - 전부 숫자면 exam.id (직접 링크용)
+ */
+function findExamByResultsSegment(exams: Exam[], segment: string) {
+  const trimmed = segment.trim()
+  if (!trimmed) return undefined
+
+  const byEntryCode = exams.find(
+    (e) => e.entryCode != null && String(e.entryCode).length > 0 && e.entryCode === trimmed
+  )
+  if (byEntryCode) return byEntryCode
+
+  const byTitle = exams.find((e) => e.title === trimmed)
+  if (byTitle) return byTitle
+
+  if (/^\d+$/.test(trimmed)) {
+    return exams.find((e) => String(e.id) === trimmed)
+  }
+
+  return undefined
 }
 
 function TrendBadge({ trend }: { trend: TrendLevel }) {
@@ -58,7 +83,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
       try {
         // 1) 시험 목록에서 entryCode에 매핑된 examId 찾기
         const exams = await getExams()
-        const matched = exams.find((e) => e.entryCode === entryCode)
+        const matched = findExamByResultsSegment(exams, entryCode)
         if (!matched) {
           // entryCode로 직접 매핑이 안 될 때 — 첫 번째 시험 또는 에러
           setError("해당 입장 코드에 대한 시험을 찾을 수 없습니다.")

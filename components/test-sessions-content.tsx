@@ -18,7 +18,17 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { deleteExam, getBoard, getExams, type Exam, type ExamineeBoardEntry } from "@/lib/api/admin";
+import { deleteExam, getBoard, getExams, type Exam, type ExamineeBoardEntry, formatBoardSubmissionLabelKo } from "@/lib/api/admin";
+
+function submissionBadgeClassName(label: string): string {
+  if (label === "시작 안 함") return "bg-gray-100 text-gray-700 hover:bg-gray-100"
+  if (label === "진행 중") return "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
+  if (label === "제출 실패") return "bg-red-100 text-red-700 hover:bg-red-100"
+  if (label.startsWith("채점 완료")) return "bg-green-100 text-green-700 hover:bg-green-100"
+  if (label === "제출·채점 중") return "bg-amber-100 text-amber-800 hover:bg-amber-100"
+  if (label === "제출됨") return "bg-blue-100 text-blue-700 hover:bg-blue-100"
+  return "bg-gray-100 text-gray-700 hover:bg-gray-100"
+}
 
 export interface TestSession {
   id: number
@@ -34,7 +44,10 @@ interface Participant {
   name: string
   phoneNumber: string
   connectionStatus: string
-  submissionStatus: string
+  /** 제출 레코드 존재 */
+  hasSubmission: boolean
+  /** 표시용 한글 상태 */
+  submissionStatusLabel: string
   tokenUsage: number
 }
 
@@ -89,11 +102,8 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
         name: participant.name,
         phoneNumber: participant.phoneMasked,
         connectionStatus: participant.state === "ENTRANCE" ? "Connected" : "Disconnected",
-        submissionStatus: participant.submitted
-          ? "Submitted"
-          : participant.state === "ENTRANCE"
-            ? "In Progress"
-            : "Not Started",
+        hasSubmission: participant.submitted,
+        submissionStatusLabel: formatBoardSubmissionLabelKo(participant),
         tokenUsage: participant.tokenUsed || 0,
       }))
       setParticipants(mapped)
@@ -156,7 +166,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   const participantEndIndex = Math.min(participantStartIndex + participantPageSize, totalParticipants)
   const paginatedParticipants = participants.slice(participantStartIndex, participantEndIndex)
 
-  const submittedCount = participants.filter((p) => p.submissionStatus === "Submitted").length
+  const submittedCount = participants.filter((p) => p.hasSubmission).length
   const avgTokenUsage =
     participants.length > 0
       ? Math.round(participants.reduce((sum, p) => sum + p.tokenUsage, 0) / participants.length)
@@ -680,16 +690,10 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                         <TableCell>
                           <Badge
                             variant="secondary"
-                            className={
-                              participant.submissionStatus === "Submitted"
-                                ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
-                                : participant.submissionStatus === "In Progress"
-                                  ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-100"
-                            }
+                            className={submissionBadgeClassName(participant.submissionStatusLabel)}
                             style={{ fontSize: "12px", fontWeight: 500 }}
                           >
-                            {participant.submissionStatus === "Submitted" ? "제출됨" : participant.submissionStatus === "In Progress" ? "진행 중" : "시작 안 함"}
+                            {participant.submissionStatusLabel}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-[#6B7280]" style={{ fontSize: "14px", fontWeight: 400 }}>

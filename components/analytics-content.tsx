@@ -34,11 +34,15 @@ function mapBoardToParticipant(entry: ExamineeBoardEntry, examTitle: string): Pa
   const tokenRatio =
     entry.tokenLimit > 0 ? Math.min(100, Math.round((entry.tokenUsed / entry.tokenLimit) * 100)) : 0
 
+  const total =
+    entry.totalScore != null && entry.totalScore !== undefined ? Number(entry.totalScore) : null
+  const avgScore = total != null && !Number.isNaN(total) ? total : 0
+
   return {
     id: entry.examParticipantId.toString(),
     name: entry.name,
     entryCode: examTitle,
-    avgScore: 0, // 채점 API 미연동 — 채점 완료 후 집계 예정
+    avgScore,
     status: submitted ? "완료" : "진행 중",
     trend: "보통",
     sparklineData: [0, tokenRatio], // 토큰 사용 추이

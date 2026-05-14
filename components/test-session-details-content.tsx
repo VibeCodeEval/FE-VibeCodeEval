@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link";
-import { getBoard } from "@/lib/api/admin";
+import { getBoard, formatBoardSubmissionLabelKo, type ExamineeBoardEntry } from "@/lib/api/admin";
 
 // Participant type
 type Participant = {
@@ -16,7 +16,10 @@ type Participant = {
   name: string
   phoneNumber: string
   connectionStatus: string
-  submissionStatus: string
+  /** 제출 레코드 존재 여부 (요약 통계용) */
+  hasSubmission: boolean
+  /** 제출·채점 상태 표시 문구 */
+  submissionStatusLabel: string
   tokenUsage: number
 }
 
@@ -43,16 +46,13 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
     setIsLoading(true);
     try {
       const board = await getBoard(session.id);
-      const mapped: Participant[] = board.map((p) => ({
+      const mapped: Participant[] = board.map((p: ExamineeBoardEntry) => ({
         id: p.examParticipantId,
         name: p.name,
         phoneNumber: p.phoneMasked,
         connectionStatus: p.state === "ENTRANCE" ? "Connected" : "Pending",
-        submissionStatus: p.submitted
-          ? "Submitted"
-          : p.state === "ENTRANCE"
-          ? "In Progress"
-          : "Not Started",
+        hasSubmission: p.submitted,
+        submissionStatusLabel: formatBoardSubmissionLabelKo(p),
         tokenUsage: p.tokenUsed || 0,
       }));
       setParticipants(mapped);
@@ -77,7 +77,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
   const currentParticipants = participants.slice(startIndex, endIndex)
 
   // Calculate summary stats
-  const submissions = participants.filter((p) => p.submissionStatus === "Submitted").length
+  const submissions = participants.filter((p) => p.hasSubmission).length
   const avgTokenUsage =
     participants.length > 0
       ? Math.round(participants.reduce((sum, p) => sum + p.tokenUsage, 0) / participants.length)
@@ -97,14 +97,26 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
     return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">대기 중</Badge>
   }
 
-  const getSubmissionBadge = (status: string) => {
-    if (status === "Submitted") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">제출됨</Badge>
+  const getSubmissionBadge = (label: string) => {
+    if (label === "시작 안 함") {
+      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">시작 안 함</Badge>
     }
-    if (status === "In Progress") {
+    if (label === "진행 중") {
       return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">진행 중</Badge>
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">시작 안 함</Badge>
+    if (label === "제출 실패") {
+      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">제출 실패</Badge>
+    }
+    if (label.startsWith("채점 완료")) {
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{label}</Badge>
+    }
+    if (label === "제출·채점 중") {
+      return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">{label}</Badge>
+    }
+    if (label === "제출됨") {
+      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">제출됨</Badge>
+    }
+    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{label}</Badge>
   }
 
   // Generate page numbers for pagination
@@ -260,7 +272,7 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
                       {getConnectionBadge(participant.connectionStatus)}
                     </TableCell>
                     <TableCell style={{ width: "140px" }} className="text-center">
-                      {getSubmissionBadge(participant.submissionStatus)}
+                      {getSubmissionBadge(participant.submissionStatusLabel)}
                     </TableCell>
                     <TableCell style={{ width: "120px", fontSize: "14px", color: "#6B7280" }} className="text-center">
                       {participant.tokenUsage.toLocaleString()}

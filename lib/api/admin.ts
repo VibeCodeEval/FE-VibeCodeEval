@@ -1728,6 +1728,41 @@ export interface ExamineeBoardEntry {
   tokenLimit: number;
   tokenUsed: number;
   submitted: boolean;
+  /** 최신 제출 ID (submissions.id) */
+  submissionId?: number | null;
+  /** QUEUED | RUNNING | DONE | FAILED */
+  submissionStatus?: string | null;
+  /** scores.total_score (없으면 null) */
+  totalScore?: number | null;
+  /** 제출 생성 시각 (ISO 문자열) */
+  submittedAt?: string | null;
+  /** 점수 행 기준 갱신 시각 (ISO 문자열) */
+  evaluatedAt?: string | null;
+}
+
+/**
+ * 관리자 보드 한 행의 제출·채점 상태를 한글 짧은 라벨로 변환합니다.
+ */
+export function formatBoardSubmissionLabelKo(entry: ExamineeBoardEntry): string {
+  if (!entry.submitted) {
+    return entry.state === "ENTRANCE" ? "진행 중" : "시작 안 함";
+  }
+  if (entry.submissionStatus === "FAILED") {
+    return "제출 실패";
+  }
+  if (entry.totalScore != null && entry.totalScore !== undefined) {
+    const n = Number(entry.totalScore);
+    if (!Number.isNaN(n)) {
+      return `채점 완료 (${n.toFixed(1)}점)`;
+    }
+  }
+  if (entry.submissionStatus === "DONE") {
+    return "채점 완료";
+  }
+  if (entry.submissionStatus === "RUNNING" || entry.submissionStatus === "QUEUED") {
+    return "제출·채점 중";
+  }
+  return "제출됨";
 }
 
 export interface AdminMetrics {
