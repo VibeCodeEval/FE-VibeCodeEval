@@ -118,7 +118,7 @@ export async function getSubmission(submissionId: number): Promise<SubmissionDet
   return data.result;
 }
 
-// ─── SSE 채점 결과 스트리밍 (Admin 전용) ────────────────────────────────────────
+// ─── SSE 채점 결과 스트리밍 (응시자: 본인 제출만) ─────────────────────────────
 
 export interface CaseResultEvent {
   testCaseId: number;
@@ -155,8 +155,8 @@ export interface ScoringStreamCallbacks {
 }
 
 /**
- * 채점 결과 SSE 스트리밍 구독 (Admin/Master 전용)
- * GET /api/admin/submissions/{submissionId}/stream
+ * 채점 결과 SSE 스트리밍 구독 (로그인 응시자, 해당 submission 소유자만)
+ * GET /api/submissions/{submissionId}/stream
  *
  * EventSource는 Authorization 헤더 미지원 → fetch + ReadableStream 사용
  * 반환값: 구독을 취소하는 AbortController의 abort 함수
@@ -167,7 +167,7 @@ export function streamScoringResult(
 ): () => void {
   const controller = new AbortController();
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-  const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}/stream`;
+  const url = `${apiBaseUrl}/api/submissions/${submissionId}/stream`;
 
   async function connect() {
     try {

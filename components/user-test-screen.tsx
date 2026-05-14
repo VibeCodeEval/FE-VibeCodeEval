@@ -145,6 +145,7 @@ export default function UserTestScreen() {
   const handleCodeSubmitted = (submissionId: number) => {
     // 이전 SSE 연결 취소
     sseCleanupRef.current?.();
+    sseCleanupRef.current = null;
 
     setIsScoring(true);
     setCaseResultCount(0);
@@ -182,6 +183,7 @@ export default function UserTestScreen() {
   useEffect(() => {
     return () => {
       sseCleanupRef.current?.();
+      sseCleanupRef.current = null;
     };
   }, []);
 
@@ -224,6 +226,8 @@ export default function UserTestScreen() {
   }, [examId, isExamEnded, showEndModal]);
 
   const handleGoHome = () => {
+    sseCleanupRef.current?.();
+    sseCleanupRef.current = null;
     router.push("/");
   };
 
@@ -458,7 +462,7 @@ export default function UserTestScreen() {
             <div className="w-full flex flex-col gap-2">
               <Button
                 className="w-full rounded-lg bg-gray-900 text-white hover:bg-black"
-                onClick={() => router.push("/")}
+                onClick={handleGoHome}
               >
                 홈 화면으로 돌아가기
               </Button>
