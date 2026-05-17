@@ -240,23 +240,37 @@ export async function getActiveSessionByExam(examId: number): Promise<ActiveSess
     credentials: 'include',
   });
 
-  let data: BaseResponse<ActiveSessionResponse>;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error('활성 세션 응답을 파싱할 수 없습니다.');
+  if (response.status === 404) {
+    return null;
+  }
+
+  let data: BaseResponse<ActiveSessionResponse> | undefined;
+  const text = await response.text();
+  if (text) {
+    try {
+      data = JSON.parse(text) as BaseResponse<ActiveSessionResponse>;
+    } catch {
+      if (!response.ok) {
+        const err: any = new Error('활성 세션 응답을 파싱할 수 없습니다.');
+        err.status = response.status;
+        throw err;
+      }
+      throw new Error('활성 세션 응답을 파싱할 수 없습니다.');
+    }
   }
 
   if (!response.ok) {
-    if (response.status === 404 || data.code === 'EXAM404_5') {
+    if (data?.code === 'EXAM404_5') {
       return null;
     }
-    const err: any = new Error(data.message || '활성 세션 조회에 실패했습니다.');
+    const err: any = new Error(data?.message || '활성 세션 조회에 실패했습니다.');
     err.status = response.status;
+    err.code = data?.code;
+    err.apiMessage = data?.message;
     throw err;
   }
 
-  if (data.code !== 'COMMON200' || !data.result) {
+  if (!data || data.code !== 'COMMON200' || !data.result) {
     return null;
   }
 
@@ -300,8 +314,22 @@ export async function getAssignment(examId: number): Promise<AssignmentResponse>
     credentials: 'include',
   });
 
-  const data: BaseResponse<AssignmentResponse> = await response.json();
-  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+  let data: BaseResponse<AssignmentResponse> | undefined;
+  const text = await response.text();
+  if (text) {
+    try {
+      data = JSON.parse(text) as BaseResponse<AssignmentResponse>;
+    } catch {
+      if (!response.ok) {
+        const err: any = new Error('문제 조회 응답을 파싱할 수 없습니다.');
+        err.status = response.status;
+        throw err;
+      }
+      throw new Error('문제 조회 응답을 파싱할 수 없습니다.');
+    }
+  }
+
+  if (!response.ok || !data || data.code !== 'COMMON200' || !data.result) {
     const err: any = new Error(data?.message || '문제 조회에 실패했습니다.');
     err.status = response.status;
     err.code = data?.code;

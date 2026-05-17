@@ -15,6 +15,18 @@ export default function TestPage() {
 
   useEffect(() => {
     let cancelled = false;
+    let redirectTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const scheduleRedirect = () => {
+      if (redirectTimeoutId !== undefined) {
+        clearTimeout(redirectTimeoutId);
+      }
+      redirectTimeoutId = setTimeout(() => {
+        if (!cancelled) {
+          router.replace("/");
+        }
+      }, 1200);
+    };
 
     const restoreSession = async () => {
       const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -24,6 +36,8 @@ export default function TestPage() {
       // 이 경우 즉시 entry로 튕기지 말고 짧게 재시도 후 실패 시에만 리다이렉트한다.
       const maxAttempts = 6; // 총 5~6초 내 재시도
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        if (cancelled) return;
+
         try {
           const currentExamId = useExamSessionStore.getState().examId;
           const activeSession = currentExamId
@@ -42,17 +56,18 @@ export default function TestPage() {
 
           if (attempt === maxAttempts) {
             setRestoreError("활성 시험 세션이 없습니다. 다시 입장해주세요.");
-            setTimeout(() => router.replace("/"), 1200);
+            scheduleRedirect();
             return;
           }
 
           await sleep(300 + attempt * 250);
+          if (cancelled) return;
         } catch (error: any) {
           if (cancelled) return;
           // 인증 실패(쿠키 누락/만료)는 재시도해도 의미 없으므로 즉시 리다이렉트
           if (error?.status === 401) {
             setRestoreError("인증이 필요합니다. 다시 입장해주세요.");
-            setTimeout(() => router.replace("/"), 1200);
+            scheduleRedirect();
             return;
           }
 
@@ -60,11 +75,12 @@ export default function TestPage() {
 
           if (attempt === maxAttempts) {
             setRestoreError("세션 복구에 실패했습니다. 다시 입장해주세요.");
-            setTimeout(() => router.replace("/"), 1200);
+            scheduleRedirect();
             return;
           }
 
           await sleep(300 + attempt * 250);
+          if (cancelled) return;
         }
       }
     };
@@ -74,6 +90,9 @@ export default function TestPage() {
     });
     return () => {
       cancelled = true;
+      if (redirectTimeoutId !== undefined) {
+        clearTimeout(redirectTimeoutId);
+      }
     };
   }, [router]);
 

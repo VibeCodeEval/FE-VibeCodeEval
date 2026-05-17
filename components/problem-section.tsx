@@ -20,7 +20,11 @@ export function ProblemSection({ examId }: ProblemSectionProps) {
       const status = err?.status
       const code = err?.code
       const msg = String(err?.apiMessage || err?.message || "")
-      return status === 400 && (code === "PROBLEM005" || msg.includes("배정된 문제가 없습니다"))
+      return (
+        status === 400 ||
+        code === "PROBLEM005" ||
+        msg.includes("배정된 문제가 없습니다")
+      )
     }
 
     const load = async () => {
@@ -52,6 +56,7 @@ export function ProblemSection({ examId }: ProblemSectionProps) {
               console.warn(`[ProblemSection] assignment not ready (attempt ${attempt}/${maxAttempts}), retrying...`, err)
             }
             await sleep(1000)
+            if (cancelled) return
             continue
           }
 
