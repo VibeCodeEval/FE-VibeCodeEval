@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { Download, TrendingUp, TrendingDown, Minus, ChevronDown, X, CheckCircle } from "lucide-react"
 import { getExams, getBoard, Exam, ExamineeBoardEntry } from "@/lib/api/admin"
+import { adminParticipantEvaluationHref } from "@/lib/paths/admin-participant-evaluation"
 
 type Trend = "높음" | "보통" | "낮음"
 type Status = "완료" | "진행 중"
@@ -150,10 +151,12 @@ function ParticipantCard({ participant }: { participant: Participant }) {
 
       <div className="mt-4 flex justify-end">
         <Link
-          href={{
-            pathname: `/admin/results/${encodeURIComponent(participant.entryCode)}/${participant.id}`,
-            query: { from: "analytics" },
-          }}
+          href={adminParticipantEvaluationHref({
+            resultsSegment: participant.entryCode,
+            participantId: participant.id,
+            from: "analytics",
+            participantName: participant.name,
+          })}
           className="text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]"
         >
           상세 보기 →

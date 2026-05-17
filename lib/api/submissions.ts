@@ -1,12 +1,6 @@
-// Submission API 호출 함수들
+// Submission API 호출 함수들 (HttpOnly 쿠키 — lib/api/user-client.ts)
 
-function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-}
-
-function getUserAuthHeaders(): HeadersInit {
-  return { 'Content-Type': 'application/json' };
-}
+import { USER_JSON_HEADERS, userApiFetch } from '@/lib/api/user-client';
 
 export interface BaseResponse<T> {
   timestamp: string;
@@ -72,13 +66,11 @@ export interface SubmissionDetailResponse {
  * HTTP 202 Accepted 반환 (비동기 채점)
  */
 export async function submitCode(examId: number, request: SubmitRequest): Promise<SubmitResponse> {
-  const url = `${getApiBaseUrl()}/api/exams/${examId}/submissions`;
-
-  const response = await fetch(url, {
+  const response = await userApiFetch(`/api/exams/${examId}/submissions`, {
     method: 'POST',
-    headers: getUserAuthHeaders(),
-    body: JSON.stringify(request),
     credentials: 'include',
+    headers: USER_JSON_HEADERS,
+    body: JSON.stringify(request),
   });
 
   // 202 Accepted도 성공으로 처리
@@ -101,12 +93,10 @@ export async function submitCode(examId: number, request: SubmitRequest): Promis
  * GET /api/submissions/{submissionId}
  */
 export async function getSubmission(submissionId: number): Promise<SubmissionDetailResponse> {
-  const url = `${getApiBaseUrl()}/api/submissions/${submissionId}`;
-
-  const response = await fetch(url, {
+  const response = await userApiFetch(`/api/submissions/${submissionId}`, {
     method: 'GET',
-    headers: getUserAuthHeaders(),
     credentials: 'include',
+    headers: USER_JSON_HEADERS,
   });
 
   const data: BaseResponse<SubmissionDetailResponse> = await response.json();
@@ -166,15 +156,13 @@ export function streamScoringResult(
   callbacks: ScoringStreamCallbacks
 ): () => void {
   const controller = new AbortController();
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-  const url = `${apiBaseUrl}/api/submissions/${submissionId}/stream`;
 
   async function connect() {
     try {
-      const response = await fetch(url, {
+      const response = await userApiFetch(`/api/submissions/${submissionId}/stream`, {
         method: 'GET',
-        headers: { Accept: 'text/event-stream' },
         credentials: 'include',
+        headers: { Accept: 'text/event-stream' },
         signal: controller.signal,
       });
 

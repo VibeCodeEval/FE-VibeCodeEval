@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link";
 import { getBoard, formatBoardSubmissionLabelKo, type ExamineeBoardEntry } from "@/lib/api/admin";
+import { adminParticipantEvaluationHref } from "@/lib/paths/admin-participant-evaluation";
 
 // Participant type
 type Participant = {
@@ -279,13 +280,13 @@ export default function TestSessionDetailsContent({ session, onBack }: TestSessi
                     </TableCell>
                     <TableCell style={{ width: "100px" }} className="text-right">
                       <Link
-                        href={{
-                          pathname: `/admin/results/${encodeURIComponent("AIV-2024-001")}/${participant.id}`,
-                          query: {
-                            from: "master",                 // ✅ 3번 루트 표시
-                            sessionId: session.id.toString() // ✅ 어떤 세션에서 왔는지
-                          },
-                        }}
+                        href={adminParticipantEvaluationHref({
+                          resultsSegment: session.id,
+                          participantId: participant.id,
+                          from: "master",
+                          participantName: participant.name,
+                          sessionId: session.id,
+                        })}
                       >
                         <Button
                           variant="ghost"

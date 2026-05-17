@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { ArrowLeft, Eye, ChevronLeft, ChevronRight } from "lucide-react"
 import { getExams, getBoard, ExamineeBoardEntry, type Exam } from "@/lib/api/admin"
+import { adminParticipantEvaluationHref } from "@/lib/paths/admin-participant-evaluation"
 
 type TrendLevel = "High" | "Average" | "Low"
 
@@ -222,14 +223,12 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
                   </div>
                   <div className="flex justify-center">
                     <Link
-                      href={{
-                        pathname: `/admin/results/${encodeURIComponent(entryCode)}/${encodeURIComponent(participant.id)}`,
-                        query: {
-                          entryCode,
-                          participantName: participant.name,
-                          from: "results",
-                        },
-                      }}
+                      href={adminParticipantEvaluationHref({
+                        resultsSegment: entryCode,
+                        participantId: participant.id,
+                        from: "results",
+                        participantName: participant.name,
+                      })}
                       className="inline-flex items-center gap-1.5 rounded-md border-[#3B82F6] bg-white px-3 py-1.5 text-sm text-[#3B82F6] hover:bg-[#EFF6FF]"
                     >
                       <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />

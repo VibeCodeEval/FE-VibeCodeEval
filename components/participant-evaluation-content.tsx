@@ -12,6 +12,9 @@ import {
   type ExamineeBoardEntry,
   type AdminSubmissionDetailResponse,
 } from "@/lib/api/admin"
+import { resolveBoardPerformanceLevel } from "@/lib/performance-level"
+import { ParticipantEvaluationTestSummary } from "@/components/participant-evaluation-test-summary"
+import { ParticipantEvaluationRubricReport } from "@/components/participant-evaluation-rubric-report"
 
 interface ParticipantEvaluationContentProps {
   entryCode: string
@@ -49,25 +52,9 @@ function findExamByResultsSegment(exams: Exam[], segment: string) {
   return undefined
 }
 
-function trendFromBoard(entry: ExamineeBoardEntry | null): "High" | "Average" | "Low" {
-  if (!entry) return "Low"
-  if (entry.submitted) return "High"
-  if (entry.state === "ENTRANCE") return "Average"
-  return "Low"
-}
-
-function TrendBadge({ trend }: { trend: "High" | "Average" | "Low" }) {
-  const badgeStyles: Record<string, string> = {
-    High: "bg-[#DCFCE7] text-[#16A34A]",
-    Average: "bg-[#FEF3C7] text-[#D97706]",
-    Low: "bg-[#FEE2E2] text-[#DC2626]",
-  }
-  const trendText: Record<string, string> = {
-    High: "높음",
-    Average: "보통",
-    Low: "낮음",
-  }
-  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[trend]}>{trendText[trend]}</span>
+function PerformanceLevelBadge({ totalScore }: { totalScore: number | null | undefined }) {
+  const { label, badgeClass } = resolveBoardPerformanceLevel(totalScore)
+  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeClass}>{label}</span>
 }
 
 function LanguageBadge({ language }: { language: string }) {
@@ -77,16 +64,6 @@ function LanguageBadge({ language }: { language: string }) {
 function formatScore(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return "–"
   return `${Number(n).toFixed(1)}`
-}
-
-function formatRubricDisplay(raw: string): string {
-  const trimmed = raw.trim()
-  if (!trimmed) return ""
-  try {
-    return JSON.stringify(JSON.parse(trimmed), null, 2)
-  } catch {
-    return trimmed
-  }
 }
 
 export function ParticipantEvaluationContent({
@@ -186,8 +163,6 @@ export function ParticipantEvaluationContent({
     return formatBoardSubmissionLabelKo(boardEntry)
   }, [boardEntry])
 
-  const trend = useMemo(() => trendFromBoard(boardEntry), [boardEntry])
-
   const scoreFromDetail = submissionDetail?.score
   /** BE는 Score 행이 없어도 0으로 채워 보냄 → 전부 0이면 ‘실제 점수 없음’으로 간주 */
   const detailScoresMeaningful =
@@ -201,6 +176,18 @@ export function ParticipantEvaluationContent({
     boardEntry?.totalScore != null &&
     !Number.isNaN(Number(boardEntry.totalScore)) &&
     !detailScoresMeaningful
+
+  const effectiveTotalScore = useMemo((): number | null => {
+    if (detailScoresMeaningful && scoreFromDetail?.total != null) {
+      const n = Number(scoreFromDetail.total)
+      return Number.isNaN(n) ? null : n
+    }
+    if (boardEntry?.totalScore != null) {
+      const n = Number(boardEntry.totalScore)
+      return Number.isNaN(n) ? null : n
+    }
+    return null
+  }, [detailScoresMeaningful, scoreFromDetail, boardEntry])
 
   const showToast = (title: string, description: string) => {
     const id = crypto.randomUUID()
@@ -262,8 +249,8 @@ export function ParticipantEvaluationContent({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="mb-4">
+      <div className="flex min-h-0 flex-1 flex-col p-6">
+        <div className="mb-4 shrink-0">
           <button
             type="button"
             onClick={handleBackClick}
@@ -322,10 +309,22 @@ export function ParticipantEvaluationContent({
             )}
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 수준 (보드 기준)</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              성과 수준 (총점 기준)
+            </span>
             <div className="mt-3">
-              <TrendBadge trend={trend} />
+              <PerformanceLevelBadge totalScore={effectiveTotalScore} />
             </div>
+            {effectiveTotalScore != null && (
+              <p className="mt-2 text-xs text-[#6B7280]">
+                기준: 80점 이상 높음 · 50점 이상 보통 · 50점 미만 낮음
+                {detailScoresMeaningful
+                  ? " (관리자 제출 상세 API 총점)"
+                  : showBoardTotalOnly
+                    ? " (관리자 보드 총점)"
+                    : ""}
+              </p>
+            )}
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출·채점 상태</span>
@@ -403,107 +402,48 @@ export function ParticipantEvaluationContent({
 
         <div className="mb-6">
           <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">제출한 코드</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Code className="h-4 w-4 text-[#6B7280]" strokeWidth={1.5} />
-                  <span className="text-sm font-medium text-[#374151]">코드</span>
-                </div>
-                <LanguageBadge language={langDisplay} />
+          <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-3">
+              <div className="flex items-center gap-2">
+                <Code className="h-4 w-4 text-[#6B7280]" strokeWidth={1.5} />
+                <span className="text-sm font-medium text-[#374151]">코드</span>
               </div>
-              <div className="max-h-[400px] flex-1 overflow-y-auto p-4">
-                {isLoadingSubmission ? (
-                  <p className="text-sm text-[#6B7280]">불러오는 중…</p>
-                ) : submissionDetail?.codeInline != null && submissionDetail.codeInline.trim() !== "" ? (
-                  <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[#1A1A1A]">
-                    {submissionDetail.codeInline}
-                  </pre>
-                ) : submissionDetail ? (
-                  <p className="text-sm text-[#6B7280]">저장된 제출 코드가 없습니다.</p>
-                ) : (
-                  <p className="text-sm text-[#6B7280]">제출 상세를 불러오면 표시됩니다.</p>
-                )}
-              </div>
+              <LanguageBadge language={langDisplay} />
             </div>
-            <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
-              <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-5 py-3">
-                <span className="text-sm font-medium text-[#374151]">AI 피드백 (루브릭·턴 평가)</span>
-              </div>
-              <div className="max-h-[400px] flex-1 overflow-y-auto p-5">
-                {isLoadingSubmission ? (
-                  <p className="text-sm text-[#6B7280]">불러오는 중…</p>
-                ) : submissionDetail?.rubricJson != null && submissionDetail.rubricJson.trim() !== "" ? (
-                  <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[#1A1A1A]">
-                    {formatRubricDisplay(submissionDetail.rubricJson)}
-                  </pre>
-                ) : submissionDetail ? (
-                  <p className="text-sm text-[#6B7280]">
-                    채점 루브릭 JSON(<code className="rounded bg-[#F3F4F6] px-1">scores.rubric_json</code>)이 아직 없습니다.
-                  </p>
-                ) : (
-                  <p className="text-sm text-[#6B7280]">제출 상세를 불러오면 표시됩니다.</p>
-                )}
-              </div>
+            <div className="max-h-[400px] overflow-y-auto p-4">
+              {isLoadingSubmission ? (
+                <p className="text-sm text-[#6B7280]">불러오는 중…</p>
+              ) : submissionDetail?.codeInline != null && submissionDetail.codeInline.trim() !== "" ? (
+                <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[#1A1A1A]">
+                  {submissionDetail.codeInline}
+                </pre>
+              ) : submissionDetail ? (
+                <p className="text-sm text-[#6B7280]">저장된 제출 코드가 없습니다.</p>
+              ) : (
+                <p className="text-sm text-[#6B7280]">제출 상세를 불러오면 표시됩니다.</p>
+              )}
             </div>
           </div>
         </div>
 
         <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">채점·테스트 요약</h2>
-          <div className="rounded-xl border border-[#E5E5E5] bg-white shadow-sm p-6">
-            {!submissionDetail && !isLoadingSubmission && (
-              <p className="text-sm text-[#6B7280]">
-                제출이 없거나 제출 상세를 불러오지 못했습니다. 개별 테스트 케이스 입·출력은 현재 API에 없습니다.
-              </p>
-            )}
-            {submissionDetail && (
-              <div className="space-y-4 text-sm">
-                <p>
-                  <span className="font-medium text-[#374151]">제출 상태(상세):</span>{" "}
-                  <span className="text-[#1A1A1A]">{submissionDetail.status}</span>
-                </p>
-                {submissionDetail.metrics && (
-                  <p className="text-[#6B7280]">
-                    시간 중앙값: {submissionDetail.metrics.timeMsMedian ?? "–"} ms · 메모리 peak:{" "}
-                    {submissionDetail.metrics.memKbPeak ?? "–"} KB · LOC: {submissionDetail.metrics.loc ?? "–"}
-                  </p>
-                )}
-                {submissionDetail.tc?.groups && submissionDetail.tc.groups.length > 0 ? (
-                  <div>
-                    <p className="mb-2 font-medium text-[#374151]">채점 그룹별 통과 (submission_runs 집계)</p>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm">
-                        <thead>
-                          <tr className="border-b border-[#E5E5E5] text-[#6B7280]">
-                            <th className="py-2 pr-4">그룹</th>
-                            <th className="py-2 pr-4">통과</th>
-                            <th className="py-2">전체</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {submissionDetail.tc.groups.map((g, i) => (
-                            <tr key={i} className="border-b border-[#F3F4F6]">
-                              <td className="py-2 pr-4 font-mono text-xs">{String(g.name)}</td>
-                              <td className="py-2 pr-4">{g.pass}</td>
-                              <td className="py-2">{g.total}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {submissionDetail.tc.passRateWeighted != null && (
-                      <p className="mt-2 text-[#6B7280]">
-                        가중 통과율: {(Number(submissionDetail.tc.passRateWeighted) * 100).toFixed(1)}%
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-[#6B7280]">그룹별 채점 요약 데이터가 없습니다.</p>
-                )}
-              </div>
-            )}
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">AI 피드백 (루브릭·턴 평가)</h2>
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <ParticipantEvaluationRubricReport
+              rubricJson={submissionDetail?.rubricJson}
+              isLoading={isLoadingSubmission}
+            />
           </div>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">채점·테스트 요약</h2>
+          <ParticipantEvaluationTestSummary
+            submissionId={submissionId}
+            isLoading={isLoadingSubmission}
+            detail={submissionDetail}
+            boardStatusLabel={submissionStatusLabel}
+          />
           <div className="mt-6 flex justify-end">
             <button
               type="button"

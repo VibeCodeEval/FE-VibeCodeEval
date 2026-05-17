@@ -1919,6 +1919,18 @@ export interface AdminSubmissionTestCaseInfo {
   groups: AdminSubmissionGroupInfo[];
 }
 
+export type AdminSubmissionRunGroup = 'SAMPLE' | 'PUBLIC' | 'PRIVATE';
+export type AdminSubmissionVerdict = 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE';
+
+/** GET /api/admin/submissions/{submissionId} — submission_runs 행 (관리자 전용) */
+export interface AdminSubmissionCaseRunInfo {
+  caseIndex: number;
+  grp: AdminSubmissionRunGroup;
+  verdict: AdminSubmissionVerdict;
+  timeMs: number | null;
+  memKb: number | null;
+}
+
 /**
  * GET /api/admin/submissions/{submissionId} 응답 (코드·루브릭 포함, ADMIN/MASTER 전용)
  */
@@ -1931,6 +1943,7 @@ export interface AdminSubmissionDetailResponse {
   tc: AdminSubmissionTestCaseInfo | null;
   score: AdminSubmissionScoreInfo | null;
   rubricJson: string | null;
+  runs?: AdminSubmissionCaseRunInfo[];
 }
 
 /**
