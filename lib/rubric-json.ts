@@ -11,7 +11,13 @@ export function parseRubricJson(
 ): ParseRubricJsonResult | null {
   if (input == null) return null
   if (typeof input === "object" && !Array.isArray(input)) {
-    return { ok: true, data: input as RubricJsonRecord, raw: JSON.stringify(input, null, 2) }
+    let raw: string
+    try {
+      raw = JSON.stringify(input, null, 2)
+    } catch {
+      raw = String(input)
+    }
+    return { ok: true, data: input as RubricJsonRecord, raw }
   }
   const raw = String(input).trim()
   if (!raw) return null

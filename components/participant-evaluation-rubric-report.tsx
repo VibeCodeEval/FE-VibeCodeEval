@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import type { ReactNode } from "react"
 import { ChevronDown, ChevronRight, Info } from "lucide-react"
 import {
   parseRubricJson,
@@ -34,7 +35,7 @@ function Section({
   defaultOpen = false,
 }: {
   title: string
-  children: React.ReactNode
+  children: ReactNode
   defaultOpen?: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import type { MouseEvent } from "react"
 import { ArrowLeft, User, Code, CheckCircle, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
@@ -64,6 +65,11 @@ function LanguageBadge({ language }: { language: string }) {
 function formatScore(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return "–"
   return `${Number(n).toFixed(1)}`
+}
+
+const escapeCsv = (value: unknown) => {
+  const str = String(value ?? "")
+  return `"${str.replace(/"/g, '""')}"`
 }
 
 export function ParticipantEvaluationContent({
@@ -204,18 +210,18 @@ export function ParticipantEvaluationContent({
   const handleExport = () => {
     const header = "Field,Value"
     const rows = [
-      `Name,${displayName}`,
-      `EntryCodeSegment,${entryCode}`,
-      `ExamParticipantId,${participantId}`,
-      `ExamId,${examId ?? ""}`,
-      `SubmissionId,${submissionId ?? ""}`,
-      `HasSubmissionCode,${submissionDetail?.codeInline?.trim() ? "yes" : "no"}`,
-      `HasRubricJson,${submissionDetail?.rubricJson?.trim() ? "yes" : "no"}`,
-      `BoardStatus,${submissionStatusLabel ?? ""}`,
-      `PromptScore,${scoreFromDetail?.prompt ?? ""}`,
-      `PerfScore,${scoreFromDetail?.perf ?? ""}`,
-      `CorrectnessScore,${scoreFromDetail?.correctness ?? ""}`,
-      `TotalScore,${scoreFromDetail?.total ?? boardEntry?.totalScore ?? ""}`,
+      `Name,${escapeCsv(displayName)}`,
+      `EntryCodeSegment,${escapeCsv(entryCode)}`,
+      `ExamParticipantId,${escapeCsv(participantId)}`,
+      `ExamId,${escapeCsv(examId ?? "")}`,
+      `SubmissionId,${escapeCsv(submissionId ?? "")}`,
+      `HasSubmissionCode,${escapeCsv(submissionDetail?.codeInline?.trim() ? "yes" : "no")}`,
+      `HasRubricJson,${escapeCsv(submissionDetail?.rubricJson?.trim() ? "yes" : "no")}`,
+      `BoardStatus,${escapeCsv(submissionStatusLabel ?? "")}`,
+      `PromptScore,${escapeCsv(scoreFromDetail?.prompt ?? "")}`,
+      `PerfScore,${escapeCsv(scoreFromDetail?.perf ?? "")}`,
+      `CorrectnessScore,${escapeCsv(scoreFromDetail?.correctness ?? "")}`,
+      `TotalScore,${escapeCsv(scoreFromDetail?.total ?? boardEntry?.totalScore ?? "")}`,
     ]
     const csvContent = [header, ...rows].join("\n")
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
@@ -230,7 +236,7 @@ export function ParticipantEvaluationContent({
     showToast("보내기 완료", "participant-evaluation.csv")
   }
 
-  const handleBackClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+  const handleBackClick = (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
     e.preventDefault()
     if (onBack) onBack()
     else router.back()

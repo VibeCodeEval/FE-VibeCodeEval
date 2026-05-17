@@ -12,7 +12,13 @@ export default async function ResultParticipantsPage({
 }: ResultParticipantsPageProps) {
   const { entryCode: rawEntryCode } = await params;
   const safe = rawEntryCode ?? "";
-  const decodedEntryCode = decodeURIComponent(safe);
+  let decodedEntryCode = safe;
+
+  try {
+    decodedEntryCode = decodeURIComponent(safe);
+  } catch {
+    decodedEntryCode = safe;
+  }
 
   return <ParticipantListContent entryCode={decodedEntryCode} />;
 }

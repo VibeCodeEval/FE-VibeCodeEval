@@ -41,7 +41,7 @@ export function ResultsContent() {
       const mapped: ResultEntry[] = exams.map((exam: Exam) => ({
         id: String(exam.id),
         // BE ExamResponse에 entryCode가 없을 수 있음 — 목록 표시·상세 URL은 title과 동기화
-        entryCode: exam.entryCode?.trim() ? exam.entryCode : exam.title,
+        entryCode: exam.entryCode?.trim() || exam.title,
         total: exam.participantCount,
         completed: exam.completedCount,
       }))
