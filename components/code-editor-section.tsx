@@ -184,7 +184,7 @@ export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorS
       {/* Editor Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB]">
         <span className="text-sm font-medium text-[#1F2937]">Code Editor</span>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center">
           <Select value={language} onValueChange={handleLanguageChange} disabled={isReadOnly}>
             <SelectTrigger className="w-[140px] h-8 text-sm">
               <SelectValue />
@@ -196,18 +196,6 @@ export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorS
               <SelectItem value="javascript">JavaScript</SelectItem>
             </SelectContent>
           </Select>
-
-          {/* 제출 버튼 — isReadOnly일 때 숨김 */}
-          {!isReadOnly && examId && (
-            <button
-              type="button"
-              onClick={() => void handleSubmit()}
-              disabled={isSubmitting}
-              className="h-8 px-4 text-sm font-medium rounded-md bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? "제출 중…" : "코드 제출"}
-            </button>
-          )}
         </div>
       </div>
 

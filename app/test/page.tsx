@@ -32,9 +32,11 @@ export default function TestPage() {
           if (cancelled) return;
 
           if (activeSession) {
+            const current = useExamSessionStore.getState();
             useExamSessionStore.setState({
               examId: activeSession.examId,
-              participantId: activeSession.examParticipantId,
+              participantId: activeSession.participantId ?? current.participantId,
+              examParticipantId: activeSession.examParticipantId,
               tokenLimit: activeSession.tokenLimit,
             });
             return;

@@ -57,9 +57,7 @@ export interface ExamInfoResponse {
 }
 
 export interface SessionInfoResponse {
-  id: number;
-  examId: number;
-  participantId: number;
+  examParticipantId: number;
   tokenLimit: number;
   tokenUsed: number;
 }
