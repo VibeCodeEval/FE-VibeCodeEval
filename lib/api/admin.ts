@@ -1728,6 +1728,41 @@ export interface ExamineeBoardEntry {
   tokenLimit: number;
   tokenUsed: number;
   submitted: boolean;
+  /** 최신 제출 ID (submissions.id) */
+  submissionId?: number | null;
+  /** QUEUED | RUNNING | DONE | FAILED */
+  submissionStatus?: string | null;
+  /** scores.total_score (없으면 null) */
+  totalScore?: number | null;
+  /** 제출 생성 시각 (ISO 문자열) */
+  submittedAt?: string | null;
+  /** 점수 행 기준 갱신 시각 (ISO 문자열) */
+  evaluatedAt?: string | null;
+}
+
+/**
+ * 관리자 보드 한 행의 제출·채점 상태를 한글 짧은 라벨로 변환합니다.
+ */
+export function formatBoardSubmissionLabelKo(entry: ExamineeBoardEntry): string {
+  if (!entry.submitted) {
+    return entry.state === "ENTRANCE" ? "진행 중" : "시작 안 함";
+  }
+  if (entry.submissionStatus === "FAILED") {
+    return "제출 실패";
+  }
+  if (entry.totalScore != null && entry.totalScore !== undefined) {
+    const n = Number(entry.totalScore);
+    if (!Number.isNaN(n)) {
+      return `채점 완료 (${n.toFixed(1)}점)`;
+    }
+  }
+  if (entry.submissionStatus === "DONE") {
+    return "채점 완료";
+  }
+  if (entry.submissionStatus === "RUNNING" || entry.submissionStatus === "QUEUED") {
+    return "제출·채점 중";
+  }
+  return "제출됨";
 }
 
 export interface AdminMetrics {
@@ -1854,6 +1889,84 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
     throw new LoginFailedError(data.message || '보드 조회에 실패했습니다.', response.status);
   }
   return data.result ?? [];
+}
+
+/** 관리자 제출 상세 API와 동일한 상태 값 (백엔드 SubmissionStatus) */
+export type AdminSubmissionStatusDto = 'QUEUED' | 'RUNNING' | 'DONE' | 'FAILED';
+
+export interface AdminSubmissionScoreInfo {
+  prompt: number | null;
+  perf: number | null;
+  correctness: number | null;
+  total: number | null;
+}
+
+export interface AdminSubmissionMetricsInfo {
+  timeMsMedian: number | null;
+  memKbPeak: number | null;
+  loc: number | null;
+}
+
+export interface AdminSubmissionGroupInfo {
+  name: string;
+  pass: number;
+  total: number;
+  weight: number;
+}
+
+export interface AdminSubmissionTestCaseInfo {
+  passRateWeighted: number | null;
+  groups: AdminSubmissionGroupInfo[];
+}
+
+export type AdminSubmissionRunGroup = 'SAMPLE' | 'PUBLIC' | 'PRIVATE';
+export type AdminSubmissionVerdict = 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE';
+
+/** GET /api/admin/submissions/{submissionId} — submission_runs 행 (관리자 전용) */
+export interface AdminSubmissionCaseRunInfo {
+  caseIndex: number;
+  grp: AdminSubmissionRunGroup;
+  verdict: AdminSubmissionVerdict;
+  timeMs: number | null;
+  memKb: number | null;
+}
+
+/**
+ * GET /api/admin/submissions/{submissionId} 응답 (코드·루브릭 포함, ADMIN/MASTER 전용)
+ */
+export interface AdminSubmissionDetailResponse {
+  submissionId: number;
+  status: AdminSubmissionStatusDto;
+  lang: string;
+  codeInline: string | null;
+  metrics: AdminSubmissionMetricsInfo | null;
+  tc: AdminSubmissionTestCaseInfo | null;
+  score: AdminSubmissionScoreInfo | null;
+  rubricJson: string | null;
+  runs?: AdminSubmissionCaseRunInfo[];
+}
+
+/**
+ * 관리자 전용 제출 상세 조회 (제출 코드·rubricJson 포함)
+ * GET /api/admin/submissions/{submissionId}
+ */
+export async function getAdminSubmissionDetail(
+  submissionId: number
+): Promise<AdminSubmissionDetailResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}`;
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<AdminSubmissionDetailResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(data.message || '제출 상세(관리자) 조회에 실패했습니다.', response.status);
+  }
+  return data.result;
 }
 
 // ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────

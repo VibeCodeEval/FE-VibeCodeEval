@@ -107,13 +107,13 @@ export function DashboardContent() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
                 <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
-              <span className="text-sm font-medium text-gray-500">평가 완료 수</span>
+              <span className="text-sm font-medium text-gray-500">코드 제출 완료 수</span>
             </div>
             <p className="mt-6 text-4xl font-bold text-gray-900">{displayValue(completedCount)}</p>
             <p className="mt-1 text-xs text-gray-400">
               {!isLoading && totalParticipants !== null && totalParticipants > 0
-                ? `완료율 ${Math.round(((completedCount ?? 0) / totalParticipants) * 100)}%`
-                : "코드 제출 기준"}
+                ? `제출률 ${Math.round(((completedCount ?? 0) / totalParticipants) * 100)}%`
+                : "submissions 테이블 기준"}
             </p>
           </div>
 

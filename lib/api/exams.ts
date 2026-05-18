@@ -173,6 +173,8 @@ export interface ParticipantSessionResponse {
 export interface ActiveSessionResponse {
   examId: number;
   examParticipantId: number;
+  /** users.id */
+  participantId: number;
   assignedProblemId: number | null;
   specId: number | null;
   examState: ExamState;

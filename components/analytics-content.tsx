@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { Download, TrendingUp, TrendingDown, Minus, ChevronDown, X, CheckCircle } from "lucide-react"
 import { getExams, getBoard, Exam, ExamineeBoardEntry } from "@/lib/api/admin"
+import { adminParticipantEvaluationHref } from "@/lib/paths/admin-participant-evaluation"
 
 type Trend = "높음" | "보통" | "낮음"
 type Status = "완료" | "진행 중"
@@ -34,11 +35,15 @@ function mapBoardToParticipant(entry: ExamineeBoardEntry, examTitle: string): Pa
   const tokenRatio =
     entry.tokenLimit > 0 ? Math.min(100, Math.round((entry.tokenUsed / entry.tokenLimit) * 100)) : 0
 
+  const total =
+    entry.totalScore != null && entry.totalScore !== undefined ? Number(entry.totalScore) : null
+  const avgScore = total != null && !Number.isNaN(total) ? total : 0
+
   return {
     id: entry.examParticipantId.toString(),
     name: entry.name,
     entryCode: examTitle,
-    avgScore: 0, // 채점 API 미연동 — 채점 완료 후 집계 예정
+    avgScore,
     status: submitted ? "완료" : "진행 중",
     trend: "보통",
     sparklineData: [0, tokenRatio], // 토큰 사용 추이
@@ -146,10 +151,12 @@ function ParticipantCard({ participant }: { participant: Participant }) {
 
       <div className="mt-4 flex justify-end">
         <Link
-          href={{
-            pathname: `/admin/results/${encodeURIComponent(participant.entryCode)}/${participant.id}`,
-            query: { from: "analytics" },
-          }}
+          href={adminParticipantEvaluationHref({
+            resultsSegment: participant.entryCode,
+            participantId: participant.id,
+            from: "analytics",
+            participantName: participant.name,
+          })}
           className="text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]"
         >
           상세 보기 →
