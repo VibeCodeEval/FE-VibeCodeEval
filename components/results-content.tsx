@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, Download, Eye, X, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
-import { getExams, type Exam } from "@/lib/api/admin"
+import { Search, Download, Eye, X, CheckCircle, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { getExams, getBoard, type Exam } from "@/lib/api/admin"
+import {
+  buildBoardParticipantsCsvBody,
+  downloadUtf8Csv,
+  sanitizeCsvFilenameSegment,
+} from "@/lib/admin-board-csv-export"
 
 interface ResultEntry {
   id: string
@@ -23,6 +28,7 @@ export function ResultsContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [downloadingExamId, setDownloadingExamId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
 
@@ -61,11 +67,32 @@ export function ResultsContent() {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }
 
-  const handleDownload = (entryCode: string) => {
-    showToast(
-      "CSV 다운로드 준비 중",
-      "현재 해당 기능을 서버에서 준비 중입니다. 조만간 업데이트될 예정입니다.",
-    )
+  const handleDownload = async (result: ResultEntry) => {
+    const examId = Number.parseInt(result.id, 10)
+    if (Number.isNaN(examId)) {
+      showToast("다운로드 실패", "유효하지 않은 시험 ID입니다.")
+      return
+    }
+
+    setDownloadingExamId(result.id)
+    try {
+      const board = await getBoard(examId)
+      const csvBody = buildBoardParticipantsCsvBody(
+        board.map((entry) => ({ entry, examLabel: result.entryCode })),
+        { includeScores: true }
+      )
+      const filename = `results-${sanitizeCsvFilenameSegment(result.entryCode)}.csv`
+      downloadUtf8Csv(filename, csvBody)
+      showToast("다운로드 완료", `${result.entryCode} 세션 결과가 CSV로 저장되었습니다.`)
+    } catch (error) {
+      console.error(`[Results] CSV download failed for examId=${examId}`, error)
+      showToast(
+        "다운로드 실패",
+        "참가자 결과를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+      )
+    } finally {
+      setDownloadingExamId(null)
+    }
   }
 
   const filteredResults = results.filter((result) => result.entryCode.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -211,15 +238,21 @@ export function ResultsContent() {
               {/* Right Side - Action Buttons */}
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleDownload(result.entryCode)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3B82F6] text-white hover:bg-[#2563EB] transition-colors"
+                  type="button"
+                  onClick={() => handleDownload(result)}
+                  disabled={downloadingExamId === result.id}
+                  className="flex items-center gap-2 rounded-lg bg-[#3B82F6] px-4 py-2 text-white transition-colors hover:bg-[#2563EB] disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
                     fontSize: "14px",
                     fontWeight: 500,
                   }}
                 >
-                  <Download size={18} />
-                  <span>다운로드</span>
+                  {downloadingExamId === result.id ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Download size={18} />
+                  )}
+                  <span>{downloadingExamId === result.id ? "다운로드 중…" : "다운로드"}</span>
                 </button>
                 <Link
                   href={`/admin/results/${encodeURIComponent(result.entryCode)}`}

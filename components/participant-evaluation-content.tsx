@@ -13,6 +13,11 @@ import {
   type ExamineeBoardEntry,
   type AdminSubmissionDetailResponse,
 } from "@/lib/api/admin"
+import {
+  buildKeyValueCsvBody,
+  buildParticipantEvaluationCsvFilename,
+  downloadUtf8Csv,
+} from "@/lib/admin-board-csv-export"
 import { resolveBoardPerformanceLevel } from "@/lib/performance-level"
 import { ParticipantEvaluationTestSummary } from "@/components/participant-evaluation-test-summary"
 import { ParticipantEvaluationRubricReport } from "@/components/participant-evaluation-rubric-report"
@@ -65,11 +70,6 @@ function LanguageBadge({ language }: { language: string }) {
 function formatScore(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return "–"
   return `${Number(n).toFixed(1)}`
-}
-
-const escapeCsv = (value: unknown) => {
-  const str = String(value ?? "")
-  return `"${str.replace(/"/g, '""')}"`
 }
 
 export function ParticipantEvaluationContent({
@@ -208,32 +208,49 @@ export function ParticipantEvaluationContent({
   }
 
   const handleExport = () => {
-    const header = "Field,Value"
-    const rows = [
-      `Name,${escapeCsv(displayName)}`,
-      `EntryCodeSegment,${escapeCsv(entryCode)}`,
-      `ExamParticipantId,${escapeCsv(participantId)}`,
-      `ExamId,${escapeCsv(examId ?? "")}`,
-      `SubmissionId,${escapeCsv(submissionId ?? "")}`,
-      `HasSubmissionCode,${escapeCsv(submissionDetail?.codeInline?.trim() ? "yes" : "no")}`,
-      `HasRubricJson,${escapeCsv(submissionDetail?.rubricJson?.trim() ? "yes" : "no")}`,
-      `BoardStatus,${escapeCsv(submissionStatusLabel ?? "")}`,
-      `PromptScore,${escapeCsv(scoreFromDetail?.prompt ?? "")}`,
-      `PerfScore,${escapeCsv(scoreFromDetail?.perf ?? "")}`,
-      `CorrectnessScore,${escapeCsv(scoreFromDetail?.correctness ?? "")}`,
-      `TotalScore,${escapeCsv(scoreFromDetail?.total ?? boardEntry?.totalScore ?? "")}`,
-    ]
-    const csvContent = [header, ...rows].join("\n")
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = "participant-evaluation.csv"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    showToast("보내기 완료", "participant-evaluation.csv")
+    try {
+      const examLabel = entryCode.trim() || "session"
+      const csvBody = buildKeyValueCsvBody([
+        { label: "이름", value: displayName },
+        { label: "시험", value: examLabel, excelTextValue: true },
+        { label: "제출 상태", value: submissionStatusLabel ?? "–" },
+        {
+          label: "총점",
+          value: effectiveTotalScore != null ? formatScore(effectiveTotalScore) : "–",
+        },
+        {
+          label: "프롬프트 점수",
+          value: detailScoresMeaningful ? formatScore(scoreFromDetail?.prompt ?? null) : "–",
+        },
+        {
+          label: "성능 점수",
+          value: detailScoresMeaningful ? formatScore(scoreFromDetail?.perf ?? null) : "–",
+        },
+        {
+          label: "정답률 점수",
+          value: detailScoresMeaningful ? formatScore(scoreFromDetail?.correctness ?? null) : "–",
+        },
+        {
+          label: "코드 LOC",
+          value:
+            submissionDetail?.metrics?.loc != null
+              ? String(submissionDetail.metrics.loc)
+              : "–",
+        },
+        { label: "제출 언어", value: submissionDetail?.lang ?? "–" },
+        { label: "참가자 ID", value: participantId },
+        ...(submissionId != null
+          ? [{ label: "제출 ID", value: String(submissionId) }]
+          : []),
+      ])
+
+      const filename = buildParticipantEvaluationCsvFilename(examLabel, displayName)
+      downloadUtf8Csv(filename, csvBody)
+      showToast("보내기 완료", filename)
+    } catch (e) {
+      console.error("[ParticipantEvaluation] CSV export failed", e)
+      showToast("보내기 실패", "CSV 파일을 생성하지 못했습니다.")
+    }
   }
 
   const handleBackClick = (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
@@ -255,7 +272,7 @@ export function ParticipantEvaluationContent({
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col p-6">
+      <div className="flex min-h-0 flex-1 flex-col px-6 pt-6 pb-12">
         <div className="mb-4 shrink-0">
           <button
             type="button"
@@ -450,7 +467,7 @@ export function ParticipantEvaluationContent({
             detail={submissionDetail}
             boardStatusLabel={submissionStatusLabel}
           />
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-end pb-4">
             <button
               type="button"
               onClick={handleExport}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { cleanupAiFeedbackText } from "@/lib/utils/cleanup-ai-feedback"
 import type { ReactNode } from "react"
 import { ChevronDown, ChevronRight, Info } from "lucide-react"
 import {
@@ -87,8 +88,11 @@ function MetricCell({
 }
 
 function TextBlock({ text }: { text: string }) {
+  const displayText = useMemo(() => cleanupAiFeedbackText(text), [text])
   return (
-    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[#374151]">{text}</p>
+    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[#374151]">
+      {displayText}
+    </p>
   )
 }
 
@@ -183,10 +187,11 @@ const R4_CONTEXT_SECTION_TITLE = "R4 맥락 유지"
 const R4_CONTEXT_SECTION_HINT = "대화 흐름과 문맥 유지 능력 평가"
 
 function HolisticSubsectionTitle({ title }: { title: string }) {
-  const showHint = title === R4_CONTEXT_SECTION_TITLE
+  const displayTitle = useMemo(() => cleanupAiFeedbackText(title), [title])
+  const showHint = displayTitle === R4_CONTEXT_SECTION_TITLE
   return (
     <div className="mb-2 flex items-center gap-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{title}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{displayTitle}</p>
       {showHint && (
         <span
           className="inline-flex shrink-0 text-[#9CA3AF]"
@@ -304,7 +309,9 @@ function DebateRoundCompactRow({ entry }: { entry: RubricJsonRecord }) {
       </div>
       <div className="min-w-0 flex-1 rounded-md border border-[#FDE68A] bg-[#FFFBEB] px-3 py-2">
         {summary ? (
-          <p className="whitespace-pre-wrap break-words text-sm leading-snug text-[#78350F]">{summary}</p>
+          <p className="whitespace-pre-wrap break-words text-sm leading-snug text-[#78350F]">
+            {cleanupAiFeedbackText(summary)}
+          </p>
         ) : (
           <p className="text-sm text-[#9CA3AF]">제공되지 않음</p>
         )}
@@ -371,7 +378,7 @@ function DebateVerdictCard({ entry }: { entry: RubricJsonRecord }) {
           <ul className="list-inside list-disc space-y-1 text-sm text-[#374151]">
             {keyPoints.map((p, i) => (
               <li key={i} className="whitespace-pre-wrap break-words">
-                {p}
+                {cleanupAiFeedbackText(p)}
               </li>
             ))}
           </ul>
@@ -448,7 +455,9 @@ function TurnScoresSection({ data }: { data: RubricJsonRecord }) {
         const ts = asNumber(val.turn_score ?? val.turnScore ?? val.score)
         const parts: string[] = []
         if (hasPresentValue(val.intent)) parts.push(`intent: ${asString(val.intent)}`)
-        if (hasPresentValue(val.feedback)) parts.push(asString(val.feedback) ?? "")
+        if (hasPresentValue(val.feedback)) {
+          parts.push(cleanupAiFeedbackText(asString(val.feedback) ?? ""))
+        }
         rows.push({
           turn,
           score: ts !== null ? formatScoreDisplay(ts) : "–",
