@@ -1732,6 +1732,12 @@ export interface ExamineeBoardEntry {
   submissionId?: number | null;
   /** QUEUED | RUNNING | DONE | FAILED */
   submissionStatus?: string | null;
+  /** scores.prompt_score (Score 행 없으면 null) */
+  promptScore?: number | null;
+  /** scores.perf_score (Score 행 없으면 null) */
+  perfScore?: number | null;
+  /** scores.correctness_score (Score 행 없으면 null) */
+  correctnessScore?: number | null;
   /** scores.total_score (없으면 null) */
   totalScore?: number | null;
   /** 제출 생성 시각 (ISO 문자열) */
@@ -1778,6 +1784,17 @@ export interface AdminMetrics {
     rate1m: number;
     last: string | null;
   };
+}
+
+export interface SystemStatusServiceItem {
+  key: string;
+  name: string;
+  status: string;
+  latencyMs: number | null;
+}
+
+export interface SystemStatusResponse {
+  services: SystemStatusServiceItem[];
 }
 
 // ─── 시험 연장 ─────────────────────────────────────────────────────────────────
@@ -1848,6 +1865,27 @@ export async function deleteEntryCode(code: string): Promise<void> {
 }
 
 // ─── 시험 지표·보드 ────────────────────────────────────────────────────────────
+
+/**
+ * 관리자 시스템 상태 조회 API 호출
+ * GET /api/admin/system-status
+ */
+export async function getSystemStatus(): Promise<SystemStatusResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/system-status`;
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<SystemStatusResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(data.message || '시스템 상태 조회에 실패했습니다.', response.status);
+  }
+  return data.result;
+}
 
 /**
  * 시험 실시간 지표 조회 API 호출
