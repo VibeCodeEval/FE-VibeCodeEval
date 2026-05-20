@@ -107,6 +107,7 @@ export interface AdminLoginResponse {
 // AdminSignupRequest
 export interface AdminSignupRequest {
   adminNumber: string;
+  displayName: string;
   email: string;
   password: string;
 }
@@ -116,11 +117,26 @@ export interface MeResponse {
   role: string;
   participant: {
     id: number;
-    name: string; // ADMIN의 경우 adminNumber가 들어감
-    phone: string; // ADMIN의 경우 email이 들어감
+    name: string; // ADMIN: displayName(또는 fallback), USER: 참가자 이름
+    phone: string; // ADMIN: email, USER: 전화번호
+    adminNumber?: string | null; // ADMIN 전용
   };
   exam?: null;
   session?: null;
+}
+
+/** GET /api/auth/me 응답에서 관리자 표시 이름 해석 (displayName → adminNumber → "관리자") */
+export function resolveAdminDisplayNameFromMe(response: MeResponse): string {
+  const participant = response.participant;
+  const adminNumber =
+    participant.adminNumber?.trim() ||
+    participant.name?.trim() ||
+    "";
+  return (
+    participant.name?.trim() ||
+    adminNumber ||
+    "관리자"
+  );
 }
 
 // AdminInfo (AdminListResponse에서 사용)
@@ -130,6 +146,11 @@ export interface AdminInfo {
   email: string;
   role: 'ADMIN' | 'MASTER';
   is2faEnabled: boolean;
+  isActive?: boolean;
+  displayName?: string | null;
+  createdAt?: string | null;
+  adminNumberIssuedAt?: string | null;
+  lastLoginAt?: string | null;
 }
 
 // AdminListResponse
@@ -171,6 +192,11 @@ export interface ChangeAdminPasswordRequest {
   newPassword: string;
 }
 
+/** MASTER가 타 관리자 임시 비밀번호 재설정 응답 */
+export interface ResetAdminPasswordByMasterResponse {
+  temporaryPassword: string;
+}
+
 export interface AdminProblem {
   id: number;
   title: string;
@@ -178,6 +204,43 @@ export interface AdminProblem {
   tags: string | string[] | null;
   status: string;
   createdAt: string;
+  updatedAt?: string | null;
+  version?: number | string | null;
+  usedSessionCount?: number | null;
+  usedInSessions?: number | null;
+  sessionCount?: number | null;
+}
+
+export interface ProblemSpecResponse {
+  specId: number;
+  version: number;
+  changelogMd: string | null;
+  publishedAt: string | null;
+}
+
+export interface AdminProblemDetail {
+  id: number;
+  title: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  tags: string[];
+  version: number;
+  contentMd: string;
+  limits: {
+    timeMs: number;
+    memoryMb: number;
+  };
+  restrictions: {
+    allowedLangs: string[];
+    forbiddenApis: string[];
+  };
+  checker: {
+    type: string;
+  };
+  createdAt: string;
+  updatedAt: string | null;
+  publishedAt: string | null;
+  status: string;
+  usable: boolean;
 }
 
 /**
@@ -293,6 +356,74 @@ export async function getProblems(): Promise<AdminProblem[]> {
     }
 
     throw new NetworkError('문제 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 문제 스펙(버전) 목록 조회 — GET /api/admin/problems/{problemId}/specs
+ */
+export async function getProblemSpecs(problemId: number): Promise<ProblemSpecResponse[]> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems/${problemId}/specs`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    const data: BaseResponse<ProblemSpecResponse[]> = await response.json();
+
+    if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+      throw new LoginFailedError(data.message || '문제 스펙 조회에 실패했습니다.', response.status, data.code);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('문제 스펙 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 문제 상세 조회 — GET /api/admin/problems/{problemId}/detail
+ */
+export async function getProblemDetail(problemId: number): Promise<AdminProblemDetail> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems/${problemId}/detail`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    const data: BaseResponse<AdminProblemDetail> = await response.json();
+
+    if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+      throw new LoginFailedError(data.message || '문제 상세 조회에 실패했습니다.', response.status, data.code);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('문제 상세 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   }
 }
 
@@ -504,6 +635,75 @@ export async function updateAdminNumber(
       console.warn('[Update Admin Number] 예상치 못한 오류:', error);
     }
     throw new NetworkError('관리자 번호 상태 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * MASTER가 타 관리자 임시 비밀번호 재설정 API 호출
+ */
+export async function resetAdminPasswordByMaster(
+  adminNumber: string
+): Promise<ResetAdminPasswordByMasterResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/admin-numbers/${encodeURIComponent(adminNumber)}/password/reset`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Reset Admin Password By Master] API 호출:', url);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      let errorMessage = '비밀번호 재설정에 실패했습니다.';
+
+      if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '마스터 계정만 비밀번호를 재설정할 수 있습니다.';
+      }
+
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      throw new LoginFailedError(errorMessage, response.status);
+    }
+
+    const data: BaseResponse<ResetAdminPasswordByMasterResponse> = await response.json();
+
+    if (data.code !== 'COMMON200' || !data.result?.temporaryPassword) {
+      throw new LoginFailedError(data.message || '비밀번호 재설정에 실패했습니다.');
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('비밀번호 재설정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   }
 }
 

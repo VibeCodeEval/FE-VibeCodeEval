@@ -14,7 +14,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { logoutAdmin, getMe, changeAdminPassword, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import {
+  logoutAdmin,
+  getMe,
+  changeAdminPassword,
+  LoginFailedError,
+  NetworkError,
+  resolveAdminDisplayNameFromMe,
+} from "@/lib/api/admin"
 import { useToast } from "@/hooks/use-toast"
 import { Lock } from "lucide-react"
 
@@ -47,12 +54,14 @@ export function SettingsContent() {
       setIsLoading(true);
       try {
         const response = await getMe();
-        // ADMIN의 경우: participant.name = adminNumber, participant.phone = email
-        // 이름은 백엔드에서 제공하지 않으므로 더미 데이터 사용
+        const adminNumber =
+          response.participant.adminNumber?.trim() ||
+          response.participant.name?.trim() ||
+          "";
         setAdminProfile({
-          name: "Admin", // 더미 데이터 (백엔드에서 제공되지 않음)
-          email: response.participant.phone || "", // email
-          adminNumber: response.participant.name || "", // adminNumber
+          name: resolveAdminDisplayNameFromMe(response),
+          email: response.participant.phone || "",
+          adminNumber,
         });
       } catch (error) {
         if (error instanceof LoginFailedError) {
@@ -237,7 +246,7 @@ export function SettingsContent() {
                 {isLoading ? (
                   <div className="space-y-6">
                     <div>
-                      <Label className="text-sm font-medium text-[#374151]">관리자 이름</Label>
+                      <Label className="text-sm font-medium text-[#374151]">이름</Label>
                       <Input
                         value="불러오는 중..."
                         disabled
@@ -264,9 +273,9 @@ export function SettingsContent() {
                 ) : (
                   <>
                     <div>
-                      <Label className="text-sm font-medium text-[#374151]">관리자 이름</Label>
+                      <Label className="text-sm font-medium text-[#374151]">이름</Label>
                       <Input
-                        value={adminProfile.name || "Admin"}
+                        value={adminProfile.name || "관리자"}
                         disabled
                         className="mt-2 bg-[#F9FAFB] border-[#E5E5E5] text-[#374151]"
                       />

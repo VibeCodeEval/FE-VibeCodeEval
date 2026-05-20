@@ -1,16 +1,7 @@
-import type React from "react"
-import type { ReactNode } from "react";
+import type { ReactNode } from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import "../globals.css"
-import { Sidebar } from "@/components/sidebar";
-import { TopNavBar } from "@/components/top-nav-bar";
+import { Sidebar } from "@/components/sidebar"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
-
-// <CHANGE> Updated metadata for Master Dashboard
 export const metadata: Metadata = {
   title: "Master Dashboard - AI Vibe Coding Test",
   description: "Admin dashboard for AI Vibe Coding Test platform",
@@ -34,23 +25,23 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default function MasterLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: ReactNode
 }>) {
   return (
-    <div className="flex min-h-screen bg-[#F5F5F5]">
-      {/* 왼쪽 고정 사이드바 */}
-      <Sidebar />
+    <div className="flex h-screen w-full overflow-hidden" style={{ maxWidth: "1920px" }}>
+      <div className="fixed left-0 top-0 z-30 h-screen" style={{ width: "240px" }}>
+        <Sidebar />
+      </div>
 
-      {/* 오른쪽 영역(상단바 + 페이지 내용) */}
-      <div className="flex-1 ml-[0px] flex flex-col">
-        <TopNavBar />
-        <main className="mt-[0px] min-h-[calc(100vh-80px)] overflow-y-auto">
-          {children}
-        </main>
+      <div
+        className="ml-[240px] flex h-screen flex-1 flex-col"
+        style={{ backgroundColor: "#F9FAFB" }}
+      >
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
-  );
+  )
 }

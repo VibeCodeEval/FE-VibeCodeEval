@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -25,7 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { logoutAdmin } from "@/lib/api/admin"
+import { getMe, logoutAdmin, resolveAdminDisplayNameFromMe } from "@/lib/api/admin"
 
 const menuGroupA = [
   { icon: LayoutDashboard, label: "대시보드",   href: "/admin/dashboard" },
@@ -74,6 +74,30 @@ export function AdminSidebar() {
   const router = useRouter()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [displayName, setDisplayName] = useState("관리자")
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchAdminDisplayName = async () => {
+      try {
+        const response = await getMe()
+        if (!cancelled) {
+          setDisplayName(resolveAdminDisplayNameFromMe(response))
+        }
+      } catch {
+        if (!cancelled) {
+          setDisplayName("관리자")
+        }
+      }
+    }
+
+    fetchAdminDisplayName()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -124,7 +148,7 @@ export function AdminSidebar() {
             <User className="h-5 w-5 text-[#7C3AED]" strokeWidth={1.5} />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-[#1A1A1A]">Admin</span>
+            <span className="text-sm font-medium text-[#1A1A1A]">{displayName}</span>
             <span className="text-xs text-[#6B7280]">관리자</span>
           </div>
         </div>

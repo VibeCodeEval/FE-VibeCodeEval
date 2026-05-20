@@ -23,11 +23,16 @@ import { ParticipantEvaluationTestSummary } from "@/components/participant-evalu
 import { ParticipantEvaluationRubricReport } from "@/components/participant-evaluation-rubric-report"
 
 interface ParticipantEvaluationContentProps {
-  entryCode: string
+  /** Admin: entryCode / title / exam id 문자열. Master: 생략 가능(examId 사용) */
+  entryCode?: string
+  /** Master 전용 — 지정 시 entryCode 조회 없이 직접 보드 로드 */
+  examId?: number
   participantName?: string
   /** URL 세그먼트 — 목록·보드와 동일하게 `exam_participants.id` (examParticipantId) */
   participantId: string
   onBack?: () => void
+  /** 뒤로가기 버튼 문구 (기본: 이전 페이지로 돌아가기) */
+  backLabel?: string
 }
 
 interface ToastItem {
@@ -73,15 +78,18 @@ function formatScore(n: number | null | undefined): string {
 }
 
 export function ParticipantEvaluationContent({
-  entryCode,
+  entryCode = "",
+  examId: examIdProp,
   participantName: participantNameProp,
   participantId,
   onBack,
+  backLabel = "이전 페이지로 돌아가기",
 }: ParticipantEvaluationContentProps) {
   const router = useRouter()
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  const [examId, setExamId] = useState<number | null>(null)
+  const [examId, setExamId] = useState<number | null>(examIdProp ?? null)
+  const [examTitle, setExamTitle] = useState<string | null>(null)
   const [boardEntry, setBoardEntry] = useState<ExamineeBoardEntry | null>(null)
   const [boardError, setBoardError] = useState<string | null>(null)
   const [isLoadingBoard, setIsLoadingBoard] = useState(true)
@@ -96,18 +104,40 @@ export function ParticipantEvaluationContent({
       setIsLoadingBoard(true)
       setBoardError(null)
       setBoardEntry(null)
-      setExamId(null)
+      setExamTitle(null)
+
+      const directExamId =
+        examIdProp != null && Number.isFinite(examIdProp) && examIdProp > 0 ? examIdProp : null
+
       try {
-        const exams = await getExams()
-        const matched = findExamByResultsSegment(exams, entryCode)
-        if (!matched) {
-          if (!cancelled) setBoardError("해당 입장 코드·시험명에 맞는 시험을 찾을 수 없습니다.")
+        let resolvedExamId: number | null = directExamId
+        let resolvedTitle: string | null = null
+
+        if (directExamId != null) {
+          const exams = await getExams()
+          const matched = exams.find((e) => e.id === directExamId)
+          resolvedTitle = matched?.title?.trim() || `시험 #${directExamId}`
+        } else {
+          const exams = await getExams()
+          const matched = findExamByResultsSegment(exams, entryCode)
+          if (!matched) {
+            if (!cancelled) setBoardError("해당 입장 코드·시험명에 맞는 시험을 찾을 수 없습니다.")
+            return
+          }
+          resolvedExamId = matched.id
+          resolvedTitle = matched.title?.trim() || entryCode
+        }
+
+        if (resolvedExamId == null) {
+          if (!cancelled) setBoardError("시험 정보를 확인할 수 없습니다.")
           return
         }
-        const board = await getBoard(matched.id)
+
+        const board = await getBoard(resolvedExamId)
         const entry = board.find((p) => String(p.examParticipantId) === String(participantId))
         if (!cancelled) {
-          setExamId(matched.id)
+          setExamId(resolvedExamId)
+          setExamTitle(resolvedTitle)
           if (entry) setBoardEntry(entry)
           else setBoardError("참가자를 보드에서 찾을 수 없습니다. (ID가 examParticipantId와 일치하는지 확인하세요)")
         }
@@ -122,7 +152,7 @@ export function ParticipantEvaluationContent({
     return () => {
       cancelled = true
     }
-  }, [entryCode, participantId])
+  }, [entryCode, examIdProp, participantId])
 
   const submissionId = boardEntry?.submissionId ?? null
 
@@ -209,7 +239,7 @@ export function ParticipantEvaluationContent({
 
   const handleExport = () => {
     try {
-      const examLabel = entryCode.trim() || "session"
+      const examLabel = (examTitle ?? entryCode).trim() || "session"
       const csvBody = buildKeyValueCsvBody([
         { label: "이름", value: displayName },
         { label: "시험", value: examLabel, excelTextValue: true },
@@ -280,7 +310,7 @@ export function ParticipantEvaluationContent({
             className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#4B5563]"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
-            이전 페이지로 돌아가기
+            {backLabel}
           </button>
         </div>
 
@@ -303,8 +333,12 @@ export function ParticipantEvaluationContent({
             </div>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">시험 구분 (URL)</span>
-            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{entryCode}</p>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              {examIdProp != null ? "시험" : "시험 구분 (URL)"}
+            </span>
+            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">
+              {isLoadingBoard ? "…" : (examTitle ?? entryCode) || "–"}
+            </p>
             {examId != null && <p className="mt-1 text-xs text-[#6B7280]">examId: {examId}</p>}
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">

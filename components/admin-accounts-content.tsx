@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MoreHorizontal, Copy, Check, Eye, Power, RotateCcw, KeyRound, Trash2, EyeOff } from "lucide-react"
+import { MoreHorizontal, Copy, Check, Eye, Power, RotateCcw, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -20,108 +20,92 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
-import { getAllAdmins, AdminInfo, LoginFailedError, NetworkError, issueAdminNumber, updateAdminNumber, AdminNumberUpdateRequest, toggleAdminNumberActive, AdminNumberDto } from "@/lib/api/admin"
-import { isMasterAdmin, isSystemMasterAdmin, SYSTEM_MASTER_ADMIN_NUMBER } from "@/lib/auth/utils"
+import {
+  fetchMasterAdminAccounts,
+  issueMasterAdminNumber,
+  updateMasterAdminAccountStatus,
+  resetMasterAdminPassword,
+  deleteMasterAdminAccount,
+  sortMasterAdminAccounts,
+  LoginFailedError,
+  NetworkError,
+  type MasterAdminAccount,
+} from "@/lib/api/master-admin-accounts"
+import { isMasterAdmin, isSystemMasterAdmin } from "@/lib/auth/utils"
 import { useRouter } from "next/navigation"
+import { AdminPageHeader } from "@/components/admin-page-header"
 
-type Admin = AdminInfo & {
-  status?: string; // UI 표시용: "활성화" | "비활성화"
-  lastLogin?: string;
-  createdAt?: string;
-  secretKey?: string;
-  lastKeyIssued?: string;
-}
-
-function generateSecretKey(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
-  let key = "sk_prod_"
-  for (let i = 0; i < 22; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return key
-}
-
-function generateTempPassword(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-  let password = "temp-"
-  for (let i = 0; i < 5; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  password += "!"
-  password += chars.charAt(Math.floor(Math.random() * 26)) // Add a letter at the end
-  return password
+function displayValue(value: string | null | undefined): string {
+  return value && value.trim() ? value : "-"
 }
 
 export function AdminAccountsContent() {
-  const [adminUsers, setAdminUsers] = useState<Admin[]>([])
+  const [adminUsers, setAdminUsers] = useState<MasterAdminAccount[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [listError, setListError] = useState<string | null>(null)
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false)
   const [generatedKey, setGeneratedKey] = useState("")
   const [copied, setCopied] = useState(false)
-  const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null)
+  const [selectedAdmin, setSelectedAdmin] = useState<MasterAdminAccount | null>(null)
   const [isChangeStatusOpen, setIsChangeStatusOpen] = useState(false)
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false)
   const [isResetPasswordResultOpen, setIsResetPasswordResultOpen] = useState(false)
   const [tempPassword, setTempPassword] = useState("")
   const [tempPasswordCopied, setTempPasswordCopied] = useState(false)
-  const [isReissueKeyOpen, setIsReissueKeyOpen] = useState(false)
-  const [isReissueKeyResultOpen, setIsReissueKeyResultOpen] = useState(false)
-  const [reissuedSecretKey, setReissuedSecretKey] = useState("")
-  const [reissuedKeyCopied, setReissuedKeyCopied] = useState(false)
   const [isDeleteAdminOpen, setIsDeleteAdminOpen] = useState(false)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
-  const [showSecretKey, setShowSecretKey] = useState(false)
-  const [detailsKeyCopied, setDetailsKeyCopied] = useState(false)
   const [isChangingStatus, setIsChangingStatus] = useState(false)
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [isDeletingAdmin, setIsDeletingAdmin] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
-  // 관리자 목록 조회 함수
   const fetchAdmins = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
+    setListError(null)
     try {
-      const response = await getAllAdmins();
-      // 백엔드 AdminInfo를 Admin 타입으로 변환
-      const admins: Admin[] = response.admins.map((admin) => ({
-        ...admin,
-        status: "활성화", // 백엔드에 상태 필드가 없으면 기본값
-        lastLogin: "-", // 백엔드에 마지막 로그인 필드가 없으면 기본값
-        createdAt: "-", // 백엔드에 생성일 필드가 없으면 기본값
-      }));
-      setAdminUsers(admins);
+      const { admins } = await fetchMasterAdminAccounts()
+      setAdminUsers(admins)
     } catch (error) {
+      setAdminUsers([])
       if (error instanceof LoginFailedError) {
-        if (error.message.includes('인증')) {
+        const message = error.message || "관리자 목록 조회에 실패했습니다."
+        setListError(message)
+        if (error.message.includes("인증")) {
           toast({
             title: "인증 오류",
             description: "다시 로그인해주세요.",
             variant: "destructive",
-          });
-          router.push("/");
+          })
+          router.push("/")
         } else {
           toast({
             title: "조회 실패",
-            description: error.message,
+            description: message,
             variant: "destructive",
-          });
+          })
         }
       } else if (error instanceof NetworkError) {
+        const message = error.message
+        setListError(message)
         toast({
           title: "네트워크 오류",
-          description: error.message,
+          description: message,
           variant: "destructive",
-        });
+        })
       } else {
+        const message = "관리자 목록을 불러오는 중 오류가 발생했습니다."
+        setListError(message)
         toast({
           title: "오류",
-          description: "관리자 목록을 불러오는 중 오류가 발생했습니다.",
+          description: message,
           variant: "destructive",
-        });
+        })
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // 관리자 목록 조회
   useEffect(() => {
@@ -149,7 +133,7 @@ export function AdminAccountsContent() {
     if (!generatedKey) {
       // 관리자 번호 발급 API 호출
       try {
-        const response = await issueAdminNumber({
+        const response = await issueMasterAdminNumber({
           label: undefined,
           expiresAt: undefined,
         })
@@ -187,7 +171,7 @@ export function AdminAccountsContent() {
     }
   }
 
-  const handleOpenChangeStatus = (admin: Admin) => {
+  const handleOpenChangeStatus = (admin: MasterAdminAccount) => {
     // MASTER-0001 보호 로직
     if (isSystemMasterAdmin({ adminNumber: admin.adminNumber })) {
       toast({
@@ -203,7 +187,7 @@ export function AdminAccountsContent() {
   }
 
   // 공용 상태 변경 핸들러 (모달에서 확인 버튼을 누른 후 호출됨)
-  const handleToggleStatus = async (admin: Admin) => {
+  const handleToggleStatus = async (admin: MasterAdminAccount) => {
     // MASTER-0001 보호 로직 (이중 체크)
     if (isSystemMasterAdmin({ adminNumber: admin.adminNumber })) {
       toast({
@@ -218,47 +202,24 @@ export function AdminAccountsContent() {
     setIsChangingStatus(true);
 
     try {
-      // 현재 상태를 기반으로 active 값 추론
-      const currentActive = admin.status === "활성화";
+      const updated = await updateMasterAdminAccountStatus(admin)
 
-      // AdminNumberDto 구성 (status 기반으로 active 추론)
-      const adminNumberDto: AdminNumberDto = {
-        adminNumber: admin.adminNumber,
-        label: undefined,
-        active: currentActive,
-        issuedBy: 0, // 실제 값은 필요 없음 (API에서 사용하지 않음)
-        assignedAdminId: admin.id,
-        expiresAt: undefined,
-        usedAt: undefined,
-        createdAt: "",
-      };
-
-      // toggleAdminNumberActive 호출
-      const updated = await toggleAdminNumberActive(adminNumberDto);
-
-      // 성공 시 목록(state) 즉시 업데이트
       setAdminUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.adminNumber === admin.adminNumber
-            ? { ...user, status: updated.active ? "활성화" : "비활성화" }
-            : user
+          user.adminNumber === admin.adminNumber ? updated : user
         )
-      );
+      )
 
-      // 상세 패널이 열려 있으면 selectedAdmin도 업데이트
       if (selectedAdmin && selectedAdmin.adminNumber === admin.adminNumber) {
-        setSelectedAdmin({
-          ...selectedAdmin,
-          status: updated.active ? "활성화" : "비활성화",
-        });
+        setSelectedAdmin(updated)
       }
 
       toast({
         title: "상태 변경 성공",
-        description: updated.active
+        description: updated.isActive
           ? "관리자 계정이 활성화되었습니다."
           : "관리자 계정이 비활성화되었습니다.",
-      });
+      })
 
       setIsChangeStatusOpen(false);
       setSelectedAdmin(null);
@@ -292,9 +253,8 @@ export function AdminAccountsContent() {
     await handleToggleStatus(selectedAdmin);
   }
 
-  const handleOpenResetPassword = (admin: Admin) => {
-    // MASTER-0001 보호 로직
-    if (isSystemMasterAdmin({ adminNumber: admin.adminNumber })) {
+  const handleOpenResetPassword = (admin: MasterAdminAccount) => {
+    if (isSystemMasterAdmin({ adminNumber: admin.adminNumber }) || admin.role === "MASTER") {
       toast({
         title: "변경 불가",
         description: "마스터 관리자 계정은 비밀번호를 재설정할 수 없습니다.",
@@ -307,12 +267,29 @@ export function AdminAccountsContent() {
     setIsResetPasswordOpen(true)
   }
 
-  const handleConfirmResetPassword = () => {
-    const newTempPassword = generateTempPassword()
-    setTempPassword(newTempPassword)
-    setTempPasswordCopied(false)
-    setIsResetPasswordOpen(false)
-    setIsResetPasswordResultOpen(true)
+  const handleConfirmResetPassword = async () => {
+    if (!selectedAdmin) return
+
+    setIsResettingPassword(true)
+    try {
+      const { temporaryPassword } = await resetMasterAdminPassword(selectedAdmin)
+      setTempPassword(temporaryPassword)
+      setTempPasswordCopied(false)
+      setIsResetPasswordOpen(false)
+      setIsResetPasswordResultOpen(true)
+    } catch (error) {
+      const message =
+        error instanceof LoginFailedError || error instanceof NetworkError
+          ? error.message
+          : "비밀번호 재설정에 실패했습니다."
+      toast({
+        title: "비밀번호 재설정 불가",
+        description: message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsResettingPassword(false)
+    }
   }
 
   const handleCopyTempPassword = async () => {
@@ -324,75 +301,14 @@ export function AdminAccountsContent() {
     setTimeout(() => setTempPasswordCopied(false), 2000)
   }
 
-  const handleOpenReissueKey = (admin: Admin) => {
-    // MASTER-0001 보호 로직
-    if (isSystemMasterAdmin({ adminNumber: admin.adminNumber })) {
-      toast({
-        title: "변경 불가",
-        description: "마스터 관리자 계정은 시크릿 키를 재발급할 수 없습니다.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setSelectedAdmin(admin)
-    setIsReissueKeyOpen(true)
+  const handleCloseResetPasswordResult = () => {
+    setIsResetPasswordResultOpen(false)
+    setTempPassword("")
+    setTempPasswordCopied(false)
   }
 
-  const formatDateToKorean = (date: Date) => {
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const hours = date.getHours()
-    const minutes = date.getMinutes()
-    const ampm = hours >= 12 ? "오후" : "오전"
-    const displayHours = hours % 12 || 12
-    const displayMinutes = minutes.toString().padStart(2, "0")
-    return `${year}년 ${month}월 ${day}일 ${ampm} ${displayHours}:${displayMinutes}`
-  }
-
-  const handleConfirmReissueKey = () => {
-    const randomStr = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 11)
-    const newKey = `sk_prod_${randomStr}`
-    setReissuedSecretKey(newKey)
-    
-    // Update the admin user's secret key and lastKeyIssued date
-    if (selectedAdmin) {
-      const now = new Date()
-      const koreanDate = formatDateToKorean(now)
-      setAdminUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === selectedAdmin.id
-            ? { ...user, secretKey: newKey, lastKeyIssued: koreanDate }
-            : user
-        )
-      )
-      // Update selectedAdmin to reflect the changes
-      setSelectedAdmin((prev) => prev ? {
-        ...prev,
-        secretKey: newKey,
-        lastKeyIssued: koreanDate,
-      } : null)
-    }
-    
-    setIsReissueKeyOpen(false)
-    setIsReissueKeyResultOpen(true)
-    setReissuedKeyCopied(false)
-  }
-
-  const copyReissuedKey = async () => {
-    await navigator.clipboard.writeText(reissuedSecretKey)
-    setReissuedKeyCopied(true)
-    toast({
-      title: "Secret key copied to clipboard",
-      duration: 2000,
-    })
-    setTimeout(() => setReissuedKeyCopied(false), 2000)
-  }
-
-  const handleOpenDeleteAdmin = (admin: Admin) => {
-    // MASTER-0001 보호 로직
-    if (isSystemMasterAdmin({ adminNumber: admin.adminNumber })) {
+  const handleOpenDeleteAdmin = (admin: MasterAdminAccount) => {
+    if (isSystemMasterAdmin({ adminNumber: admin.adminNumber }) || admin.role === "MASTER") {
       toast({
         title: "삭제 불가",
         description: "마스터 관리자 계정은 삭제할 수 없습니다.",
@@ -405,30 +321,37 @@ export function AdminAccountsContent() {
     setIsDeleteAdminOpen(true)
   }
 
-  const handleConfirmDeleteAdmin = () => {
-    if (selectedAdmin) {
+  const handleConfirmDeleteAdmin = async () => {
+    if (!selectedAdmin) return
+    setIsDeletingAdmin(true)
+    try {
+      await deleteMasterAdminAccount(selectedAdmin)
       setAdminUsers((prev) => prev.filter((a) => a.id !== selectedAdmin.id))
       setIsDeleteAdminOpen(false)
-    }
-  }
-
-  const handleOpenDetails = (admin: Admin) => {
-    setSelectedAdmin(admin)
-    setShowSecretKey(false)
-    setDetailsKeyCopied(false)
-    setIsDetailsOpen(true)
-  }
-
-  const handleCopyDetailsKey = async () => {
-    if (selectedAdmin) {
-      // 시크릿 키는 백엔드에 없는 필드이므로 임시로 관리자 번호 복사
-      await navigator.clipboard.writeText(selectedAdmin.adminNumber)
-      setDetailsKeyCopied(true)
+      setIsDetailsOpen(false)
+      setSelectedAdmin(null)
       toast({
-        description: "관리자 번호가 클립보드에 복사되었습니다.",
+        title: "관리자 삭제 완료",
+        description: "관리자 계정이 삭제되었습니다.",
       })
-      setTimeout(() => setDetailsKeyCopied(false), 2000)
+    } catch (error) {
+      const message =
+        error instanceof LoginFailedError || error instanceof NetworkError
+          ? error.message
+          : "관리자 삭제에 실패했습니다."
+      toast({
+        title: "관리자 삭제 불가",
+        description: message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeletingAdmin(false)
     }
+  }
+
+  const handleOpenDetails = (admin: MasterAdminAccount) => {
+    setSelectedAdmin(admin)
+    setIsDetailsOpen(true)
   }
 
   const handleChangeStatusFromPanel = () => {
@@ -437,8 +360,9 @@ export function AdminAccountsContent() {
   }
 
   const handleResetPasswordFromPanel = () => {
+    if (!selectedAdmin) return
     setIsDetailsOpen(false)
-    setIsResetPasswordOpen(true)
+    handleOpenResetPassword(selectedAdmin)
   }
 
   const handleDeleteAdminFromPanel = () => {
@@ -447,29 +371,13 @@ export function AdminAccountsContent() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-6 min-h-[calc(100vh-80px)]">
-      {/* Page Header */}
-      <div>
-        <h1
-          style={{
-            fontSize: "24px",
-            fontWeight: 600,
-            color: "#1A1A1A",
-            marginBottom: "4px",
-          }}
-        >
-          관리자 계정 관리
-        </h1>
-        <p
-          style={{
-            fontSize: "14px",
-            color: "#6B7280",
-          }}
-        >
-          관리자 계정과 접근 권한을 관리합니다.
-        </p>
-      </div>
+    <div className="flex h-full flex-1 flex-col">
+      <AdminPageHeader
+        title="관리자 계정 관리"
+        description="관리자 계정과 접근 권한을 관리합니다."
+      />
 
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
       {/* Admin Users Card */}
       <Card className="border border-[#E5E5E5] shadow-sm flex-1 flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between py-2 px-6">
@@ -496,6 +404,14 @@ export function AdminAccountsContent() {
           </Button>
         </CardHeader>
         <CardContent className="px-0 pb-0 pt-0 flex-1 flex flex-col overflow-hidden">
+          {listError && !isLoading && (
+            <p
+              className="mx-6 mb-3 rounded-lg border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]"
+              role="alert"
+            >
+              {listError}
+            </p>
+          )}
           <ScrollArea className="flex-1 h-[520px]">
             <Table className="w-full table-fixed">
               <TableHeader>
@@ -578,12 +494,14 @@ export function AdminAccountsContent() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  adminUsers.map((user) => {
+                  sortMasterAdminAccounts(adminUsers).map((user) => {
                     const isMaster = isMasterAdmin({
                       adminNumber: user.adminNumber,
                       role: user.role,
                     });
-                    const isSystemMaster = isSystemMasterAdmin({ adminNumber: user.adminNumber });
+                    const isSystemMaster =
+                      isSystemMasterAdmin({ adminNumber: user.adminNumber }) ||
+                      user.role === "MASTER";
                     
                     return (
                       <TableRow key={user.id} className="border-t border-[#E5E5E5] hover:bg-[#F9FAFB]">
@@ -658,7 +576,7 @@ export function AdminAccountsContent() {
                         color: "#6B7280",
                       }}
                     >
-                      {user.lastLogin}
+                      {displayValue(user.lastLogin)}
                     </TableCell>
                     <TableCell className="w-[80px] text-right" style={{ paddingRight: "24px" }}>
                       <DropdownMenu>
@@ -686,22 +604,17 @@ export function AdminAccountsContent() {
                             상태 변경
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className={`flex items-center gap-2 ${isSystemMaster ? "cursor-not-allowed opacity-60" : ""}`}
+                            className={`flex items-center gap-2 ${isSystemMaster || user.role === "MASTER" ? "cursor-not-allowed opacity-60" : ""}`}
                             style={{ fontSize: "14px", color: "#1A1A1A" }}
-                            disabled={isSystemMaster}
-                            onClick={() => !isSystemMaster && handleOpenResetPassword(user)}
+                            disabled={isSystemMaster || user.role === "MASTER"}
+                            onClick={() =>
+                              !isSystemMaster &&
+                              user.role !== "MASTER" &&
+                              handleOpenResetPassword(user)
+                            }
                           >
                             <RotateCcw className="h-4 w-4" />
                             비밀번호 재설정
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className={`flex items-center gap-2 ${isSystemMaster ? "cursor-not-allowed opacity-60" : ""}`}
-                            style={{ fontSize: "14px", color: "#1A1A1A" }}
-                            disabled={isSystemMaster}
-                            onClick={() => !isSystemMaster && handleOpenReissueKey(user)}
-                          >
-                            <KeyRound className="h-4 w-4" />
-                            시크릿 키 재발급
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className={`flex items-center gap-2 ${isSystemMaster ? "cursor-not-allowed opacity-40" : ""}`}
@@ -919,24 +832,26 @@ export function AdminAccountsContent() {
                 fontSize: "14px",
                 color: "#6B7280",
                 marginBottom: "12px",
+                lineHeight: "1.6",
               }}
             >
-              관리자의 다음 로그인을 위해 임시 비밀번호가 생성됩니다.
+              해당 관리자의 비밀번호를 임시 비밀번호로 재설정하시겠습니까?
             </p>
             <p
               style={{
                 fontSize: "14px",
-                fontWeight: 600,
-                color: "#1A1A1A",
+                color: "#6B7280",
+                lineHeight: "1.6",
               }}
             >
-              이 관리자의 비밀번호를 재설정하시겠습니까?
+              생성된 임시 비밀번호는 한 번만 표시됩니다. 관리자에게 안전하게 전달한 뒤, 해당 관리자는 설정 화면에서 본인이 직접 비밀번호를 변경할 수 있습니다.
             </p>
           </div>
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
               onClick={() => setIsResetPasswordOpen(false)}
+              disabled={isResettingPassword}
               style={{
                 fontSize: "14px",
                 fontWeight: 500,
@@ -946,21 +861,28 @@ export function AdminAccountsContent() {
             </Button>
             <Button
               onClick={handleConfirmResetPassword}
+              disabled={isResettingPassword}
               style={{
                 backgroundColor: "#3B82F6",
                 color: "#FFFFFF",
                 fontSize: "14px",
                 fontWeight: 500,
+                opacity: isResettingPassword ? 0.6 : 1,
               }}
             >
-              비밀번호 재설정
+              {isResettingPassword ? "처리 중..." : "비밀번호 재설정"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Modal — Temporary password generated (result) */}
-      <Dialog open={isResetPasswordResultOpen} onOpenChange={setIsResetPasswordResultOpen}>
+      <Dialog
+        open={isResetPasswordResultOpen}
+        onOpenChange={(open) => {
+          if (!open) handleCloseResetPasswordResult()
+        }}
+      >
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle
@@ -978,7 +900,7 @@ export function AdminAccountsContent() {
                 color: "#6B7280",
               }}
             >
-              이 비밀번호를 복사하여 관리자에게 안전하게 전달해주세요.
+              이 비밀번호는 한 번만 표시됩니다. 모달을 닫으면 다시 확인할 수 없습니다.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -1019,7 +941,7 @@ export function AdminAccountsContent() {
           </div>
           <DialogFooter>
             <Button
-              onClick={() => setIsResetPasswordResultOpen(false)}
+              onClick={handleCloseResetPasswordResult}
               style={{
                 backgroundColor: "#3B82F6",
                 color: "#FFFFFF",
@@ -1033,75 +955,18 @@ export function AdminAccountsContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal — Reissue Secret Key confirmation dialog */}
-      <Dialog open={isReissueKeyOpen} onOpenChange={setIsReissueKeyOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>
-              Reissue Secret Key
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p style={{ fontSize: "14px", color: "#6B7280", lineHeight: "1.6" }}>
-              The current secret key will be invalidated and replaced with a new one. Do you want to continue?
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReissueKeyOpen(false)}>
-              Cancel
-            </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleConfirmReissueKey}>
-              Reissue Key
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal — Reissue Secret Key result dialog */}
-      <Dialog open={isReissueKeyResultOpen} onOpenChange={setIsReissueKeyResultOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>
-              New Secret Key Issued
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <p style={{ fontSize: "14px", color: "#6B7280", lineHeight: "1.6" }}>
-              This secret key will only be shown once. Please copy and store it safely.
-            </p>
-            <div className="space-y-2">
-              <label style={{ fontSize: "14px", fontWeight: 500, color: "#1A1A1A" }}>Secret Key</label>
-              <div className="flex items-center gap-2">
-                <Input readOnly value={reissuedSecretKey} style={{ fontSize: "14px", fontFamily: "monospace" }} />
-                <Button variant="outline" size="icon" onClick={copyReissuedKey} className="shrink-0 bg-transparent">
-                  {reissuedKeyCopied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => setIsReissueKeyResultOpen(false)}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Modal — Delete Admin confirmation dialog */}
       <Dialog open={isDeleteAdminOpen} onOpenChange={setIsDeleteAdminOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>Delete Admin</DialogTitle>
+            <DialogTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>관리자 삭제</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1">
               <p style={{ fontSize: "14px", color: "#374151" }}>
-                Are you sure you want to permanently delete this admin?
+                해당 관리자 계정을 삭제하시겠습니까?
               </p>
-              <p style={{ fontSize: "14px", color: "#374151" }}>This action cannot be undone.</p>
+              <p style={{ fontSize: "14px", color: "#374151" }}>삭제된 계정은 복구할 수 없습니다.</p>
             </div>
 
             {selectedAdmin && (
@@ -1113,14 +978,18 @@ export function AdminAccountsContent() {
               </div>
             )}
 
-            <p style={{ fontSize: "14px", color: "#374151" }}>All access for this admin will be removed immediately.</p>
+            <p style={{ fontSize: "14px", color: "#374151" }}>해당 관리자의 접근 권한이 즉시 제거됩니다.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteAdminOpen(false)}>
-              Cancel
+              취소
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDeleteAdmin}>
-              Delete Admin
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDeleteAdmin}
+              disabled={isDeletingAdmin}
+            >
+              {isDeletingAdmin ? "삭제 중..." : "관리자 삭제"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1184,6 +1053,12 @@ export function AdminAccountsContent() {
                   </div>
                 </div>
                 <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">이름</p>
+                  <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
+                    {displayValue(selectedAdmin?.displayName)}
+                  </p>
+                </div>
+                <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">이메일</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
                     {selectedAdmin?.email}
@@ -1207,13 +1082,13 @@ export function AdminAccountsContent() {
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">마지막 로그인</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
-                    {selectedAdmin?.lastLogin}
+                    {displayValue(selectedAdmin?.lastLogin)}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">생성일</p>
                   <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
-                    {selectedAdmin?.createdAt}
+                    {displayValue(selectedAdmin?.createdAt)}
                   </p>
                 </div>
               </div>
@@ -1224,54 +1099,11 @@ export function AdminAccountsContent() {
             {/* Security Settings Section */}
             <div className="space-y-4">
               <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>보안 설정</h3>
-              <div className="grid gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">비밀번호 상태</p>
-                  <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
-                    비밀번호 설정됨
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">시크릿 키</p>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="flex-1 bg-[#F9FAFB] rounded-md px-3 py-2 font-mono text-sm"
-                      style={{ color: "#1A1A1A" }}
-                    >
-                      {showSecretKey ? selectedAdmin?.adminNumber : "•••••••••••••••••••••"}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setShowSecretKey(!showSecretKey)}
-                      className="h-9 w-9 shrink-0 bg-transparent border-[#E5E5E5]"
-                    >
-                      {showSecretKey ? (
-                        <EyeOff className="h-4 w-4 text-[#6B7280]" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-[#6B7280]" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleCopyDetailsKey}
-                      className="h-9 w-9 shrink-0 bg-transparent border-[#E5E5E5]"
-                    >
-                      {detailsKeyCopied ? (
-                        <Check className="h-4 w-4 text-[#16A34A]" />
-                      ) : (
-                        <Copy className="h-4 w-4 text-[#6B7280]" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">마지막 시크릿 키 발급일</p>
-                  <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
-                    {selectedAdmin?.lastKeyIssued}
-                  </p>
-                </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">비밀번호 상태</p>
+                <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
+                  {selectedAdmin?.passwordStatus ?? "-"}
+                </p>
               </div>
             </div>
           </div>
@@ -1305,18 +1137,6 @@ export function AdminAccountsContent() {
                   <RotateCcw className="h-4 w-4 mr-2" /> 비밀번호 재설정
                 </Button>
                 <Button
-                  variant="outline"
-                  className="w-full bg-transparent"
-                  disabled
-                  style={{
-                    color: "#9CA3AF",
-                    cursor: "not-allowed",
-                    opacity: 0.5,
-                  }}
-                >
-                  <KeyRound className="h-4 w-4 mr-2" /> 시크릿 키 재발급
-                </Button>
-                <Button
                   variant="destructive"
                   className="w-full"
                   disabled
@@ -1339,15 +1159,6 @@ export function AdminAccountsContent() {
                   <RotateCcw className="h-4 w-4 mr-2" />
                   비밀번호 재설정
                 </Button>
-                <Button variant="outline" className="w-full bg-transparent" onClick={() => {
-                  setIsDetailsOpen(false);
-                  if (selectedAdmin) {
-                    handleOpenReissueKey(selectedAdmin);
-                  }
-                }}>
-                  <KeyRound className="h-4 w-4 mr-2" />
-                  시크릿 키 재발급
-                </Button>
                 <Button variant="destructive" className="w-full" onClick={handleDeleteAdminFromPanel}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   관리자 삭제
@@ -1357,6 +1168,7 @@ export function AdminAccountsContent() {
           </div>
         </SheetContent>
       </Sheet>
+      </main>
     </div>
   )
 }
