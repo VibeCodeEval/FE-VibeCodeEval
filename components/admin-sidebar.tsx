@@ -74,7 +74,7 @@ export function AdminSidebar() {
   const router = useRouter()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [displayName, setDisplayName] = useState("관리자")
+  const [displayName, setDisplayName] = useState("알 수 없음")
 
   useEffect(() => {
     let cancelled = false

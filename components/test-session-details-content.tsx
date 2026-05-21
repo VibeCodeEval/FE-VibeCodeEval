@@ -136,6 +136,7 @@ export default function TestSessionDetailsContent({ examId, onBack }: TestSessio
   const sessionMeta = exam ? mapExamToTestSession(exam) : null
   const statusLabel = exam ? getMasterSessionStatusLabel(exam.state) : "-"
   const displaySessionId = sessionMeta?.sessionId ?? "-"
+  const displayCreator = sessionMeta?.createdBy ?? "알 수 없음"
   const displayCreatedAt = exam ? getExamDisplayDate(exam) : "-"
   const participantTotal = exam?.participantCount ?? participants.length
   const submissions = participants.filter((p) => p.hasSubmission).length
@@ -245,7 +246,7 @@ export default function TestSessionDetailsContent({ examId, onBack }: TestSessio
                   </div>
                   <div>
                     <p className="mb-1 text-sm text-gray-500">생성자</p>
-                    <p className="text-sm font-medium text-gray-900">Admin</p>
+                    <p className="text-sm font-medium text-gray-900">{displayCreator}</p>
                   </div>
                   <div>
                     <p className="mb-1 text-sm text-gray-500">생성일</p>

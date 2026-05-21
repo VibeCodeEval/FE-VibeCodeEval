@@ -80,6 +80,15 @@ export function getExamDisplayDate(exam: Exam): string {
 }
 
 /** 목록 필터용 Active / Completed */
+const UNKNOWN_CREATOR_LABEL = "알 수 없음"
+
+/** API creatorName → 목록/상세 표시용 생성자 라벨 */
+export function resolveExamCreatorDisplayName(exam: Exam): string {
+  const name = exam.creatorName?.trim()
+  if (name) return name
+  return UNKNOWN_CREATOR_LABEL
+}
+
 export function getTestSessionFilterStatus(state: string | null | undefined): string {
   const normalized = (state ?? "").trim().toUpperCase()
   if (["RUNNING", "IN_PROGRESS", "ACTIVE"].includes(normalized)) return "Active"
@@ -91,7 +100,7 @@ export function mapExamToTestSession(exam: Exam): TestSessionListItem {
   return {
     id: exam.id,
     sessionId: title || `시험 #${exam.id}`,
-    createdBy: "Admin",
+    createdBy: resolveExamCreatorDisplayName(exam),
     createdAt: formatSessionCreatedAt(
       (exam as ExamWithOptionalCreatedAt).createdAt ?? exam.startsAt
     ),

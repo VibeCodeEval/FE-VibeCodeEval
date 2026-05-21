@@ -7,6 +7,7 @@ import {
   issueAdminNumber,
   updateAdminNumber,
   resetAdminPasswordByMaster,
+  resolveAdminAccountDisplayName,
   LoginFailedError,
   NetworkError,
   type AdminInfo,
@@ -67,7 +68,10 @@ export function mapAdminApiRecordToAccount(record: MasterAdminApiRecord): Master
   return {
     id: record.id,
     adminNumber: record.adminNumber,
-    displayName: record.displayName?.trim() || record.adminNumber,
+    displayName: resolveAdminAccountDisplayName({
+      displayName: record.displayName,
+      adminNumber: record.adminNumber,
+    }),
     email: record.email,
     role: record.role,
     is2faEnabled: record.is2faEnabled,

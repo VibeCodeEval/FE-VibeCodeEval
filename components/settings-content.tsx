@@ -21,6 +21,7 @@ import {
   LoginFailedError,
   NetworkError,
   resolveAdminDisplayNameFromMe,
+  resolveAdminNumberFromMe,
 } from "@/lib/api/admin"
 import { useToast } from "@/hooks/use-toast"
 import { Lock } from "lucide-react"
@@ -54,14 +55,10 @@ export function SettingsContent() {
       setIsLoading(true);
       try {
         const response = await getMe();
-        const adminNumber =
-          response.participant.adminNumber?.trim() ||
-          response.participant.name?.trim() ||
-          "";
         setAdminProfile({
           name: resolveAdminDisplayNameFromMe(response),
           email: response.participant.phone || "",
-          adminNumber,
+          adminNumber: resolveAdminNumberFromMe(response),
         });
       } catch (error) {
         if (error instanceof LoginFailedError) {
@@ -275,7 +272,7 @@ export function SettingsContent() {
                     <div>
                       <Label className="text-sm font-medium text-[#374151]">이름</Label>
                       <Input
-                        value={adminProfile.name || "관리자"}
+                        value={adminProfile.name || "알 수 없음"}
                         disabled
                         className="mt-2 bg-[#F9FAFB] border-[#E5E5E5] text-[#374151]"
                       />

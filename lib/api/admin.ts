@@ -117,26 +117,65 @@ export interface MeResponse {
   role: string;
   participant: {
     id: number;
-    name: string; // ADMIN: displayName(또는 fallback), USER: 참가자 이름
+    /** ADMIN: resolveDisplayName() 결과, USER: 참가자 이름 */
+    name: string;
     phone: string; // ADMIN: email, USER: 전화번호
     adminNumber?: string | null; // ADMIN 전용
+    /** ADMIN: DB display_name 원본 (nullable). USER는 null/미포함 */
+    displayName?: string | null;
   };
   exam?: null;
   session?: null;
 }
 
-/** GET /api/auth/me 응답에서 관리자 표시 이름 해석 (displayName → adminNumber → "관리자") */
+function pickFirstNonEmpty(
+  ...values: (string | null | undefined)[]
+): string | undefined {
+  for (const value of values) {
+    const trimmed = value?.trim();
+    if (trimmed) return trimmed;
+  }
+  return undefined;
+}
+
+/**
+ * GET /api/auth/me — 관리자 표시 이름
+ * 우선순위: displayName → name(관리자번호와 다를 때) → name → adminNumber → "알 수 없음"
+ */
 export function resolveAdminDisplayNameFromMe(response: MeResponse): string {
   const participant = response.participant;
-  const adminNumber =
-    participant.adminNumber?.trim() ||
-    participant.name?.trim() ||
-    "";
-  return (
-    participant.name?.trim() ||
-    adminNumber ||
-    "관리자"
-  );
+  const displayName = pickFirstNonEmpty(participant.displayName);
+  const name = pickFirstNonEmpty(participant.name);
+  const adminNumber = pickFirstNonEmpty(participant.adminNumber);
+
+  if (displayName) return displayName;
+  if (name && adminNumber && name !== adminNumber) return name;
+  if (name) return name;
+  if (adminNumber) return adminNumber;
+  return "알 수 없음";
+}
+
+/** GET /api/auth/me — 관리자 번호 필드 (name fallback 사용하지 않음) */
+export function resolveAdminNumberFromMe(response: MeResponse): string {
+  return pickFirstNonEmpty(response.participant.adminNumber) ?? "";
+}
+
+/** 관리자 목록/상세 — 표시 이름 (displayName 원본 우선, 번호와 동일한 값은 이름으로 취급하지 않음) */
+export function resolveAdminAccountDisplayName(account: {
+  displayName?: string | null;
+  adminNumber: string;
+}): string {
+  const displayName = pickFirstNonEmpty(account.displayName);
+  const adminNumber = pickFirstNonEmpty(account.adminNumber);
+
+  if (displayName && adminNumber && displayName !== adminNumber) {
+    return displayName;
+  }
+  if (displayName && !adminNumber) {
+    return displayName;
+  }
+  if (adminNumber) return adminNumber;
+  return "알 수 없음";
 }
 
 // AdminInfo (AdminListResponse에서 사용)
@@ -1190,6 +1229,8 @@ export interface Exam {
   endsAt: string;   // ISO 8601 형식
   version: number;
   createdBy: number;
+  /** 생성 관리자 표시 이름 (GET /api/admin/exams) */
+  creatorName?: string | null;
   participantCount: number;
   completedCount: number;
   entryCode?: string; // 입장 코드 (선택적)

@@ -8,100 +8,22 @@ import {
   type Exam,
   type ExamineeBoardEntry,
 } from "@/lib/api/admin"
-
-type ConnectionStatus = "응시 완료" | "응시 중" | "대기 중" | "종료됨"
-
-const EXAM_ENDED_STATES = new Set(["ENDED", "COMPLETED", "FINISHED", "CLOSED"])
-type SubmissionStatus = "시작 전" | "진행 중" | "채점 중" | "제출 완료"
+import {
+  isAdminUsersSubmissionCountedComplete,
+  resolveAdminUsersConnectionStatus,
+  resolveAdminUsersSubmissionStatus,
+  type AdminUsersConnectionStatus,
+  type AdminUsersSubmissionStatus,
+} from "@/lib/admin-users-participant-status"
 
 interface Participant {
   id: string
   name: string
   examLabel: string
   phone: string
-  connectionStatus: ConnectionStatus
-  submissionStatus: SubmissionStatus
+  connectionStatus: AdminUsersConnectionStatus
+  submissionStatus: AdminUsersSubmissionStatus
   tokenUsage: number
-}
-
-const PARTICIPANT_WAITING_STATES = new Set(["WAITING", "PENDING", "IDLE"])
-
-const PARTICIPANT_EXAMINING_STATES = new Set([
-  "ACTIVE",
-  "RUNNING",
-  "IN_PROGRESS",
-  "ENTRANCE",
-  "STARTED",
-  "JOINED",
-])
-
-function normalizeParticipantState(state: string | null | undefined): string {
-  return (state ?? "").trim().toUpperCase()
-}
-
-function isWaitingParticipant(entry: ExamineeBoardEntry): boolean {
-  const state = normalizeParticipantState(entry.state)
-  if (PARTICIPANT_WAITING_STATES.has(state)) return true
-  if (!state && (entry.tokenUsed ?? 0) === 0 && !entry.submitted) return true
-  return false
-}
-
-function isExamineeInProgress(entry: ExamineeBoardEntry): boolean {
-  if (entry.submitted) return false
-  const state = normalizeParticipantState(entry.state)
-  if (PARTICIPANT_EXAMINING_STATES.has(state)) return true
-  if ((entry.tokenUsed ?? 0) > 0) return true
-  if (
-    entry.submissionStatus === "QUEUED" ||
-    entry.submissionStatus === "RUNNING"
-  ) {
-    return true
-  }
-  return false
-}
-
-function normalizeSubmissionStatus(status: string | null | undefined): string {
-  return (status ?? "").trim().toUpperCase()
-}
-
-function isGradingComplete(entry: ExamineeBoardEntry): boolean {
-  if (!entry.submitted) return false
-  const status = normalizeSubmissionStatus(entry.submissionStatus)
-  if (status === "FAILED") return true
-
-  if (entry.evaluatedAt) return true
-  if (entry.totalScore != null && entry.totalScore !== undefined) {
-    const n = Number(entry.totalScore)
-    if (!Number.isNaN(n)) return true
-  }
-  return false
-}
-
-function isExamEnded(exam: Exam): boolean {
-  const state = (exam.state ?? "").trim().toUpperCase()
-  if (EXAM_ENDED_STATES.has(state)) return true
-  if (exam.endsAt) {
-    const endMs = new Date(exam.endsAt).getTime()
-    if (!Number.isNaN(endMs) && endMs <= Date.now()) return true
-  }
-  return false
-}
-
-function mapConnectionStatus(entry: ExamineeBoardEntry, exam: Exam): ConnectionStatus {
-  if (isExamEnded(exam)) return "종료됨"
-  if (entry.submitted) return "응시 완료"
-  if (isWaitingParticipant(entry)) return "대기 중"
-  if (isExamineeInProgress(entry)) return "응시 중"
-  return "대기 중"
-}
-
-function mapSubmissionStatus(entry: ExamineeBoardEntry): SubmissionStatus {
-  if (!entry.submitted) {
-    if (isExamineeInProgress(entry)) return "진행 중"
-    return "시작 전"
-  }
-  if (isGradingComplete(entry)) return "제출 완료"
-  return "채점 중"
 }
 
 function resolveExamDisplayLabel(exam: Exam): string {
@@ -111,19 +33,20 @@ function resolveExamDisplayLabel(exam: Exam): string {
 }
 
 function mapBoardEntry(entry: ExamineeBoardEntry, exam: Exam): Participant {
+  const connectionStatus = resolveAdminUsersConnectionStatus(entry, exam)
   return {
     id: `${exam.id}-${entry.examParticipantId}`,
     name: entry.name || "–",
     examLabel: resolveExamDisplayLabel(exam),
     phone: entry.phoneMasked || "–",
-    connectionStatus: mapConnectionStatus(entry, exam),
-    submissionStatus: mapSubmissionStatus(entry),
+    connectionStatus,
+    submissionStatus: resolveAdminUsersSubmissionStatus(entry, exam, connectionStatus),
     tokenUsage: entry.tokenUsed ?? 0,
   }
 }
 
-function ConnectionBadge({ status }: { status: ConnectionStatus }) {
-  const styles: Record<ConnectionStatus, string> = {
+function ConnectionBadge({ status }: { status: AdminUsersConnectionStatus }) {
+  const styles: Record<AdminUsersConnectionStatus, string> = {
     "응시 완료": "border-[#16A34A] bg-[#DCFCE7] text-[#16A34A]",
     "응시 중": "border-[#3B82F6] bg-white text-[#3B82F6]",
     "대기 중": "border-[#6B7280] bg-white text-[#6B7280]",
@@ -136,12 +59,15 @@ function ConnectionBadge({ status }: { status: ConnectionStatus }) {
   )
 }
 
-function SubmissionBadge({ status }: { status: SubmissionStatus }) {
-  const styles: Record<SubmissionStatus, string> = {
+function SubmissionBadge({ status }: { status: AdminUsersSubmissionStatus }) {
+  const styles: Record<AdminUsersSubmissionStatus, string> = {
     "시작 전": "bg-[#F3F4F6] text-[#6B7280]",
     "진행 중": "bg-[#E0EDFF] text-[#3B82F6]",
     "채점 중": "bg-[#FEF3C7] text-[#D97706]",
     "제출 완료": "bg-[#DCFCE7] text-[#16A34A]",
+    "채점 완료": "bg-[#DCFCE7] text-[#16A34A]",
+    "미제출": "bg-[#F3F4F6] text-[#6B7280]",
+    "제출 실패": "bg-[#FEE2E2] text-[#DC2626]",
   }
 
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>{status}</span>
@@ -254,7 +180,10 @@ export function UsersContent() {
   const displayEnd = Math.min(endIndex, filteredParticipants.length)
 
   const completedCount = useMemo(
-    () => filteredParticipants.filter((p) => p.submissionStatus === "제출 완료").length,
+    () =>
+      filteredParticipants.filter((p) =>
+        isAdminUsersSubmissionCountedComplete(p.submissionStatus)
+      ).length,
     [filteredParticipants]
   )
 
