@@ -105,6 +105,7 @@ export function ParticipantEvaluationContent({
       setBoardError(null)
       setBoardEntry(null)
       setExamTitle(null)
+      setExamId(null)
 
       const directExamId =
         examIdProp != null && Number.isFinite(examIdProp) && examIdProp > 0 ? examIdProp : null

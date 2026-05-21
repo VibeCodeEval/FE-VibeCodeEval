@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { createExam, getExams, deleteExam, getEntryCodes, startExam, endExam, extendExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { getExamSortTimestamp } from "@/lib/master-test-sessions"
 import { useToast } from "@/hooks/use-toast"
 
 
@@ -63,6 +64,27 @@ const pickEntryCode = (source: unknown): string | undefined => {
   }
 
   return undefined
+}
+
+/** 시험 시작 버튼(0) → 종료 버튼(1) → 종료됨(2). UI 버튼 분기와 동일한 state 기준 */
+function getExamEntryCodesActionPriority(state: string): number {
+  const normalized = (state ?? "").trim().toUpperCase()
+  if (["ENDED", "COMPLETED", "CLOSED", "FINISHED", "DONE"].includes(normalized)) {
+    return 2
+  }
+  if (["RUNNING", "IN_PROGRESS", "ACTIVE"].includes(normalized)) {
+    return 1
+  }
+  return 0
+}
+
+/** 상태 우선 정렬 후, 같은 그룹 내에서는 시작/생성 시각 내림차순(기존 시각 기준) */
+function sortExamsForEntryCodes<T extends Exam>(exams: T[]): T[] {
+  return [...exams].sort((a, b) => {
+    const byAction = getExamEntryCodesActionPriority(a.state) - getExamEntryCodesActionPriority(b.state)
+    if (byAction !== 0) return byAction
+    return getExamSortTimestamp(b) - getExamSortTimestamp(a)
+  })
 }
 
 export function EntryCodesContent() {
@@ -149,7 +171,7 @@ export function EntryCodesContent() {
         })
       )
       
-      setExams(examsWithEntryCodes)
+      setExams(sortExamsForEntryCodes(examsWithEntryCodes))
       // 시험 목록을 새로 가져올 때 페이지를 1로 리셋
       setCurrentExamPage(1)
     } catch (error) {
@@ -252,7 +274,7 @@ export function EntryCodesContent() {
         if (prev === null) {
           return [createdExamWithEntryCode]
         }
-        return [createdExamWithEntryCode, ...prev]
+        return sortExamsForEntryCodes([createdExamWithEntryCode, ...prev])
       })
 
       // 모달 닫기
@@ -471,7 +493,7 @@ export function EntryCodesContent() {
         } else if (newList.length === 0) {
           setCurrentExamPage(1)
         }
-        return newList
+        return sortExamsForEntryCodes(newList)
       })
 
       // 성공 토스트 표시

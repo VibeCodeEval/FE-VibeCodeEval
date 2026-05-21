@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, type CSSProperties } from "react"
 import { MoreHorizontal, Copy, Check, Eye, Power, RotateCcw, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Separator } from "@/components/ui/separator"
 import {
   fetchMasterAdminAccounts,
   issueMasterAdminNumber,
@@ -37,6 +36,14 @@ import { AdminPageHeader } from "@/components/admin-page-header"
 
 function displayValue(value: string | null | undefined): string {
   return value && value.trim() ? value : "-"
+}
+
+/** 관리자 계정 상태 Badge (활성=초록, 비활성=빨간 계열) */
+function adminAccountStatusBadgeStyle(status: MasterAdminAccount["status"]): CSSProperties {
+  if (status === "활성화") {
+    return { backgroundColor: "#DCFCE7", color: "#166534" }
+  }
+  return { backgroundColor: "#FEE2E2", color: "#DC2626" }
 }
 
 export function AdminAccountsContent() {
@@ -438,7 +445,7 @@ export function AdminAccountsContent() {
                     이메일
                   </TableHead>
                   <TableHead
-                    className="w-[100px]"
+                    className="w-[108px] text-center align-middle"
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
@@ -448,7 +455,7 @@ export function AdminAccountsContent() {
                     역할
                   </TableHead>
                   <TableHead
-                    className="w-[120px]"
+                    className="w-[120px] text-center align-middle"
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
@@ -458,7 +465,7 @@ export function AdminAccountsContent() {
                     상태
                   </TableHead>
                   <TableHead
-                    className="w-[200px]"
+                    className="w-[200px] text-center align-middle whitespace-nowrap"
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
@@ -468,7 +475,7 @@ export function AdminAccountsContent() {
                     최근 로그인
                   </TableHead>
                   <TableHead
-                    className="w-[80px] text-right"
+                    className="w-[80px] text-center align-middle"
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
@@ -541,45 +548,52 @@ export function AdminAccountsContent() {
                         >
                           {user.email}
                         </TableCell>
-                        <TableCell className="w-[100px]">
-                          <Badge
-                            variant={user.role === "MASTER" ? "default" : "secondary"}
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: 500,
-                              backgroundColor: user.role === "MASTER" ? "#FEF3C7" : "#F3F4F6",
-                              color: user.role === "MASTER" ? "#92400E" : "#6B7280",
-                              border: "none",
-                            }}
-                          >
-                            {user.role === "MASTER" ? "마스터" : "관리자"}
-                          </Badge>
+                        <TableCell className="w-[108px] text-center align-middle">
+                          <div className="flex justify-center items-center">
+                            <Badge
+                              variant={user.role === "MASTER" ? "default" : "secondary"}
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 500,
+                                backgroundColor: user.role === "MASTER" ? "#FEF3C7" : "#F3F4F6",
+                                color: user.role === "MASTER" ? "#92400E" : "#6B7280",
+                                border: "none",
+                              }}
+                            >
+                              {user.role === "MASTER" ? "마스터" : "관리자"}
+                            </Badge>
+                          </div>
                         </TableCell>
-                        <TableCell className="w-[120px]">
-                          <Badge
-                            variant={user.status === "활성화" ? "default" : "secondary"}
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: 500,
-                              backgroundColor: user.status === "활성화" ? "#DCFCE7" : "#F3F4F6",
-                              color: user.status === "활성화" ? "#166534" : "#6B7280",
-                              border: "none",
-                            }}
-                          >
-                            {user.status}
-                          </Badge>
+                        <TableCell className="w-[120px] text-center align-middle">
+                          <div className="flex justify-center items-center">
+                            <Badge
+                              variant={user.status === "활성화" ? "default" : "secondary"}
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 500,
+                                ...adminAccountStatusBadgeStyle(user.status),
+                                border: "none",
+                              }}
+                            >
+                              {user.status}
+                            </Badge>
+                          </div>
                         </TableCell>
-                    <TableCell
-                      className="w-[200px]"
-                      style={{
-                        fontSize: "14px",
-                        color: "#6B7280",
-                      }}
-                    >
-                      {displayValue(user.lastLogin)}
-                    </TableCell>
-                    <TableCell className="w-[80px] text-right" style={{ paddingRight: "24px" }}>
-                      <DropdownMenu>
+                        <TableCell
+                          className="w-[200px] text-center align-middle whitespace-nowrap tabular-nums"
+                          style={{
+                            fontSize: "14px",
+                            color: "#6B7280",
+                          }}
+                        >
+                          {displayValue(user.lastLogin)}
+                        </TableCell>
+                        <TableCell
+                          className="w-[80px] text-center align-middle"
+                          style={{ paddingRight: "24px" }}
+                        >
+                          <div className="flex justify-center items-center">
+                            <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#F3F4F6]">
                             <MoreHorizontal className="h-4 w-4 text-[#6B7280]" />
@@ -626,9 +640,10 @@ export function AdminAccountsContent() {
                             관리자 삭제
                           </DropdownMenuItem>
                         </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     );
                   })
                 )}
@@ -1014,28 +1029,9 @@ export function AdminAccountsContent() {
               <div className="grid gap-4">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">관리자 번호</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
-                      {selectedAdmin?.adminNumber}
-                    </p>
-                    {selectedAdmin && isMasterAdmin({
-                      adminNumber: selectedAdmin.adminNumber,
-                      role: selectedAdmin.role,
-                    }) && (
-                      <Badge
-                        variant="default"
-                        style={{
-                          fontSize: "10px",
-                          fontWeight: 600,
-                          backgroundColor: "#FEF3C7",
-                          color: "#92400E",
-                          border: "none",
-                        }}
-                      >
-                        MASTER
-                      </Badge>
-                    )}
-                  </div>
+                  <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
+                    {selectedAdmin?.adminNumber}
+                  </p>
                   <div className="mt-2">
                     <p className="text-xs text-muted-foreground">역할</p>
                     <Badge
@@ -1071,8 +1067,7 @@ export function AdminAccountsContent() {
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
-                      backgroundColor: selectedAdmin?.status === "활성화" ? "#DCFCE7" : "#F3F4F6",
-                      color: selectedAdmin?.status === "활성화" ? "#166534" : "#6B7280",
+                      ...(selectedAdmin ? adminAccountStatusBadgeStyle(selectedAdmin.status) : {}),
                       border: "none",
                     }}
                   >
@@ -1091,19 +1086,6 @@ export function AdminAccountsContent() {
                     {displayValue(selectedAdmin?.createdAt)}
                   </p>
                 </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Security Settings Section */}
-            <div className="space-y-4">
-              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>보안 설정</h3>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">비밀번호 상태</p>
-                <p className="text-sm font-medium" style={{ color: "#1A1A1A" }}>
-                  {selectedAdmin?.passwordStatus ?? "-"}
-                </p>
               </div>
             </div>
           </div>

@@ -73,6 +73,10 @@ function SubmissionBadge({ status }: { status: AdminUsersSubmissionStatus }) {
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>{status}</span>
 }
 
+/** 참가자 목록 그리드: 좌측(이름·시험) / 중앙(전화·상태) / 우측(토큰) */
+const PARTICIPANT_LIST_GRID_COLS =
+  "grid-cols-[1.2fr_1fr_1fr_minmax(5.5rem,1fr)_minmax(5.5rem,1fr)_minmax(4.5rem,0.95fr)]"
+
 export function UsersContent() {
   const [exams, setExams] = useState<Exam[]>([])
   const [participants, setParticipants] = useState<Participant[]>([])
@@ -245,19 +249,35 @@ export function UsersContent() {
         )}
 
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
-          <div className="grid shrink-0 grid-cols-[1.2fr_1fr_1.2fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-6 py-3">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">이름</span>
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">시험</span>
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">전화번호</span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-              응시 상태
+          <div
+            className={`grid shrink-0 ${PARTICIPANT_LIST_GRID_COLS} items-center gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-6 py-3`}
+          >
+            <span className="min-w-0 justify-self-start text-left text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              이름
             </span>
-            <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-              제출 상태
+            <span className="min-w-0 justify-self-start text-left text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              시험
             </span>
-            <span className="text-right text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-              토큰 사용량
-            </span>
+            <div className="flex w-full min-w-0 items-center justify-center">
+              <span className="whitespace-nowrap text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                전화번호
+              </span>
+            </div>
+            <div className="flex w-full min-w-0 items-center justify-center">
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                응시 상태
+              </span>
+            </div>
+            <div className="flex w-full min-w-0 items-center justify-center">
+              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                제출 상태
+              </span>
+            </div>
+            <div className="flex w-full min-w-0 items-center justify-end">
+              <span className="text-right text-xs font-semibold uppercase tracking-wide tabular-nums text-[#6B7280]">
+                토큰 사용량
+              </span>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto">
@@ -279,22 +299,32 @@ export function UsersContent() {
               visibleParticipants.map((participant, index) => (
                 <div
                   key={participant.id}
-                  className={`grid grid-cols-[1.2fr_1fr_1.2fr_1fr_1fr_1fr] items-center gap-4 px-6 py-4 ${
+                  className={`grid ${PARTICIPANT_LIST_GRID_COLS} items-center gap-4 px-6 py-4 ${
                     index !== visibleParticipants.length - 1 ? "border-b border-[#E5E5E5]" : ""
                   }`}
                 >
-                  <span className="text-sm font-medium text-[#1A1A1A]">{participant.name}</span>
-                  <span className="text-sm font-medium text-[#374151]">{participant.examLabel}</span>
-                  <span className="text-sm text-[#6B7280]">{participant.phone}</span>
-                  <div className="flex justify-center">
+                  <span className="min-w-0 justify-self-start text-left text-sm font-medium text-[#1A1A1A]">
+                    {participant.name}
+                  </span>
+                  <span className="min-w-0 justify-self-start text-left text-sm font-medium text-[#374151]">
+                    {participant.examLabel}
+                  </span>
+                  <div className="flex w-full min-w-0 items-center justify-center">
+                    <span className="whitespace-nowrap text-center text-sm text-[#6B7280]">
+                      {participant.phone}
+                    </span>
+                  </div>
+                  <div className="flex w-full min-w-0 items-center justify-center">
                     <ConnectionBadge status={participant.connectionStatus} />
                   </div>
-                  <div className="flex justify-center">
+                  <div className="flex w-full min-w-0 items-center justify-center">
                     <SubmissionBadge status={participant.submissionStatus} />
                   </div>
-                  <span className="text-right text-sm font-medium text-[#1A1A1A]">
-                    {participant.tokenUsage.toLocaleString()}
-                  </span>
+                  <div className="flex w-full min-w-0 items-center justify-end">
+                    <span className="text-right text-sm font-medium tabular-nums text-[#1A1A1A]">
+                      {participant.tokenUsage.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               ))
             )}

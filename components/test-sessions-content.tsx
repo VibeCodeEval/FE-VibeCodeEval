@@ -36,6 +36,15 @@ function submissionBadgeClassName(label: string): string {
   return "bg-gray-100 text-gray-700 hover:bg-gray-100"
 }
 
+/** statusLabel 우선, 없으면 Active/Completed 매핑, 그 외 status 원문 */
+function formatSessionStatusDisplay(session: Pick<TestSessionListItem, "status" | "statusLabel">): string {
+  const label = session.statusLabel?.trim()
+  if (label) return label
+  if (session.status === "Active") return "진행 중"
+  if (session.status === "Completed") return "완료"
+  return session.status
+}
+
 export type TestSession = TestSessionListItem
 
 interface Participant {
@@ -338,7 +347,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                           fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                         }}
                       >
-                        {session.status === "Active" ? "진행 중" : session.status === "Completed" ? "완료" : session.statusLabel}
+                        {formatSessionStatusDisplay(session)}
                       </Badge>
                     </TableCell>
                     <TableCell
@@ -562,7 +571,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                     }
                     style={{ fontSize: "12px", fontWeight: 500 }}
                   >
-                    {detailsSession?.status === "Active" ? "진행 중" : detailsSession?.status === "Completed" ? "완료" : detailsSession?.status}
+                    {detailsSession ? formatSessionStatusDisplay(detailsSession) : "–"}
                   </Badge>
                 </div>
               </div>

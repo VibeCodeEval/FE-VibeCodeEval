@@ -18,6 +18,7 @@ import {
   countActiveExamSessions,
   countTodayParticipants,
   deriveMasterSystemStatusDisplay,
+  isActiveExam,
   type MasterSystemStatusDisplay,
 } from "@/lib/master-dashboard-kpi"
 import {
@@ -77,9 +78,15 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
         const [examsResult, statusResult] = await Promise.allSettled([
           (async () => {
             const exams = await getExams()
-            const boards = await Promise.all(
-              exams.map((e) => getBoard(e.id).catch(() => []))
+            // ACTIVE(state) 시험에만 getBoard 호출 — 전체 시험 대상 board 조회 제거
+            const boardByExamId = new Map<number, Awaited<ReturnType<typeof getBoard>>>()
+            await Promise.all(
+              exams.filter(isActiveExam).map(async (e) => {
+                const board = await getBoard(e.id).catch(() => [])
+                boardByExamId.set(e.id, board)
+              })
             )
+            const boards = exams.map((e) => boardByExamId.get(e.id) ?? [])
             return { exams, boards }
           })(),
           getSystemStatus(),

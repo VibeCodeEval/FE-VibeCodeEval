@@ -38,7 +38,12 @@ export type MasterAdminAccount = {
   isActive: boolean;
   status: '활성화' | '비활성화';
   lastLogin: string | null;
+  /** 정렬용 — lastLoginAt ISO의 getTime(), 없거나 invalid면 null */
+  lastLoginSortKey: number | null;
+  /** UI 표시용 (locale 포맷) */
   createdAt: string | null;
+  /** 정렬용 — 원본 ISO의 getTime(), 없거나 invalid면 null */
+  createdAtSortKey: number | null;
   passwordStatus: string;
 };
 
@@ -63,6 +68,19 @@ function mapActiveToStatus(isActive: boolean): '활성화' | '비활성화' {
   return isActive ? '활성화' : '비활성화';
 }
 
+function parseIsoSortKey(iso: string | null | undefined): number | null {
+  if (!iso?.trim()) return null;
+  const time = new Date(iso).getTime();
+  return Number.isNaN(time) ? null : time;
+}
+
+function compareAdminNumber(a: MasterAdminAccount, b: MasterAdminAccount): number {
+  return a.adminNumber.localeCompare(b.adminNumber, undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  });
+}
+
 export function mapAdminApiRecordToAccount(record: MasterAdminApiRecord): MasterAdminAccount {
   const isActive = record.isActive !== false;
   return {
@@ -80,7 +98,9 @@ export function mapAdminApiRecordToAccount(record: MasterAdminApiRecord): Master
     lastLogin: record.lastLoginAt
       ? formatSessionDateTime(record.lastLoginAt)
       : null,
+    lastLoginSortKey: parseIsoSortKey(record.lastLoginAt),
     createdAt: formatDisplayDate(record.createdAt ?? null),
+    createdAtSortKey: parseIsoSortKey(record.createdAt),
     passwordStatus: '비밀번호 설정됨',
   };
 }
@@ -91,8 +111,8 @@ export function mapAdminListResponse(response: AdminListResponse): MasterAdminAc
 }
 
 /**
- * MASTER를 최상단에 두고, MASTER끼리는 adminNumber(숫자 인식) → createdAt 순으로 정렬.
- * ADMIN은 API에서 내려온 상대 순서를 유지한다.
+ * MASTER를 최상단에 두고, MASTER끼리는 adminNumber → createdAtSortKey 순.
+ * 일반 관리자(ADMIN)는 lastLoginSortKey 내림차순(최신 로그인 우선), 동률·미로그인은 adminNumber 등 fallback.
  */
 export function sortMasterAdminAccounts(
   accounts: readonly MasterAdminAccount[]
@@ -108,16 +128,23 @@ export function sortMasterAdminAccounts(
     }
   }
 
+  const lastLoginDescKey = (key: number | null) => key ?? Number.NEGATIVE_INFINITY;
+
   masters.sort((a, b) => {
-    const byNumber = a.adminNumber.localeCompare(b.adminNumber, undefined, {
-      numeric: true,
-      sensitivity: 'base',
-    });
+    const byNumber = compareAdminNumber(a, b);
+    if (byNumber !== 0) return byNumber;
+    return (a.createdAtSortKey ?? 0) - (b.createdAtSortKey ?? 0);
+  });
+
+  admins.sort((a, b) => {
+    const byLastLogin =
+      lastLoginDescKey(b.lastLoginSortKey) - lastLoginDescKey(a.lastLoginSortKey);
+    if (byLastLogin !== 0) return byLastLogin;
+
+    const byNumber = compareAdminNumber(a, b);
     if (byNumber !== 0) return byNumber;
 
-    const aCreated = a.createdAt ?? '';
-    const bCreated = b.createdAt ?? '';
-    return aCreated.localeCompare(bCreated, undefined, { numeric: true });
+    return (a.createdAtSortKey ?? 0) - (b.createdAtSortKey ?? 0);
   });
 
   return [...masters, ...admins];
