@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { AdminPageHeader } from "@/components/admin-page-header"
 
 type Settings = {
   defaultTestDuration: string
@@ -116,32 +117,13 @@ export function GlobalSettingsContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 gap-4">
-      {/* Page Header */}
-      <div className="mb-2">
-        <h1
-          style={{
-            fontSize: "24px",
-            fontWeight: 600,
-            color: "#1A1A1A",
-            fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-            lineHeight: "32px",
-          }}
-        >
-          전역 설정
-        </h1>
-        <p
-          style={{
-            fontSize: "14px",
-            color: "#6B7280",
-            fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-            marginTop: "4px",
-          }}
-        >
-          플랫폼 전역 설정 및 시스템 보안 정책을 관리합니다
-        </p>
-      </div>
+    <div className="flex h-full flex-1 flex-col">
+      <AdminPageHeader
+        title="전역 설정"
+        description="플랫폼 전역 설정 및 시스템 보안 정책을 관리합니다"
+      />
 
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
       {/* Settings Cards Container */}
       <div className="flex flex-col gap-6 flex-1">
         {/* Section 1: Test Configuration */}
@@ -415,6 +397,7 @@ export function GlobalSettingsContent() {
           </span>
         )}
       </div>
+      </main>
     </div>
   )
 }

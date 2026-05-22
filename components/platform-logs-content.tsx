@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search } from "lucide-react"
+import { AdminPageHeader } from "@/components/admin-page-header"
 
 type LogType = "Admin Activity" | "System" | "Error"
 type BadgeType = "System Updated" | "Error" | "Admin Change" | "Evaluation Completed" | "Room Started"
@@ -310,32 +311,13 @@ export function PlatformLogsContent() {
   const sortedDates = Object.keys(groupedLogs).sort((a, b) => b.localeCompare(a))
 
   return (
-    <div className="flex flex-col gap-4 p-6" style={{ minHeight: "calc(100vh - 80px)" }}>
-      {/* Page Header */}
-      <div className="flex flex-col gap-1">
-        <h1
-          style={{
-            fontSize: "24px",
-            fontWeight: 600,
-            color: "#1A1A1A",
-            lineHeight: "32px",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          플랫폼 로그
-        </h1>
-        <p
-          style={{
-            fontSize: "14px",
-            fontWeight: 400,
-            color: "#6B7280",
-            lineHeight: "20px",
-          }}
-        >
-          플랫폼 전역의 시스템 활동 로그를 확인하고 모니터링합니다.
-        </p>
-      </div>
+    <div className="flex h-full flex-1 flex-col">
+      <AdminPageHeader
+        title="플랫폼 로그"
+        description="플랫폼 전역의 시스템 활동 로그를 확인하고 모니터링합니다."
+      />
 
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
       {/* Search Bar and Filters Row */}
       <div className="flex items-center justify-between gap-4">
         {/* Search Bar */}
@@ -555,6 +537,7 @@ export function PlatformLogsContent() {
           </div>
         )}
       </div>
+      </main>
     </div>
   )
 }

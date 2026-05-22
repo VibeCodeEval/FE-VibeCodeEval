@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createExam, getExams, createEntryCode, deleteExam, getEntryCodes, startExam, endExam, extendExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { createExam, getExams, deleteExam, getEntryCodes, startExam, endExam, extendExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { getExamSortTimestamp } from "@/lib/master-test-sessions"
 import { useToast } from "@/hooks/use-toast"
 
 
@@ -47,6 +48,43 @@ const getExamStateLabel = (state: string): string => {
     default:
       return state
   }
+}
+
+// 백엔드 응답의 다양한 필드명(entryCode/accessCode/code/inviteCode)에서 입장 코드를 추출
+const pickEntryCode = (source: unknown): string | undefined => {
+  if (!source || typeof source !== "object") return undefined
+
+  const record = source as Record<string, unknown>
+  const candidates = ["entryCode", "accessCode", "code", "inviteCode"]
+  for (const key of candidates) {
+    const value = record[key]
+    if (typeof value === "string" && value.trim()) {
+      return value
+    }
+  }
+
+  return undefined
+}
+
+/** 시험 시작 버튼(0) → 종료 버튼(1) → 종료됨(2). UI 버튼 분기와 동일한 state 기준 */
+function getExamEntryCodesActionPriority(state: string): number {
+  const normalized = (state ?? "").trim().toUpperCase()
+  if (["ENDED", "COMPLETED", "CLOSED", "FINISHED", "DONE"].includes(normalized)) {
+    return 2
+  }
+  if (["RUNNING", "IN_PROGRESS", "ACTIVE"].includes(normalized)) {
+    return 1
+  }
+  return 0
+}
+
+/** 상태 우선 정렬 후, 같은 그룹 내에서는 시작/생성 시각 내림차순(기존 시각 기준) */
+function sortExamsForEntryCodes<T extends Exam>(exams: T[]): T[] {
+  return [...exams].sort((a, b) => {
+    const byAction = getExamEntryCodesActionPriority(a.state) - getExamEntryCodesActionPriority(b.state)
+    if (byAction !== 0) return byAction
+    return getExamSortTimestamp(b) - getExamSortTimestamp(a)
+  })
 }
 
 export function EntryCodesContent() {
@@ -120,20 +158,20 @@ export function EntryCodesContent() {
             const activeEntryCode = entryCodes.find((ec) => ec.isActive) || entryCodes[0]
             return {
               ...exam,
-              entryCode: activeEntryCode?.code || undefined,
+              entryCode: activeEntryCode?.code || pickEntryCode(exam),
             }
           } catch (entryCodeError) {
             // 입장 코드 조회 실패 시 해당 시험의 입장 코드는 undefined로 유지
             console.warn(`Failed to fetch entry codes for exam ${exam.id}:`, entryCodeError)
             return {
               ...exam,
-              entryCode: undefined,
+              entryCode: pickEntryCode(exam),
             }
           }
         })
       )
       
-      setExams(examsWithEntryCodes)
+      setExams(sortExamsForEntryCodes(examsWithEntryCodes))
       // 시험 목록을 새로 가져올 때 페이지를 1로 리셋
       setCurrentExamPage(1)
     } catch (error) {
@@ -211,42 +249,32 @@ export function EntryCodesContent() {
     setIsSubmitting(true)
     try {
       const createdExam = await createExam(payload)
-      console.log("Exam created:", createdExam)
-
-      // 시험 생성 후 자동으로 입장 코드 생성
-      let entryCodeValue: string | undefined = undefined
-      try {
-        const entryCodeResponse = await createEntryCode({
-          label: undefined,
-          examId: createdExam.id,
-          problemSetId: 0,
-          expiresAt: undefined,
-          maxUses: 0,
-        })
-        entryCodeValue = entryCodeResponse.code
-        console.log("Entry code created:", entryCodeValue)
-      } catch (entryCodeError) {
-        console.error("Failed to create entry code", entryCodeError)
-        // 입장 코드 생성 실패해도 시험 생성은 성공으로 처리
-        toast({
-          title: "입장 코드 생성 실패",
-          description: "시험은 생성되었지만 입장 코드 생성에 실패했습니다. 나중에 수동으로 생성해주세요.",
-          variant: "destructive",
-        })
-      }
-
-      // 입장 코드가 포함된 시험 객체 생성
-      const examWithEntryCode: Exam = {
+      const responseEntryCode = pickEntryCode(createdExam)
+      let createdExamWithEntryCode: Exam = {
         ...createdExam,
-        entryCode: entryCodeValue,
+        entryCode: responseEntryCode,
       }
+
+      // 생성 직후 entry-codes API에서 실제 활성 코드를 한번 더 조회해 반영
+      try {
+        const createdExamEntryCodes = await getEntryCodes(createdExam.id)
+        const activeEntryCode = createdExamEntryCodes.find((ec) => ec.isActive) || createdExamEntryCodes[0]
+        createdExamWithEntryCode = {
+          ...createdExam,
+          entryCode: activeEntryCode?.code || responseEntryCode,
+        }
+      } catch (entryCodeError) {
+        console.warn(`Failed to fetch entry codes right after exam creation (examId=${createdExam.id}):`, entryCodeError)
+      }
+
+      console.log("Exam created:", createdExamWithEntryCode)
 
       // 시험 목록에 새로 생성된 시험 추가
       setExams((prev) => {
         if (prev === null) {
-          return [examWithEntryCode]
+          return [createdExamWithEntryCode]
         }
-        return [examWithEntryCode, ...prev]
+        return sortExamsForEntryCodes([createdExamWithEntryCode, ...prev])
       })
 
       // 모달 닫기
@@ -260,7 +288,7 @@ export function EntryCodesContent() {
       // 성공 토스트 표시
       toast({
         title: "시험 생성 성공",
-        description: `"${createdExam.title}" 시험이 성공적으로 생성되었습니다.`,
+        description: `"${createdExamWithEntryCode.title}" 시험이 성공적으로 생성되었습니다.`,
       })
     } catch (error) {
       console.error("Failed to create exam", error)
@@ -465,7 +493,7 @@ export function EntryCodesContent() {
         } else if (newList.length === 0) {
           setCurrentExamPage(1)
         }
-        return newList
+        return sortExamsForEntryCodes(newList)
       })
 
       // 성공 토스트 표시

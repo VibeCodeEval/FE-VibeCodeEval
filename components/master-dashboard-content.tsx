@@ -1,12 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Users, UserCheck, CheckCircle2, CalendarClock, FileCode, ScrollText, ArrowRight, KeyRound, Copy, Check } from "lucide-react"
 import Link from "next/link";
-import { issueAdminNumber, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import {
+  getBoard,
+  getExams,
+  getSystemStatus,
+  issueAdminNumber,
+  LoginFailedError,
+  NetworkError,
+} from "@/lib/api/admin"
+import {
+  countActiveExamSessions,
+  countTodayParticipants,
+  deriveMasterSystemStatusDisplay,
+  isActiveExam,
+  type MasterSystemStatusDisplay,
+} from "@/lib/master-dashboard-kpi"
+import {
+  isMasterSessionInProgress,
+  pickRecentSessions,
+  type MasterRecentSession,
+} from "@/lib/master-test-sessions"
 import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
@@ -18,13 +37,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-const recentSessions = [
-  { id: 1, sessionId: "SESSION-2025-001", status: "진행 중", createdAt: "2025년 1월 14일", participants: 18 },
-  { id: 2, sessionId: "SESSION-2025-002", status: "완료", createdAt: "2025년 1월 13일", participants: 25 },
-  { id: 3, sessionId: "SESSION-2025-003", status: "진행 중", createdAt: "2025년 1월 12일", participants: 12 },
-  { id: 4, sessionId: "SESSION-2025-004", status: "완료", createdAt: "2025년 1월 11일", participants: 30 },
-]
+import { AdminPageHeader } from "@/components/admin-page-header"
 
 const recentLogs = [
   { id: 1, timestamp: "오전 10:33", type: "관리자", description: "관리자 'john.smith'가 플랫폼 설정을 업데이트했습니다" },
@@ -43,7 +56,84 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
   const [issuedAdminNumber, setIssuedAdminNumber] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [activeSessions, setActiveSessions] = useState<number | null>(null)
+  const [todayParticipants, setTodayParticipants] = useState<number | null>(null)
+  const [systemStatus, setSystemStatus] = useState<MasterSystemStatusDisplay>(
+    deriveMasterSystemStatusDisplay({ type: "fetch_failed" })
+  )
+  const [kpiLoading, setKpiLoading] = useState(true)
+  const [recentSessions, setRecentSessions] = useState<MasterRecentSession[]>([])
+  const [recentSessionsLoading, setRecentSessionsLoading] = useState(true)
+  const [recentSessionsError, setRecentSessionsError] = useState(false)
   const { toast } = useToast()
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadKpi() {
+      setKpiLoading(true)
+      setRecentSessionsLoading(true)
+      setRecentSessionsError(false)
+      try {
+        const [examsResult, statusResult] = await Promise.allSettled([
+          (async () => {
+            const exams = await getExams()
+            // ACTIVE(state) 시험에만 getBoard 호출 — 전체 시험 대상 board 조회 제거
+            const boardByExamId = new Map<number, Awaited<ReturnType<typeof getBoard>>>()
+            await Promise.all(
+              exams.filter(isActiveExam).map(async (e) => {
+                const board = await getBoard(e.id).catch(() => [])
+                boardByExamId.set(e.id, board)
+              })
+            )
+            const boards = exams.map((e) => boardByExamId.get(e.id) ?? [])
+            return { exams, boards }
+          })(),
+          getSystemStatus(),
+        ])
+
+        if (cancelled) return
+
+        if (examsResult.status === "fulfilled") {
+          const { exams, boards } = examsResult.value
+          setActiveSessions(countActiveExamSessions(exams))
+          setTodayParticipants(countTodayParticipants(exams, boards))
+          setRecentSessions(pickRecentSessions(exams))
+        } else {
+          console.error("[MasterDashboard] Failed to load session/participant KPI", examsResult.reason)
+          setActiveSessions(0)
+          setTodayParticipants(0)
+          setRecentSessions([])
+          setRecentSessionsError(true)
+        }
+
+        if (statusResult.status === "fulfilled") {
+          setSystemStatus(
+            deriveMasterSystemStatusDisplay({
+              type: "services",
+              services: statusResult.value.services ?? [],
+            })
+          )
+        } else {
+          console.error("[MasterDashboard] Failed to load system status", statusResult.reason)
+          setSystemStatus(deriveMasterSystemStatusDisplay({ type: "fetch_failed" }))
+        }
+      } finally {
+        if (!cancelled) {
+          setKpiLoading(false)
+          setRecentSessionsLoading(false)
+        }
+      }
+    }
+
+    loadKpi()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const displayKpiNumber = (val: number | null) =>
+    kpiLoading ? "..." : val !== null ? val.toLocaleString() : "0"
 
   const handleIssueAdminNumber = async () => {
     setIsLoading(true)
@@ -105,15 +195,10 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6" style={{ minHeight: "calc(100vh - 80px)" }}>
-      {/* Page Header */}
-      <div className="flex flex-col gap-1">
-        <h1 style={{ fontSize: "24px", fontWeight: 600, color: "#1A1A1A", letterSpacing: "-0.01em" }}>
-          마스터 대시보드
-        </h1>
-        <p style={{ fontSize: "14px", color: "#6B7280" }}>플랫폼 활동 및 코딩 테스트 운영 개요.</p>
-      </div>
+    <div className="flex h-full flex-1 flex-col">
+      <AdminPageHeader title="마스터 대시보드" />
 
+      <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
       {/* Section 1: KPI Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
         {/* Active Sessions */}
@@ -121,7 +206,9 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
-                <span style={{ fontSize: "32px", fontWeight: 700, color: "#1A1A1A" }}>12</span>
+                <span style={{ fontSize: "32px", fontWeight: 700, color: "#1A1A1A" }}>
+                  {displayKpiNumber(activeSessions)}
+                </span>
                 <span style={{ fontSize: "14px", color: "#6B7280" }}>진행 중인 세션</span>
               </div>
               <div
@@ -144,7 +231,9 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
-                <span style={{ fontSize: "32px", fontWeight: 700, color: "#1A1A1A" }}>148</span>
+                <span style={{ fontSize: "32px", fontWeight: 700, color: "#1A1A1A" }}>
+                  {displayKpiNumber(todayParticipants)}
+                </span>
                 <span style={{ fontSize: "14px", color: "#6B7280" }}>오늘의 참가자</span>
               </div>
               <div
@@ -167,7 +256,15 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
-                <span style={{ fontSize: "32px", fontWeight: 700, color: "#22C55E" }}>운영 중</span>
+                <span
+                  style={{
+                    fontSize: "32px",
+                    fontWeight: 700,
+                    color: kpiLoading ? "#1A1A1A" : systemStatus.valueColor,
+                  }}
+                >
+                  {kpiLoading ? "..." : systemStatus.label}
+                </span>
                 <span style={{ fontSize: "14px", color: "#6B7280" }}>시스템 상태</span>
               </div>
               <div
@@ -175,11 +272,14 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                 style={{
                   width: "48px",
                   height: "48px",
-                  backgroundColor: "#F0FDF4",
+                  backgroundColor: kpiLoading ? "#F3F4F6" : systemStatus.iconBg,
                   borderRadius: "12px",
                 }}
               >
-                <CheckCircle2 size={24} style={{ color: "#22C55E" }} />
+                <CheckCircle2
+                  size={24}
+                  style={{ color: kpiLoading ? "#9CA3AF" : systemStatus.iconColor }}
+                />
               </div>
             </div>
           </CardContent>
@@ -197,8 +297,17 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
             <CardTitle style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>최근 세션</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex flex-col flex-1">
-            <div className="flex flex-col gap-3 flex-1 mb-5">
-              {recentSessions.map((session) => (
+            <div className="mb-5 flex flex-1 flex-col gap-3">
+              {recentSessionsLoading ? (
+                <p className="py-6 text-center text-sm text-[#6B7280]">최근 세션을 불러오는 중…</p>
+              ) : recentSessionsError ? (
+                <p className="py-6 text-center text-sm text-[#DC2626]">
+                  최근 세션을 불러오지 못했습니다.
+                </p>
+              ) : recentSessions.length === 0 ? (
+                <p className="py-6 text-center text-sm text-[#6B7280]">최근 세션이 없습니다.</p>
+              ) : (
+                recentSessions.map((session) => (
                 <div
                   key={session.id}
                   className="flex items-center justify-between p-3"
@@ -216,8 +325,10 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                   </div>
                   <Badge
                     style={{
-                      backgroundColor: session.status === "진행 중" ? "#DCFCE7" : "#F3F4F6",
-                      color: session.status === "진행 중" ? "#22C55E" : "#6B7280",
+                      backgroundColor: isMasterSessionInProgress(session.status)
+                        ? "#DCFCE7"
+                        : "#F3F4F6",
+                      color: isMasterSessionInProgress(session.status) ? "#22C55E" : "#6B7280",
                       fontWeight: 500,
                       fontSize: "12px",
                       border: "none",
@@ -226,7 +337,8 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                     {session.status}
                   </Badge>
                 </div>
-              ))}
+              ))
+              )}
             </div>
             <div className="mt-auto pt-3" style={{ borderTop: "1px solid #E5E5E5" }}>
               <Button
@@ -567,6 +679,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </main>
     </div>
   )
 }

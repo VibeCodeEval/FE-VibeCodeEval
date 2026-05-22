@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-
+import Link from "next/link"
 import { useRouter } from "next/navigation";
 import { signUpAdmin, LoginFailedError, NetworkError } from "@/lib/api/admin"
 import { useToast } from "@/hooks/use-toast"
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 export default function AdminSignupForm() {
   const [formData, setFormData] = useState({
     adminNumber: "",
+    displayName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -33,6 +34,10 @@ export default function AdminSignupForm() {
     // 입력값 검증
     if (!formData.adminNumber.trim()) {
       setError("관리자 번호를 입력해주세요.")
+      return
+    }
+    if (!formData.displayName.trim()) {
+      setError("이름을 입력해주세요.")
       return
     }
     if (!formData.email.trim()) {
@@ -63,6 +68,7 @@ export default function AdminSignupForm() {
     try {
       await signUpAdmin({
         adminNumber: formData.adminNumber.trim(),
+        displayName: formData.displayName.trim(),
         email: formData.email.trim(),
         password: formData.password.trim(),
       })
@@ -91,6 +97,13 @@ export default function AdminSignupForm() {
 
   return (
     <div className="w-full max-w-[450px] bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-10">
+      <Link
+        href="/admin-login"
+        className="mb-5 inline-flex items-center text-xs text-[#6B7280] transition-colors hover:text-[#1A1A1A]"
+      >
+        ← 로그인으로
+      </Link>
+
       {/* Header */}
       <h1 className="text-xl font-semibold text-center text-gray-900">관리자 회원가입</h1>
       <div className="mt-5 mb-8 h-px bg-gray-200" />
@@ -105,6 +118,19 @@ export default function AdminSignupForm() {
             name="adminNumber"
             placeholder="발급받은 관리자 번호를 입력하세요"
             value={formData.adminNumber}
+            onChange={handleChange}
+            className="w-full h-11 px-3.5 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
+          />
+        </div>
+
+        {/* Display Name */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">이름</label>
+          <input
+            type="text"
+            name="displayName"
+            placeholder="이름을 입력하세요"
+            value={formData.displayName}
             onChange={handleChange}
             className="w-full h-11 px-3.5 border border-[#DDDDDD] rounded-[10px] text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
           />

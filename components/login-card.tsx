@@ -62,6 +62,7 @@ export default function LoginCard() {
         useExamSessionStore.setState({
           examId,
           participantId,
+          examParticipantId: response.session?.examParticipantId ?? null,
           tokenLimit: response.session?.tokenLimit ?? 20000,
           accessToken: response.accessToken,
         });
