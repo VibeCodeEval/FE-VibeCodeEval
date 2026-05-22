@@ -18,7 +18,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { deleteExam, getBoard, getExams, type Exam, type ExamineeBoardEntry, formatBoardSubmissionLabelKo } from "@/lib/api/admin";
+import { deleteExam, getBoard, getExams, type ExamineeBoardEntry, formatBoardSubmissionLabelKo } from "@/lib/api/admin";
+import { AdminPageHeader } from "@/components/admin-page-header"
+import {
+  mapBoardConnectionStatus,
+  mapExamsToTestSessions,
+  type TestSessionListItem,
+} from "@/lib/master-test-sessions"
 
 function submissionBadgeClassName(label: string): string {
   if (label === "시작 안 함") return "bg-gray-100 text-gray-700 hover:bg-gray-100"
@@ -30,14 +36,16 @@ function submissionBadgeClassName(label: string): string {
   return "bg-gray-100 text-gray-700 hover:bg-gray-100"
 }
 
-export interface TestSession {
-  id: number
-  sessionId: string     // BE의 title을 sessionId로 매핑 (필요시)
-  createdBy: string
-  createdAt: string
-  status: string
-  participants: number
+/** statusLabel 우선, 없으면 Active/Completed 매핑, 그 외 status 원문 */
+function formatSessionStatusDisplay(session: Pick<TestSessionListItem, "status" | "statusLabel">): string {
+  const label = session.statusLabel?.trim()
+  if (label) return label
+  if (session.status === "Active") return "진행 중"
+  if (session.status === "Completed") return "완료"
+  return session.status
 }
+
+export type TestSession = TestSessionListItem
 
 interface Participant {
   id: number
@@ -76,15 +84,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
     setIsLoading(true)
     try {
       const exams = await getExams()
-      const mapped: TestSession[] = exams.map((exam: Exam) => ({
-        id: exam.id,
-        sessionId: exam.title,
-        createdBy: "Admin",
-        createdAt: exam.startsAt ? exam.startsAt.split("T")[0] : "-",
-        status: ["RUNNING", "IN_PROGRESS"].includes(exam.state) ? "Active" : "Completed",
-        participants: exam.participantCount,
-      }))
-      setTestSessions(mapped)
+      setTestSessions(mapExamsToTestSessions(exams))
     } catch (error) {
       console.error("Failed to fetch exams:", error)
     } finally {
@@ -94,6 +94,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
 
   // 2. 특정 시험의 참가자 현황 조회 (Board)
   const fetchParticipants = async (examId: number) => {
+    if (!Number.isFinite(examId) || examId <= 0) return
     setIsParticipantsLoading(true)
     try {
       const board = await getBoard(examId)
@@ -101,7 +102,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
         id: participant.examParticipantId,
         name: participant.name,
         phoneNumber: participant.phoneMasked,
-        connectionStatus: participant.state === "ENTRANCE" ? "Connected" : "Disconnected",
+        connectionStatus: mapBoardConnectionStatus(participant.state),
         hasSubmission: participant.submitted,
         submissionStatusLabel: formatBoardSubmissionLabelKo(participant),
         tokenUsage: participant.tokenUsed || 0,
@@ -152,13 +153,14 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   }
 
   const handleViewDetailsAction = (session: TestSession) => {
-    setDetailsSession(session);
-    setIsDetailsOpen(true);
-    fetchParticipants(session.id);
     if (onViewDetails) {
-      onViewDetails(session);
+      onViewDetails(session)
+      return
     }
-  };
+    setDetailsSession(session)
+    setIsDetailsOpen(true)
+    fetchParticipants(session.id)
+  }
 
   const totalParticipants = participants.length
   const totalParticipantPages = Math.ceil(totalParticipants / participantPageSize)
@@ -189,30 +191,13 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   }
 
   return (
-    <div className="flex flex-col gap-4 p-6" style={{ minHeight: "calc(100vh - 80px)" }}>
-      {/* Page Header */}
-      <div>
-        <h1
-          className="text-gray-900"
-          style={{
-            fontSize: "24px",
-            fontWeight: 600,
-            lineHeight: "32px",
-          }}
-        >
-          테스트 세션
-        </h1>
-        <p
-          className="text-gray-500 mt-1"
-          style={{
-            fontSize: "14px",
-            fontWeight: 400,
-          }}
-        >
-          플랫폼의 모든 테스트 세션을 관리하고 모니터링합니다.
-        </p>
-      </div>
+    <div className="flex h-full flex-1 flex-col">
+      <AdminPageHeader
+        title="테스트 세션"
+        description="플랫폼의 모든 테스트 세션을 관리하고 모니터링합니다."
+      />
 
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
       {/* Main Card */}
       <Card className="flex-1 flex flex-col border border-gray-200 shadow-sm">
         <CardHeader className="py-3 px-6 flex flex-row items-center justify-between">
@@ -362,7 +347,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                           fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                         }}
                       >
-                        {session.status === "Active" ? "진행 중" : session.status === "Completed" ? "완료" : session.status}
+                        {formatSessionStatusDisplay(session)}
                       </Badge>
                     </TableCell>
                     <TableCell
@@ -586,7 +571,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                     }
                     style={{ fontSize: "12px", fontWeight: 500 }}
                   >
-                    {detailsSession?.status === "Active" ? "진행 중" : detailsSession?.status === "Completed" ? "완료" : detailsSession?.status}
+                    {detailsSession ? formatSessionStatusDisplay(detailsSession) : "–"}
                   </Badge>
                 </div>
               </div>
@@ -762,6 +747,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
           </div>
         </SheetContent>
       </Sheet>
+      </main>
     </div>
   )
 }

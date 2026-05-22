@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { ProblemContentMdView } from "@/components/problem-content-md-view"
 import { getAssignment, AssignmentResponse } from "@/lib/api/exams"
 
 interface ProblemSectionProps {
@@ -91,9 +92,7 @@ export function ProblemSection({ examId }: ProblemSectionProps) {
 
       {problem && (
         <>
-          <div className="text-[#4B5563] text-sm leading-relaxed mb-6 whitespace-pre-wrap">
-            {problem.contentMd}
-          </div>
+          <ProblemContentMdView contentMd={problem.contentMd} className="mb-6" />
 
           <div className="flex gap-2 flex-wrap">
             {problem.tags.map((tag) => (

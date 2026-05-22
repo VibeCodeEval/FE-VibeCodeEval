@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
-import { TopNavBar } from "@/components/top-nav-bar"
-import { DashboardContent } from "@/components/dashboard-content"
+import { MasterDashboardContent } from "@/components/master-dashboard-content"
 import { AdminAccountsContent } from "@/components/admin-accounts-content"
 import { TestSessionsContent } from "@/components/test-sessions-content"
 import TestSessionDetailsContent from "@/components/test-session-details-content"
@@ -43,19 +42,15 @@ export function MasterDashboard() {
         <Sidebar activeItem={activeItem} onItemClick={handleSidebarItemClick} />
       </div>
 
-      <div className="flex-1 flex flex-col h-screen ml-[240px]" style={{ backgroundColor: "#F9FAFB" }}>
-        <div className="fixed top-0 z-20" style={{ left: "240px", right: "0", maxWidth: "calc(1920px - 240px)" }}>
-          <TopNavBar />
-        </div>
-
-        <main className="flex-1 mt-[80px] overflow-y-auto">
-          {activeItem === "Dashboard" && <DashboardContent />}
+      <div className="ml-[240px] flex h-screen flex-1 flex-col" style={{ backgroundColor: "#F9FAFB" }}>
+        <main className="flex-1 overflow-y-auto">
+          {activeItem === "Dashboard" && <MasterDashboardContent />}
           {activeItem === "Admin Accounts" && <AdminAccountsContent />}
           {activeItem === "Test Sessions" && !selectedSession && (
             <TestSessionsContent onViewDetails={handleViewSessionDetails} />
           )}
           {activeItem === "Test Sessions" && selectedSession && (
-            <TestSessionDetailsContent session={selectedSession} onBack={handleBackToSessions} />
+            <TestSessionDetailsContent examId={selectedSession.id} onBack={handleBackToSessions} />
           )}
           {activeItem === "Global Settings" && <GlobalSettingsContent />}
           {activeItem === "Problem" && <ProblemContent />}
