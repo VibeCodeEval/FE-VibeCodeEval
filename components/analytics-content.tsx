@@ -2,24 +2,30 @@
 
 import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
-import { Download, TrendingUp, TrendingDown, Minus, ChevronDown, X, CheckCircle } from "lucide-react"
-import { getExams, getBoard, Exam, ExamineeBoardEntry } from "@/lib/api/admin"
+import { Download, ChevronDown, X, CheckCircle } from "lucide-react"
+import {
+  getExams,
+  getBoard,
+  formatBoardSubmissionLabelKo,
+  type Exam,
+  type ExamineeBoardEntry,
+} from "@/lib/api/admin"
+import {
+  computeParticipantLetterGrade,
+  computeSessionAnalytics,
+  isExamineeBoardSubmitted,
+} from "@/lib/admin-board-analytics"
+import {
+  buildBoardParticipantsCsvBody,
+  downloadUtf8Csv,
+} from "@/lib/admin-board-csv-export"
+import { adminParticipantEvaluationHref } from "@/lib/paths/admin-participant-evaluation"
 
-type Trend = "높음" | "보통" | "낮음"
-type Status = "완료" | "진행 중"
-
-interface Participant {
-  id: string
-  name: string
-  entryCode: string
-  avgScore: number
-  status: Status
-  trend: Trend
-  sparklineData: number[]
-  testDate: Date
-  promptScore: number
-  performanceScore: number
-  correctnessScore: number
+interface BoardRow {
+  entry: ExamineeBoardEntry
+  examId: number
+  examTitle: string
+  examResultsSegment: string
 }
 
 interface Toast {
@@ -28,128 +34,77 @@ interface Toast {
   description: string
 }
 
-function mapBoardToParticipant(entry: ExamineeBoardEntry, examTitle: string): Participant {
-  const submitted = entry.submitted
-  // tokenUsed를 0~100 스케일로 정규화 (tokenLimit 기준)
-  const tokenRatio =
-    entry.tokenLimit > 0 ? Math.min(100, Math.round((entry.tokenUsed / entry.tokenLimit) * 100)) : 0
-
-  return {
-    id: entry.examParticipantId.toString(),
-    name: entry.name,
-    entryCode: examTitle,
-    avgScore: 0, // 채점 API 미연동 — 채점 완료 후 집계 예정
-    status: submitted ? "완료" : "진행 중",
-    trend: "보통",
-    sparklineData: [0, tokenRatio], // 토큰 사용 추이
-    testDate: new Date(),
-    promptScore: 0,
-    performanceScore: 0,
-    correctnessScore: 0,
-  }
-}
-
-function Sparkline({ data, trend }: { data: number[]; trend: Trend }) {
-  const width = 100
-  const height = 32
-  const padding = 4
-
-  const min = Math.min(...data)
-  const max = Math.max(...data)
-  const range = max - min || 1
-
-  const points = data
-    .map((value, index) => {
-      const x = padding + (index / (data.length - 1)) * (width - padding * 2)
-      const y = height - padding - ((value - min) / range) * (height - padding * 2)
-      return `${x},${y}`
-    })
-    .join(" ")
-
-  const lineColor = trend === "높음" ? "#4AA785" : trend === "낮음" ? "#D6455D" : "#9CA3AF"
-
-  return (
-    <svg width={width} height={height} className="shrink-0">
-      <polyline
-        points={points}
-        fill="none"
-        stroke={lineColor}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function TrendIcon({ trend }: { trend: Trend }) {
-  if (trend === "높음") {
-    return <TrendingUp className="h-4 w-4 text-[#4AA785]" strokeWidth={2} />
-  } else if (trend === "낮음") {
-    return <TrendingDown className="h-4 w-4 text-[#D6455D]" strokeWidth={2} />
-  }
-  return <Minus className="h-4 w-4 text-[#9CA3AF]" strokeWidth={2} />
-}
-
-function StatusBadge({ status }: { status: Status }) {
-  const styles = status === "완료" ? "bg-[#DCFCE7] text-[#16A34A]" : "bg-[#E0E7FF] text-[#6366F1]"
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles}`}>{status}</span>
-}
-
-function TrendBadge({ trend }: { trend: Trend }) {
-  const styles = {
-    "높음": "bg-[#DCFCE7] text-[#16A34A]",
-    "보통": "bg-[#F3F4F6] text-[#6B7280]",
-    "낮음": "bg-[#FEE2E2] text-[#DC2626]",
-  }
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[trend]}`}>{trend}</span>
-}
-
-function MetricCard({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+function MetricCard({
+  label,
+  value,
+  suffix,
+  isLoading,
+}: {
+  label: string
+  value: string
+  suffix?: string
+  isLoading?: boolean
+}) {
+  const display = isLoading ? "–" : value
   return (
     <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
       <p className="text-sm text-[#6B7280]">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-[#1A1A1A]">
-        {value}
-        {suffix && <span className="ml-1 text-base font-normal text-[#6B7280]">{suffix}</span>}
+        {display}
+        {suffix && !isLoading && (
+          <span className="ml-1 text-base font-normal text-[#6B7280]">{suffix}</span>
+        )}
       </p>
     </div>
   )
 }
 
-function ParticipantCard({ participant }: { participant: Participant }) {
+function ParticipantCard({ row }: { row: BoardRow }) {
+  const { entry, examTitle, examResultsSegment } = row
+  const grade = computeParticipantLetterGrade(entry)
+  const statusLabel = formatBoardSubmissionLabelKo(entry)
+
+  const gradeColor =
+    grade === "A"
+      ? "text-[#16A34A]"
+      : grade === "B"
+        ? "text-[#2563EB]"
+        : grade === "C"
+          ? "text-[#D97706]"
+          : grade === "D"
+            ? "text-[#EA580C]"
+            : grade === "F"
+              ? "text-[#DC2626]"
+              : "text-[#9CA3AF]"
+
   return (
     <div className="rounded-xl border border-[#E5E5E5] bg-white px-6 py-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="text-base font-semibold text-[#1A1A1A]">{participant.name}</h3>
-          <p className="mt-0.5 text-sm text-[#9CA3AF]">{participant.entryCode}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base font-semibold text-[#1A1A1A]">{entry.name || "–"}</h3>
+          <p className="mt-0.5 text-sm text-[#9CA3AF]">{examTitle}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <StatusBadge status={participant.status} />
-          <TrendBadge trend={participant.trend} />
+        <div className="flex shrink-0 flex-col items-center justify-center px-2">
+          <span className={`text-5xl font-bold leading-none tracking-tight ${gradeColor}`}>
+            {grade}
+          </span>
+          <span className="mt-1 text-xs font-medium text-[#9CA3AF]">등급</span>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div>
-            <p className="text-sm text-[#6B7280]">제출 상태</p>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-[#1A1A1A]">{participant.status}</span>
-              <TrendIcon trend={participant.trend} />
-            </div>
-          </div>
-        </div>
-        <Sparkline data={participant.sparklineData} trend={participant.trend} />
+      <div className="mt-4">
+        <p className="text-sm text-[#6B7280]">제출 상태</p>
+        <p className="mt-0.5 text-base font-medium text-[#1A1A1A]">{statusLabel}</p>
       </div>
 
       <div className="mt-4 flex justify-end">
         <Link
-          href={{
-            pathname: `/admin/results/${encodeURIComponent(participant.entryCode)}/${participant.id}`,
-            query: { from: "analytics" },
-          }}
+          href={adminParticipantEvaluationHref({
+            resultsSegment: examResultsSegment,
+            participantId: String(entry.examParticipantId),
+            from: "analytics",
+            participantName: entry.name,
+          })}
           className="text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]"
         >
           상세 보기 →
@@ -159,61 +114,121 @@ function ParticipantCard({ participant }: { participant: Participant }) {
   )
 }
 
+async function loadBoardRowsForExams(exams: Exam[]): Promise<BoardRow[]> {
+  const boards = await Promise.all(
+    exams.map(async (exam) => {
+      try {
+        const entries = await getBoard(exam.id)
+        return entries.map((entry) => ({
+          entry,
+          examId: exam.id,
+          examTitle: exam.title,
+          examResultsSegment: String(exam.id),
+        }))
+      } catch (e) {
+        console.error(`[Analytics] getBoard failed for examId=${exam.id}`, e)
+        return [] as BoardRow[]
+      }
+    })
+  )
+  return boards.flat()
+}
+
 export function AnalyticsContent() {
   const [exams, setExams] = useState<Exam[]>([])
-  const [participants, setParticipants] = useState<Participant[]>([])
+  const [boardRows, setBoardRows] = useState<BoardRow[]>([])
   const [isLoadingExams, setIsLoadingExams] = useState(true)
   const [isLoadingBoard, setIsLoadingBoard] = useState(false)
+  const [boardLoadError, setBoardLoadError] = useState(false)
   const [selectedExamId, setSelectedExamId] = useState<string>("all")
   const [toasts, setToasts] = useState<Toast[]>([])
 
-  // 시험 목록 로드
   useEffect(() => {
+    let cancelled = false
     async function loadExams() {
       try {
         const data = await getExams()
-        setExams(data)
+        if (!cancelled) setExams(data)
       } catch (e) {
-        console.error("Failed to load exams", e)
+        console.error("[Analytics] Failed to load exams", e)
+        if (!cancelled) setExams([])
       } finally {
-        setIsLoadingExams(false)
+        if (!cancelled) setIsLoadingExams(false)
       }
     }
     loadExams()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  // 선택된 시험 보드 로드
   useEffect(() => {
+    if (isLoadingExams) return
+
+    let cancelled = false
+
     async function loadBoard() {
-      if (isLoadingExams) return
       setIsLoadingBoard(true)
+      setBoardLoadError(false)
       try {
         if (selectedExamId === "all") {
-          // 모든 시험의 보드를 병렬 조회
-          const boards = await Promise.all(
-            exams.map((e) =>
-              getBoard(e.id)
-                .then((entries) => entries.map((p) => mapBoardToParticipant(p, e.title)))
-                .catch(() => [] as Participant[])
-            )
+          if (exams.length === 0) {
+            if (!cancelled) setBoardRows([])
+            return
+          }
+          const rows = await loadBoardRowsForExams(exams)
+          if (!cancelled) setBoardRows(rows)
+          return
+        }
+
+        const examId = Number.parseInt(selectedExamId, 10)
+        if (Number.isNaN(examId)) {
+          if (!cancelled) setBoardRows([])
+          return
+        }
+
+        const exam = exams.find((e) => e.id === examId)
+        const board = await getBoard(examId)
+        if (!cancelled) {
+          setBoardRows(
+            board.map((entry) => ({
+              entry,
+              examId,
+              examTitle: exam?.title ?? String(examId),
+              examResultsSegment: String(examId),
+            }))
           )
-          setParticipants(boards.flat())
-        } else {
-          const examId = parseInt(selectedExamId, 10)
-          const exam = exams.find((e) => e.id === examId)
-          const board = await getBoard(examId)
-          setParticipants(board.map((p) => mapBoardToParticipant(p, exam?.title ?? selectedExamId)))
         }
       } catch (e) {
-        console.error("Failed to load board", e)
-        setParticipants([])
+        console.error("[Analytics] Failed to load board", e)
+        if (!cancelled) {
+          setBoardRows([])
+          setBoardLoadError(true)
+        }
       } finally {
-        setIsLoadingBoard(false)
+        if (!cancelled) setIsLoadingBoard(false)
       }
     }
+
     loadBoard()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedExamId, isLoadingExams])
+    return () => {
+      cancelled = true
+    }
+  }, [selectedExamId, isLoadingExams, exams])
+
+  const entries = useMemo(() => boardRows.map((r) => r.entry), [boardRows])
+
+  const analytics = useMemo(() => computeSessionAnalytics(entries), [entries])
+
+  const submittedRows = useMemo(
+    () => boardRows.filter((r) => isExamineeBoardSubmitted(r.entry)),
+    [boardRows]
+  )
+
+  const inProgressRows = useMemo(
+    () => boardRows.filter((r) => !isExamineeBoardSubmitted(r.entry)),
+    [boardRows]
+  )
 
   const showToast = (title: string, description: string) => {
     const id = crypto.randomUUID()
@@ -228,29 +243,14 @@ export function AnalyticsContent() {
   }
 
   const handleExport = () => {
-    const csvContent =
-      "이름,시험,제출상태\n" +
-      participants.map((p) => `${p.name},${p.entryCode},${p.status}`).join("\n")
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = "analytics-results.csv"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    showToast("내보내기 시작", "통계 분석 결과가 CSV 파일로 다운로드되고 있습니다.")
+    const csvBody = buildBoardParticipantsCsvBody(
+      boardRows.map((r) => ({ entry: r.entry, examLabel: r.examTitle }))
+    )
+    downloadUtf8Csv("analytics-results.csv", csvBody)
+    showToast("보내기 시작", "통계 분석 결과가 CSV 파일로 다운로드되고 있습니다.")
   }
 
-  const completedParticipants = useMemo(
-    () => participants.filter((p) => p.status === "완료"),
-    [participants]
-  )
-  const inProgressParticipants = useMemo(
-    () => participants.filter((p) => p.status === "진행 중"),
-    [participants]
-  )
+  const metricsLoading = isLoadingExams || isLoadingBoard
 
   return (
     <div className="flex h-full flex-1 flex-col">
@@ -258,7 +258,7 @@ export function AnalyticsContent() {
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">통계 분석</h1>
           <p className="text-sm text-[#6B7280]">
-            모든 시험 세션의 참가자 현황 및 제출 상태를 시각화합니다.
+            선택한 시험 세션의 참가자 현황·채점 점수를 집계합니다.
           </p>
         </div>
       </header>
@@ -285,61 +285,81 @@ export function AnalyticsContent() {
           </div>
 
           <button
+            type="button"
             onClick={handleExport}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
+            disabled={metricsLoading || boardRows.length === 0}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download className="h-4 w-4" strokeWidth={2} />
-            결과 내보내기 (CSV)
+            결과보내기 (CSV)
           </button>
         </div>
 
-        {/* 메트릭 카드 — 점수는 채점 완료 후 집계됨 */}
         <div className="mb-6 grid grid-cols-4 gap-4">
-          <MetricCard label="프롬프트 점수" value="–" />
-          <MetricCard label="성능 점수" value="–" />
-          <MetricCard label="정답률 점수" value="–" />
-          <MetricCard label="누적 사용자 수" value={isLoadingBoard ? "..." : participants.length.toString()} />
+          <MetricCard label="평균 프롬프트 점수" value={analytics.avgPrompt} isLoading={metricsLoading} />
+          <MetricCard label="평균 성능 점수" value={analytics.avgPerformance} isLoading={metricsLoading} />
+          <MetricCard label="평균 정답률 점수" value={analytics.avgCorrectness} isLoading={metricsLoading} />
+          <MetricCard
+            label="누적 사용자 수"
+            value={String(analytics.cumulativeUsers)}
+            suffix="명"
+            isLoading={metricsLoading}
+          />
         </div>
 
-        {/* 점수 미집계 안내 */}
+        {boardLoadError && (
+          <div className="mb-6 rounded-lg border border-[#FECACA] bg-[#FEF2F2] px-4 py-3">
+            <p className="text-sm text-[#B91C1C]">
+              참가자 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+            </p>
+          </div>
+        )}
+
         <div className="mb-6 rounded-lg border border-[#E5E5E5] bg-[#F9FAFB] px-4 py-3">
           <p className="text-sm text-[#6B7280]">
-            평가 점수는 채점 완료 후 집계됩니다. 현재는 참가자 현황 및 제출 상태를 기준으로 표시합니다.
+            평균 점수는 채점이 완료된 참가자만 집계합니다. 채점 전이거나 점수가 없으면 &quot;–&quot;로
+            표시됩니다. 등급(A~F)은 종합 점수(또는 항목 점수 평균)를 100점 만점 기준으로 산정합니다.
           </p>
         </div>
 
-        {isLoadingBoard ? (
+        {metricsLoading ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5E5E5] bg-white py-16">
             <p className="text-lg font-medium text-[#6B7280]">불러오는 중...</p>
           </div>
-        ) : participants.length === 0 ? (
+        ) : boardRows.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5E5E5] bg-white py-16">
             <p className="text-lg font-medium text-[#6B7280]">조회된 참가자가 없습니다</p>
             <p className="mt-1 text-sm text-[#9CA3AF]">시험 세션을 선택하거나 참가자를 확인해보세요.</p>
           </div>
         ) : (
           <>
-            {completedParticipants.length > 0 && (
+            {submittedRows.length > 0 && (
               <div className="mb-8">
                 <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">
-                  제출 완료 ({completedParticipants.length}명)
+                  제출 완료 ({submittedRows.length}명)
                 </h2>
                 <div className="grid grid-cols-2 gap-6">
-                  {completedParticipants.map((participant) => (
-                    <ParticipantCard key={participant.id} participant={participant} />
+                  {submittedRows.map((row) => (
+                    <ParticipantCard
+                      key={`${row.examId}-${row.entry.examParticipantId}`}
+                      row={row}
+                    />
                   ))}
                 </div>
               </div>
             )}
 
-            {inProgressParticipants.length > 0 && (
+            {inProgressRows.length > 0 && (
               <div className="mb-8">
                 <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[#6B7280]">
-                  진행 중 ({inProgressParticipants.length}명)
+                  진행 중 ({inProgressRows.length}명)
                 </h2>
                 <div className="grid grid-cols-2 gap-6">
-                  {inProgressParticipants.map((participant) => (
-                    <ParticipantCard key={participant.id} participant={participant} />
+                  {inProgressRows.map((row) => (
+                    <ParticipantCard
+                      key={`${row.examId}-${row.entry.examParticipantId}`}
+                      row={row}
+                    />
                   ))}
                 </div>
               </div>
@@ -362,6 +382,7 @@ export function AnalyticsContent() {
               <p className="mt-0.5 text-xs text-[#6B7280]">{toast.description}</p>
             </div>
             <button
+              type="button"
               onClick={() => removeToast(toast.id)}
               className="shrink-0 rounded p-0.5 text-[#9CA3AF] transition-colors hover:bg-[#F3F4F6] hover:text-[#6B7280]"
             >

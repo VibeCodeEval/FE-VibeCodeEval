@@ -107,6 +107,7 @@ export interface AdminLoginResponse {
 // AdminSignupRequest
 export interface AdminSignupRequest {
   adminNumber: string;
+  displayName: string;
   email: string;
   password: string;
 }
@@ -116,11 +117,65 @@ export interface MeResponse {
   role: string;
   participant: {
     id: number;
-    name: string; // ADMIN의 경우 adminNumber가 들어감
-    phone: string; // ADMIN의 경우 email이 들어감
+    /** ADMIN: resolveDisplayName() 결과, USER: 참가자 이름 */
+    name: string;
+    phone: string; // ADMIN: email, USER: 전화번호
+    adminNumber?: string | null; // ADMIN 전용
+    /** ADMIN: DB display_name 원본 (nullable). USER는 null/미포함 */
+    displayName?: string | null;
   };
   exam?: null;
   session?: null;
+}
+
+function pickFirstNonEmpty(
+  ...values: (string | null | undefined)[]
+): string | undefined {
+  for (const value of values) {
+    const trimmed = value?.trim();
+    if (trimmed) return trimmed;
+  }
+  return undefined;
+}
+
+/**
+ * GET /api/auth/me — 관리자 표시 이름
+ * 우선순위: displayName → name(관리자번호와 다를 때) → name → adminNumber → "알 수 없음"
+ */
+export function resolveAdminDisplayNameFromMe(response: MeResponse): string {
+  const participant = response.participant;
+  const displayName = pickFirstNonEmpty(participant.displayName);
+  const name = pickFirstNonEmpty(participant.name);
+  const adminNumber = pickFirstNonEmpty(participant.adminNumber);
+
+  if (displayName) return displayName;
+  if (name && adminNumber && name !== adminNumber) return name;
+  if (name) return name;
+  if (adminNumber) return adminNumber;
+  return "알 수 없음";
+}
+
+/** GET /api/auth/me — 관리자 번호 필드 (name fallback 사용하지 않음) */
+export function resolveAdminNumberFromMe(response: MeResponse): string {
+  return pickFirstNonEmpty(response.participant.adminNumber) ?? "";
+}
+
+/** 관리자 목록/상세 — 표시 이름 (displayName 원본 우선, 번호와 동일한 값은 이름으로 취급하지 않음) */
+export function resolveAdminAccountDisplayName(account: {
+  displayName?: string | null;
+  adminNumber: string;
+}): string {
+  const displayName = pickFirstNonEmpty(account.displayName);
+  const adminNumber = pickFirstNonEmpty(account.adminNumber);
+
+  if (displayName && adminNumber && displayName !== adminNumber) {
+    return displayName;
+  }
+  if (displayName && !adminNumber) {
+    return displayName;
+  }
+  if (adminNumber) return adminNumber;
+  return "알 수 없음";
 }
 
 // AdminInfo (AdminListResponse에서 사용)
@@ -130,6 +185,11 @@ export interface AdminInfo {
   email: string;
   role: 'ADMIN' | 'MASTER';
   is2faEnabled: boolean;
+  isActive?: boolean;
+  displayName?: string | null;
+  createdAt?: string | null;
+  adminNumberIssuedAt?: string | null;
+  lastLoginAt?: string | null;
 }
 
 // AdminListResponse
@@ -171,6 +231,11 @@ export interface ChangeAdminPasswordRequest {
   newPassword: string;
 }
 
+/** MASTER가 타 관리자 임시 비밀번호 재설정 응답 */
+export interface ResetAdminPasswordByMasterResponse {
+  temporaryPassword: string;
+}
+
 export interface AdminProblem {
   id: number;
   title: string;
@@ -178,6 +243,43 @@ export interface AdminProblem {
   tags: string | string[] | null;
   status: string;
   createdAt: string;
+  updatedAt?: string | null;
+  version?: number | string | null;
+  usedSessionCount?: number | null;
+  usedInSessions?: number | null;
+  sessionCount?: number | null;
+}
+
+export interface ProblemSpecResponse {
+  specId: number;
+  version: number;
+  changelogMd: string | null;
+  publishedAt: string | null;
+}
+
+export interface AdminProblemDetail {
+  id: number;
+  title: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  tags: string[];
+  version: number;
+  contentMd: string;
+  limits: {
+    timeMs: number;
+    memoryMb: number;
+  };
+  restrictions: {
+    allowedLangs: string[];
+    forbiddenApis: string[];
+  };
+  checker: {
+    type: string;
+  };
+  createdAt: string;
+  updatedAt: string | null;
+  publishedAt: string | null;
+  status: string;
+  usable: boolean;
 }
 
 /**
@@ -293,6 +395,74 @@ export async function getProblems(): Promise<AdminProblem[]> {
     }
 
     throw new NetworkError('문제 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 문제 스펙(버전) 목록 조회 — GET /api/admin/problems/{problemId}/specs
+ */
+export async function getProblemSpecs(problemId: number): Promise<ProblemSpecResponse[]> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems/${problemId}/specs`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    const data: BaseResponse<ProblemSpecResponse[]> = await response.json();
+
+    if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+      throw new LoginFailedError(data.message || '문제 스펙 조회에 실패했습니다.', response.status, data.code);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('문제 스펙 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * 문제 상세 조회 — GET /api/admin/problems/{problemId}/detail
+ */
+export async function getProblemDetail(problemId: number): Promise<AdminProblemDetail> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems/${problemId}/detail`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    const data: BaseResponse<AdminProblemDetail> = await response.json();
+
+    if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+      throw new LoginFailedError(data.message || '문제 상세 조회에 실패했습니다.', response.status, data.code);
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('문제 상세 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   }
 }
 
@@ -504,6 +674,75 @@ export async function updateAdminNumber(
       console.warn('[Update Admin Number] 예상치 못한 오류:', error);
     }
     throw new NetworkError('관리자 번호 상태 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * MASTER가 타 관리자 임시 비밀번호 재설정 API 호출
+ */
+export async function resetAdminPasswordByMaster(
+  adminNumber: string
+): Promise<ResetAdminPasswordByMasterResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/admin-numbers/${encodeURIComponent(adminNumber)}/password/reset`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Reset Admin Password By Master] API 호출:', url);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      let errorMessage = '비밀번호 재설정에 실패했습니다.';
+
+      if (response.status === 401) {
+        errorMessage = '인증이 필요합니다. 다시 로그인해주세요.';
+      } else if (response.status === 403) {
+        errorMessage = '마스터 계정만 비밀번호를 재설정할 수 있습니다.';
+      }
+
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      throw new LoginFailedError(errorMessage, response.status);
+    }
+
+    const data: BaseResponse<ResetAdminPasswordByMasterResponse> = await response.json();
+
+    if (data.code !== 'COMMON200' || !data.result?.temporaryPassword) {
+      throw new LoginFailedError(data.message || '비밀번호 재설정에 실패했습니다.');
+    }
+
+    return data.result;
+  } catch (error) {
+    if (error instanceof LoginFailedError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    }
+
+    throw new NetworkError('비밀번호 재설정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   }
 }
 
@@ -990,6 +1229,8 @@ export interface Exam {
   endsAt: string;   // ISO 8601 형식
   version: number;
   createdBy: number;
+  /** 생성 관리자 표시 이름 (GET /api/admin/exams) */
+  creatorName?: string | null;
   participantCount: number;
   completedCount: number;
   entryCode?: string; // 입장 코드 (선택적)
@@ -1728,6 +1969,47 @@ export interface ExamineeBoardEntry {
   tokenLimit: number;
   tokenUsed: number;
   submitted: boolean;
+  /** 최신 제출 ID (submissions.id) */
+  submissionId?: number | null;
+  /** QUEUED | RUNNING | DONE | FAILED */
+  submissionStatus?: string | null;
+  /** scores.prompt_score (Score 행 없으면 null) */
+  promptScore?: number | null;
+  /** scores.perf_score (Score 행 없으면 null) */
+  perfScore?: number | null;
+  /** scores.correctness_score (Score 행 없으면 null) */
+  correctnessScore?: number | null;
+  /** scores.total_score (없으면 null) */
+  totalScore?: number | null;
+  /** 제출 생성 시각 (ISO 문자열) */
+  submittedAt?: string | null;
+  /** 점수 행 기준 갱신 시각 (ISO 문자열) */
+  evaluatedAt?: string | null;
+}
+
+/**
+ * 관리자 보드 한 행의 제출·채점 상태를 한글 짧은 라벨로 변환합니다.
+ */
+export function formatBoardSubmissionLabelKo(entry: ExamineeBoardEntry): string {
+  if (!entry.submitted) {
+    return entry.state === "ENTRANCE" ? "진행 중" : "시작 안 함";
+  }
+  if (entry.submissionStatus === "FAILED") {
+    return "제출 실패";
+  }
+  if (entry.totalScore != null && entry.totalScore !== undefined) {
+    const n = Number(entry.totalScore);
+    if (!Number.isNaN(n)) {
+      return `채점 완료 (${n.toFixed(1)}점)`;
+    }
+  }
+  if (entry.submissionStatus === "DONE") {
+    return "채점 완료";
+  }
+  if (entry.submissionStatus === "RUNNING" || entry.submissionStatus === "QUEUED") {
+    return "제출·채점 중";
+  }
+  return "제출됨";
 }
 
 export interface AdminMetrics {
@@ -1743,6 +2025,17 @@ export interface AdminMetrics {
     rate1m: number;
     last: string | null;
   };
+}
+
+export interface SystemStatusServiceItem {
+  key: string;
+  name: string;
+  status: string;
+  latencyMs: number | null;
+}
+
+export interface SystemStatusResponse {
+  services: SystemStatusServiceItem[];
 }
 
 // ─── 시험 연장 ─────────────────────────────────────────────────────────────────
@@ -1815,6 +2108,27 @@ export async function deleteEntryCode(code: string): Promise<void> {
 // ─── 시험 지표·보드 ────────────────────────────────────────────────────────────
 
 /**
+ * 관리자 시스템 상태 조회 API 호출
+ * GET /api/admin/system-status
+ */
+export async function getSystemStatus(): Promise<SystemStatusResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/system-status`;
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<SystemStatusResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(data.message || '시스템 상태 조회에 실패했습니다.', response.status);
+  }
+  return data.result;
+}
+
+/**
  * 시험 실시간 지표 조회 API 호출
  * GET /api/admin/metrics?examId={}
  */
@@ -1854,6 +2168,84 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
     throw new LoginFailedError(data.message || '보드 조회에 실패했습니다.', response.status);
   }
   return data.result ?? [];
+}
+
+/** 관리자 제출 상세 API와 동일한 상태 값 (백엔드 SubmissionStatus) */
+export type AdminSubmissionStatusDto = 'QUEUED' | 'RUNNING' | 'DONE' | 'FAILED';
+
+export interface AdminSubmissionScoreInfo {
+  prompt: number | null;
+  perf: number | null;
+  correctness: number | null;
+  total: number | null;
+}
+
+export interface AdminSubmissionMetricsInfo {
+  timeMsMedian: number | null;
+  memKbPeak: number | null;
+  loc: number | null;
+}
+
+export interface AdminSubmissionGroupInfo {
+  name: string;
+  pass: number;
+  total: number;
+  weight: number;
+}
+
+export interface AdminSubmissionTestCaseInfo {
+  passRateWeighted: number | null;
+  groups: AdminSubmissionGroupInfo[];
+}
+
+export type AdminSubmissionRunGroup = 'SAMPLE' | 'PUBLIC' | 'PRIVATE';
+export type AdminSubmissionVerdict = 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE';
+
+/** GET /api/admin/submissions/{submissionId} — submission_runs 행 (관리자 전용) */
+export interface AdminSubmissionCaseRunInfo {
+  caseIndex: number;
+  grp: AdminSubmissionRunGroup;
+  verdict: AdminSubmissionVerdict;
+  timeMs: number | null;
+  memKb: number | null;
+}
+
+/**
+ * GET /api/admin/submissions/{submissionId} 응답 (코드·루브릭 포함, ADMIN/MASTER 전용)
+ */
+export interface AdminSubmissionDetailResponse {
+  submissionId: number;
+  status: AdminSubmissionStatusDto;
+  lang: string;
+  codeInline: string | null;
+  metrics: AdminSubmissionMetricsInfo | null;
+  tc: AdminSubmissionTestCaseInfo | null;
+  score: AdminSubmissionScoreInfo | null;
+  rubricJson: string | null;
+  runs?: AdminSubmissionCaseRunInfo[];
+}
+
+/**
+ * 관리자 전용 제출 상세 조회 (제출 코드·rubricJson 포함)
+ * GET /api/admin/submissions/{submissionId}
+ */
+export async function getAdminSubmissionDetail(
+  submissionId: number
+): Promise<AdminSubmissionDetailResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/submissions/${submissionId}`;
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<AdminSubmissionDetailResponse> = await response.json();
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(data.message || '제출 상세(관리자) 조회에 실패했습니다.', response.status);
+  }
+  return data.result;
 }
 
 // ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────

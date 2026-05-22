@@ -18,23 +18,44 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { deleteExam, getBoard, getExams, type Exam, type ExamineeBoardEntry } from "@/lib/api/admin";
+import { deleteExam, getBoard, getExams, type ExamineeBoardEntry, formatBoardSubmissionLabelKo } from "@/lib/api/admin";
+import { AdminPageHeader } from "@/components/admin-page-header"
+import {
+  mapBoardConnectionStatus,
+  mapExamsToTestSessions,
+  type TestSessionListItem,
+} from "@/lib/master-test-sessions"
 
-export interface TestSession {
-  id: number
-  sessionId: string     // BE의 title을 sessionId로 매핑 (필요시)
-  createdBy: string
-  createdAt: string
-  status: string
-  participants: number
+function submissionBadgeClassName(label: string): string {
+  if (label === "시작 안 함") return "bg-gray-100 text-gray-700 hover:bg-gray-100"
+  if (label === "진행 중") return "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
+  if (label === "제출 실패") return "bg-red-100 text-red-700 hover:bg-red-100"
+  if (label.startsWith("채점 완료")) return "bg-green-100 text-green-700 hover:bg-green-100"
+  if (label === "제출·채점 중") return "bg-amber-100 text-amber-800 hover:bg-amber-100"
+  if (label === "제출됨") return "bg-blue-100 text-blue-700 hover:bg-blue-100"
+  return "bg-gray-100 text-gray-700 hover:bg-gray-100"
 }
+
+/** statusLabel 우선, 없으면 Active/Completed 매핑, 그 외 status 원문 */
+function formatSessionStatusDisplay(session: Pick<TestSessionListItem, "status" | "statusLabel">): string {
+  const label = session.statusLabel?.trim()
+  if (label) return label
+  if (session.status === "Active") return "진행 중"
+  if (session.status === "Completed") return "완료"
+  return session.status
+}
+
+export type TestSession = TestSessionListItem
 
 interface Participant {
   id: number
   name: string
   phoneNumber: string
   connectionStatus: string
-  submissionStatus: string
+  /** 제출 레코드 존재 */
+  hasSubmission: boolean
+  /** 표시용 한글 상태 */
+  submissionStatusLabel: string
   tokenUsage: number
 }
 
@@ -63,15 +84,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
     setIsLoading(true)
     try {
       const exams = await getExams()
-      const mapped: TestSession[] = exams.map((exam: Exam) => ({
-        id: exam.id,
-        sessionId: exam.title,
-        createdBy: "Admin",
-        createdAt: exam.startsAt ? exam.startsAt.split("T")[0] : "-",
-        status: ["RUNNING", "IN_PROGRESS"].includes(exam.state) ? "Active" : "Completed",
-        participants: exam.participantCount,
-      }))
-      setTestSessions(mapped)
+      setTestSessions(mapExamsToTestSessions(exams))
     } catch (error) {
       console.error("Failed to fetch exams:", error)
     } finally {
@@ -81,6 +94,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
 
   // 2. 특정 시험의 참가자 현황 조회 (Board)
   const fetchParticipants = async (examId: number) => {
+    if (!Number.isFinite(examId) || examId <= 0) return
     setIsParticipantsLoading(true)
     try {
       const board = await getBoard(examId)
@@ -88,12 +102,9 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
         id: participant.examParticipantId,
         name: participant.name,
         phoneNumber: participant.phoneMasked,
-        connectionStatus: participant.state === "ENTRANCE" ? "Connected" : "Disconnected",
-        submissionStatus: participant.submitted
-          ? "Submitted"
-          : participant.state === "ENTRANCE"
-            ? "In Progress"
-            : "Not Started",
+        connectionStatus: mapBoardConnectionStatus(participant.state),
+        hasSubmission: participant.submitted,
+        submissionStatusLabel: formatBoardSubmissionLabelKo(participant),
         tokenUsage: participant.tokenUsed || 0,
       }))
       setParticipants(mapped)
@@ -142,13 +153,14 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   }
 
   const handleViewDetailsAction = (session: TestSession) => {
-    setDetailsSession(session);
-    setIsDetailsOpen(true);
-    fetchParticipants(session.id);
     if (onViewDetails) {
-      onViewDetails(session);
+      onViewDetails(session)
+      return
     }
-  };
+    setDetailsSession(session)
+    setIsDetailsOpen(true)
+    fetchParticipants(session.id)
+  }
 
   const totalParticipants = participants.length
   const totalParticipantPages = Math.ceil(totalParticipants / participantPageSize)
@@ -156,7 +168,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   const participantEndIndex = Math.min(participantStartIndex + participantPageSize, totalParticipants)
   const paginatedParticipants = participants.slice(participantStartIndex, participantEndIndex)
 
-  const submittedCount = participants.filter((p) => p.submissionStatus === "Submitted").length
+  const submittedCount = participants.filter((p) => p.hasSubmission).length
   const avgTokenUsage =
     participants.length > 0
       ? Math.round(participants.reduce((sum, p) => sum + p.tokenUsage, 0) / participants.length)
@@ -179,30 +191,13 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
   }
 
   return (
-    <div className="flex flex-col gap-4 p-6" style={{ minHeight: "calc(100vh - 80px)" }}>
-      {/* Page Header */}
-      <div>
-        <h1
-          className="text-gray-900"
-          style={{
-            fontSize: "24px",
-            fontWeight: 600,
-            lineHeight: "32px",
-          }}
-        >
-          테스트 세션
-        </h1>
-        <p
-          className="text-gray-500 mt-1"
-          style={{
-            fontSize: "14px",
-            fontWeight: 400,
-          }}
-        >
-          플랫폼의 모든 테스트 세션을 관리하고 모니터링합니다.
-        </p>
-      </div>
+    <div className="flex h-full flex-1 flex-col">
+      <AdminPageHeader
+        title="테스트 세션"
+        description="플랫폼의 모든 테스트 세션을 관리하고 모니터링합니다."
+      />
 
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
       {/* Main Card */}
       <Card className="flex-1 flex flex-col border border-gray-200 shadow-sm">
         <CardHeader className="py-3 px-6 flex flex-row items-center justify-between">
@@ -352,7 +347,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                           fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                         }}
                       >
-                        {session.status === "Active" ? "진행 중" : session.status === "Completed" ? "완료" : session.status}
+                        {formatSessionStatusDisplay(session)}
                       </Badge>
                     </TableCell>
                     <TableCell
@@ -576,7 +571,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                     }
                     style={{ fontSize: "12px", fontWeight: 500 }}
                   >
-                    {detailsSession?.status === "Active" ? "진행 중" : detailsSession?.status === "Completed" ? "완료" : detailsSession?.status}
+                    {detailsSession ? formatSessionStatusDisplay(detailsSession) : "–"}
                   </Badge>
                 </div>
               </div>
@@ -680,16 +675,10 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                         <TableCell>
                           <Badge
                             variant="secondary"
-                            className={
-                              participant.submissionStatus === "Submitted"
-                                ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
-                                : participant.submissionStatus === "In Progress"
-                                  ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-100"
-                            }
+                            className={submissionBadgeClassName(participant.submissionStatusLabel)}
                             style={{ fontSize: "12px", fontWeight: 500 }}
                           >
-                            {participant.submissionStatus === "Submitted" ? "제출됨" : participant.submissionStatus === "In Progress" ? "진행 중" : "시작 안 함"}
+                            {participant.submissionStatusLabel}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-[#6B7280]" style={{ fontSize: "14px", fontWeight: 400 }}>
@@ -758,6 +747,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
           </div>
         </SheetContent>
       </Sheet>
+      </main>
     </div>
   )
 }

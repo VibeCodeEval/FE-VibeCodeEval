@@ -16,6 +16,7 @@ export default function ParticipantEvaluationPage() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
   const sessionId = searchParams.get("sessionId");
+  const participantName = searchParams.get("participantName") ?? undefined;
 
   const decodedEntryCode = decodeURIComponent(entryCode);
 
@@ -36,12 +37,11 @@ export default function ParticipantEvaluationPage() {
 };
 
   return (
-    <main className="mt-[0px] min-h-[calc(100vh-80px)] overflow-y-auto py-6 px-8">
-      <ParticipantEvaluationContent
-        entryCode={decodedEntryCode}
-        participantId={String(participantId)}
-        onBack={handleBack}
-      />
-    </main>
+    <ParticipantEvaluationContent
+      entryCode={decodedEntryCode}
+      participantId={String(participantId)}
+      participantName={participantName}
+      onBack={handleBack}
+    />
   );
 }

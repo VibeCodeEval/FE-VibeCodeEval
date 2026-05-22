@@ -1,24 +1,24 @@
 // app/admin/results/[entryCode]/page.tsx
+// Next.js 15+ / 16: 동적 라우트의 params는 Promise — 반드시 await 후 사용
 
 import { ParticipantListContent } from "@/components/participant-list-content";
 
 type ResultParticipantsPageProps = {
-  params: {
-    entryCode: string;
-  };
+  params: Promise<{ entryCode: string }>;
 };
 
-// ⚠️ 맨 위에 "use client" 가 있었다면 삭제해주세요.
-// 이 파일은 서버 컴포넌트로 두는게 편합니다.
-
-export default function ResultParticipantsPage({
+export default async function ResultParticipantsPage({
   params,
 }: ResultParticipantsPageProps) {
-  // Next.js 동적 세그먼트에서 받은 값
-  const rawEntryCode = params?.entryCode ?? "";
+  const { entryCode: rawEntryCode } = await params;
+  const safe = rawEntryCode ?? "";
+  let decodedEntryCode = safe;
 
-  // 혹시 인코딩 되어 있을 수 있으니 decode
-  const decodedEntryCode = decodeURIComponent(rawEntryCode);
+  try {
+    decodedEntryCode = decodeURIComponent(safe);
+  } catch {
+    decodedEntryCode = safe;
+  }
 
   return <ParticipantListContent entryCode={decodedEntryCode} />;
 }

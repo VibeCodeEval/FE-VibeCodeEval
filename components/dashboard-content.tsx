@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Users, CheckCircle, Play, Plus, BarChart3, ArrowRight } from "lucide-react"
 import { getExams, getBoard } from "@/lib/api/admin"
+import { computeSessionAnalytics } from "@/lib/admin-board-analytics"
 
 // Sample recent activity data (정적 - 활동 로그 API 미지원)
 const recentActivity = [
@@ -48,6 +49,7 @@ export function DashboardContent() {
   const [totalParticipants, setTotalParticipants] = useState<number | null>(null)
   const [completedCount, setCompletedCount] = useState<number | null>(null)
   const [runningExams, setRunningExams] = useState<number | null>(null)
+  const [avgPromptScore, setAvgPromptScore] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -66,8 +68,10 @@ export function DashboardContent() {
         const allParticipants = boards.flat()
         setTotalParticipants(allParticipants.length)
         setCompletedCount(allParticipants.filter((p) => p.submitted).length)
+        setAvgPromptScore(computeSessionAnalytics(allParticipants).avgPrompt)
       } catch (e) {
         console.error("Failed to load dashboard stats", e)
+        setAvgPromptScore(null)
       } finally {
         setIsLoading(false)
       }
@@ -77,6 +81,8 @@ export function DashboardContent() {
 
   const displayValue = (val: number | null) =>
     isLoading ? "..." : val !== null ? val.toLocaleString() : "–"
+
+  const displayAvgPromptScore = isLoading ? "–" : (avgPromptScore ?? "–")
 
   return (
     <div className="flex h-full flex-1 flex-col">
@@ -107,17 +113,17 @@ export function DashboardContent() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
                 <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
-              <span className="text-sm font-medium text-gray-500">평가 완료 수</span>
+              <span className="text-sm font-medium text-gray-500">코드 제출 완료 수</span>
             </div>
             <p className="mt-6 text-4xl font-bold text-gray-900">{displayValue(completedCount)}</p>
             <p className="mt-1 text-xs text-gray-400">
               {!isLoading && totalParticipants !== null && totalParticipants > 0
-                ? `완료율 ${Math.round(((completedCount ?? 0) / totalParticipants) * 100)}%`
-                : "코드 제출 기준"}
+                ? `제출률 ${Math.round(((completedCount ?? 0) / totalParticipants) * 100)}%`
+                : "submissions 테이블 기준"}
             </p>
           </div>
 
-          {/* Average Prompt Score - no API available */}
+          {/* Average Prompt Score */}
           <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white px-6 py-8 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
@@ -125,8 +131,8 @@ export function DashboardContent() {
               </div>
               <span className="text-sm font-medium text-gray-500">평균 프롬프트 점수</span>
             </div>
-            <p className="mt-6 text-4xl font-bold text-gray-900">–</p>
-            <p className="mt-1 text-xs text-gray-400">채점 완료 후 집계</p>
+            <p className="mt-6 text-4xl font-bold text-gray-900">{displayAvgPromptScore}</p>
+            <p className="mt-1 text-xs text-gray-400">채점 완료 후 집계 (전체 세션)</p>
           </div>
 
           {/* Active Test Sessions */}

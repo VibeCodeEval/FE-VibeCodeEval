@@ -1,16 +1,38 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
+import { useState, useEffect, useMemo } from "react"
+import type { MouseEvent } from "react"
 import { ArrowLeft, User, Code, CheckCircle, X } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { getExams, getBoard } from "@/lib/api/admin"
+import {
+  getExams,
+  getBoard,
+  getAdminSubmissionDetail,
+  formatBoardSubmissionLabelKo,
+  type Exam,
+  type ExamineeBoardEntry,
+  type AdminSubmissionDetailResponse,
+} from "@/lib/api/admin"
+import {
+  buildKeyValueCsvBody,
+  buildParticipantEvaluationCsvFilename,
+  downloadUtf8Csv,
+} from "@/lib/admin-board-csv-export"
+import { resolveBoardPerformanceLevel } from "@/lib/performance-level"
+import { ParticipantEvaluationTestSummary } from "@/components/participant-evaluation-test-summary"
+import { ParticipantEvaluationRubricReport } from "@/components/participant-evaluation-rubric-report"
 
 interface ParticipantEvaluationContentProps {
-  entryCode: string
-  participantName?: string   // 선택적 — URL query 또는 board에서 로드
+  /** Admin: entryCode / title / exam id 문자열. Master: 생략 가능(examId 사용) */
+  entryCode?: string
+  /** Master 전용 — 지정 시 entryCode 조회 없이 직접 보드 로드 */
+  examId?: number
+  participantName?: string
+  /** URL 세그먼트 — 목록·보드와 동일하게 `exam_participants.id` (examParticipantId) */
   participantId: string
-  onBack?: () => void;
+  onBack?: () => void
+  /** 뒤로가기 버튼 문구 (기본: 이전 페이지로 돌아가기) */
+  backLabel?: string
 }
 
 interface ToastItem {
@@ -19,248 +41,190 @@ interface ToastItem {
   description: string
 }
 
-const participantData = {
-  name: "Alice Johnson",
-  entryCode: "AJ-2024-001",
-  avgScore: 92,
-  status: "Submitted" as const,
-  testDate: "2024-02-11",
-  duration: "32 minutes",
-  trend: "High" as const,
-  language: "Python",
-  promptScore: 86,
-  performanceScore: 81,
-  correctnessScore: 89,
+/**
+ * participant-list-content 와 동일 규칙 — 결과 URL 세그먼트 → 시험 매칭
+ */
+function findExamByResultsSegment(exams: Exam[], segment: string) {
+  const trimmed = segment.trim()
+  if (!trimmed) return undefined
+
+  const byEntryCode = exams.find(
+    (e) => e.entryCode != null && String(e.entryCode).length > 0 && e.entryCode === trimmed
+  )
+  if (byEntryCode) return byEntryCode
+
+  const byTitle = exams.find((e) => e.title === trimmed)
+  if (byTitle) return byTitle
+
+  if (/^\d+$/.test(trimmed)) {
+    return exams.find((e) => String(e.id) === trimmed)
+  }
+
+  return undefined
 }
 
-const dummyCode = `def solution(nums: List[int], target: int) -> List[int]:
-    seen = {}
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in seen:
-            return [seen[complement], i]
-        seen[num] = i
-    return []
-
-def optimize_query(data: List[Dict], filters: Dict) -> List[Dict]:
-    result = data
-    for key, value in filters.items():
-        result = [item for item in result if item.get(key) == value]
-    return result
-
-class DataProcessor:
-    def __init__(self, config: Dict):
-        self.config = config
-        self.cache = {}
-    
-    def process(self, input_data: Any) -> Any:
-        cache_key = hash(str(input_data))
-        if cache_key in self.cache:
-            return self.cache[cache_key]
-        result = self._transform(input_data)
-        self.cache[cache_key] = result
-        return result`
-
-const feedbackData = {
-  strengths: [
-    "깔끔하고 읽기 쉬운 코드 구조",
-    "O(n) 시간 복잡도를 위한 해시 맵의 효율적인 사용",
-    "독스트링을 통한 좋은 문서화",
-    "코드 전반에 걸친 적절한 타입 힌트",
-  ],
-  weaknesses: [
-    "빈 입력에 대한 엣지 케이스 처리 누락",
-    "데이터 타입에 대한 입력 검증 없음",
-    "캐시 무효화 전략이 구현되지 않음",
-  ],
-  suggestions: [
-    "엣지 케이스를 위한 단위 테스트 추가",
-    "메모이제이션을 위해 functools.lru_cache 사용 고려",
-    "커스텀 예외를 사용한 적절한 오류 처리 구현",
-  ],
-  performanceNotes: [
-    "해시 맵 접근 방식이 이 문제에 최적입니다",
-    "제너레이터를 사용하면 메모리 사용량을 줄일 수 있습니다",
-    "대용량 데이터셋에 대해 지연 평가 고려",
-  ],
-}
-
-const testCaseResults = [
-  {
-    id: "1",
-    testCase: "Basic Input",
-    expected: "[0, 1]",
-    submitted: "[0, 1]",
-    result: "Passed" as const,
-    execTime: "12ms",
-    memory: "14.2 MB",
-    tokens: 128,
-  },
-  {
-    id: "2",
-    testCase: "Empty Array",
-    expected: "[]",
-    submitted: "[]",
-    result: "Passed" as const,
-    execTime: "8ms",
-    memory: "13.8 MB",
-    tokens: 64,
-  },
-  {
-    id: "3",
-    testCase: "Large Input",
-    expected: "[999, 1000]",
-    submitted: "[999, 1000]",
-    result: "Passed" as const,
-    execTime: "45ms",
-    memory: "28.4 MB",
-    tokens: 256,
-  },
-  {
-    id: "4",
-    testCase: "Negative Numbers",
-    expected: "[2, 4]",
-    submitted: "[2, 3]",
-    result: "Failed" as const,
-    execTime: "15ms",
-    memory: "14.6 MB",
-    tokens: 128,
-  },
-  {
-    id: "5",
-    testCase: "Duplicate Values",
-    expected: "[1, 3]",
-    submitted: "[1, 3]",
-    result: "Passed" as const,
-    execTime: "11ms",
-    memory: "14.1 MB",
-    tokens: 96,
-  },
-  {
-    id: "6",
-    testCase: "Single Element",
-    expected: "[]",
-    submitted: "[]",
-    result: "Passed" as const,
-    execTime: "6ms",
-    memory: "13.5 MB",
-    tokens: 48,
-  },
-]
-
-function StatusBadge({ status }: { status: "Submitted" | "In Progress" | "Not Started" }) {
-  const badgeStyles: Record<string, string> = {
-    Submitted: "bg-[#DCFCE7] text-[#16A34A]",
-    "In Progress": "bg-[#E0EDFF] text-[#3B82F6] font-semibold",
-    "Not Started": "bg-[#F3F4F6] text-[#6B7280]",
-  }
-  const statusText: Record<string, string> = {
-    Submitted: "제출됨",
-    "In Progress": "진행 중",
-    "Not Started": "시작 안 함",
-  }
-  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[status]}>{statusText[status]}</span>
-}
-
-function TrendBadge({ trend }: { trend: "High" | "Average" | "Low" }) {
-  const badgeStyles: Record<string, string> = {
-    High: "bg-[#DCFCE7] text-[#16A34A]",
-    Average: "bg-[#FEF3C7] text-[#D97706]",
-    Low: "bg-[#FEE2E2] text-[#DC2626]",
-  }
-  const trendText: Record<string, string> = {
-    High: "높음",
-    Average: "보통",
-    Low: "낮음",
-  }
-  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeStyles[trend]}>{trendText[trend]}</span>
+function PerformanceLevelBadge({ totalScore }: { totalScore: number | null | undefined }) {
+  const { label, badgeClass } = resolveBoardPerformanceLevel(totalScore)
+  return <span className={"rounded-full px-3 py-1 text-xs font-medium " + badgeClass}>{label}</span>
 }
 
 function LanguageBadge({ language }: { language: string }) {
   return <span className="rounded-full bg-[#F3F4F6] px-3 py-1 text-xs font-medium text-[#374151]">{language}</span>
 }
 
-function TestResultBadge({ result }: { result: "Passed" | "Failed" }) {
-  const badgeStyles: Record<string, string> = {
-    Passed: "bg-[#DCFCE7] text-[#16A34A]",
-    Failed: "bg-[#FEE2E2] text-[#DC2626]",
-  }
-  const resultText: Record<string, string> = {
-    Passed: "통과",
-    Failed: "실패",
-  }
-  return <span className={"rounded-full px-2.5 py-0.5 text-xs font-medium " + badgeStyles[result]}>{resultText[result]}</span>
+function formatScore(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return "–"
+  return `${Number(n).toFixed(1)}`
 }
 
-function generateParticipantCSV(): string {
-  const header = "Metric,Value"
-  const rows = [
-    "Name," + participantData.name,
-    "Entry Code," + participantData.entryCode,
-    "Average Score," + participantData.avgScore + "%",
-    "Status," + participantData.status,
-    "Test Date," + participantData.testDate,
-    "Duration," + participantData.duration,
-    "Trend," + participantData.trend,
-    "Language," + participantData.language,
-    "Prompt Score," + participantData.promptScore + "%",
-    "Performance Score," + participantData.performanceScore + "%",
-    "Correctness Score," + participantData.correctnessScore + "%",
-  ]
-  return [header, ...rows].join("\n")
-}
-
-function downloadCSV() {
-  const csvContent = generateParticipantCSV()
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement("a")
-  link.href = url
-  link.download = "participants.csv"
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
-}
-
-export function ParticipantEvaluationContent({ entryCode, participantName: participantNameProp, participantId, onBack }: ParticipantEvaluationContentProps) {
+export function ParticipantEvaluationContent({
+  entryCode = "",
+  examId: examIdProp,
+  participantName: participantNameProp,
+  participantId,
+  onBack,
+  backLabel = "이전 페이지로 돌아가기",
+}: ParticipantEvaluationContentProps) {
   const router = useRouter()
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  // 실제 참가자 정보 (board에서 로드)
-  const [boardParticipantName, setBoardParticipantName] = useState<string | null>(null)
-  const [tokenUsed, setTokenUsed] = useState<number | null>(null)
-  const [submitted, setSubmitted] = useState<boolean | null>(null)
+  const [examId, setExamId] = useState<number | null>(examIdProp ?? null)
+  const [examTitle, setExamTitle] = useState<string | null>(null)
+  const [boardEntry, setBoardEntry] = useState<ExamineeBoardEntry | null>(null)
+  const [boardError, setBoardError] = useState<string | null>(null)
   const [isLoadingBoard, setIsLoadingBoard] = useState(true)
 
+  const [submissionDetail, setSubmissionDetail] = useState<AdminSubmissionDetailResponse | null>(null)
+  const [submissionDetailError, setSubmissionDetailError] = useState<string | null>(null)
+  const [isLoadingSubmission, setIsLoadingSubmission] = useState(false)
+
   useEffect(() => {
-    async function loadParticipantFromBoard() {
+    let cancelled = false
+    async function loadBoard() {
       setIsLoadingBoard(true)
+      setBoardError(null)
+      setBoardEntry(null)
+      setExamTitle(null)
+      setExamId(null)
+
+      const directExamId =
+        examIdProp != null && Number.isFinite(examIdProp) && examIdProp > 0 ? examIdProp : null
+
       try {
-        const exams = await getExams()
-        const matched = exams.find((e) => e.entryCode === entryCode)
-        if (!matched) {
-          setIsLoadingBoard(false)
+        let resolvedExamId: number | null = directExamId
+        let resolvedTitle: string | null = null
+
+        if (directExamId != null) {
+          const exams = await getExams()
+          const matched = exams.find((e) => e.id === directExamId)
+          resolvedTitle = matched?.title?.trim() || `시험 #${directExamId}`
+        } else {
+          const exams = await getExams()
+          const matched = findExamByResultsSegment(exams, entryCode)
+          if (!matched) {
+            if (!cancelled) setBoardError("해당 입장 코드·시험명에 맞는 시험을 찾을 수 없습니다.")
+            return
+          }
+          resolvedExamId = matched.id
+          resolvedTitle = matched.title?.trim() || entryCode
+        }
+
+        if (resolvedExamId == null) {
+          if (!cancelled) setBoardError("시험 정보를 확인할 수 없습니다.")
           return
         }
-        const board = await getBoard(matched.id)
-        const entry = board.find((p) => p.examParticipantId.toString() === participantId)
-        if (entry) {
-          setBoardParticipantName(entry.name)
-          setTokenUsed(entry.tokenUsed)
-          setSubmitted(entry.submitted)
+
+        const board = await getBoard(resolvedExamId)
+        const entry = board.find((p) => String(p.examParticipantId) === String(participantId))
+        if (!cancelled) {
+          setExamId(resolvedExamId)
+          setExamTitle(resolvedTitle)
+          if (entry) setBoardEntry(entry)
+          else setBoardError("참가자를 보드에서 찾을 수 없습니다. (ID가 examParticipantId와 일치하는지 확인하세요)")
         }
       } catch (e) {
-        console.error("Failed to load participant from board", e)
+        console.error("Failed to load board for evaluation detail", e)
+        if (!cancelled) setBoardError("참가자·시험 정보를 불러오지 못했습니다.")
       } finally {
-        setIsLoadingBoard(false)
+        if (!cancelled) setIsLoadingBoard(false)
       }
     }
-    loadParticipantFromBoard()
-  }, [entryCode, participantId])
+    loadBoard()
+    return () => {
+      cancelled = true
+    }
+  }, [entryCode, examIdProp, participantId])
 
-  // 이름 우선순위: prop > board > fallback
-  const displayName = participantNameProp || boardParticipantName || participantData.name
+  const submissionId = boardEntry?.submissionId ?? null
+
+  useEffect(() => {
+    if (submissionId == null) {
+      setSubmissionDetail(null)
+      setSubmissionDetailError(null)
+      return
+    }
+    const submissionIdNum = submissionId
+    let cancelled = false
+    async function loadSubmission() {
+      setIsLoadingSubmission(true)
+      setSubmissionDetailError(null)
+      try {
+        const detail = await getAdminSubmissionDetail(submissionIdNum)
+        if (!cancelled) setSubmissionDetail(detail)
+      } catch (e: unknown) {
+        console.error("getAdminSubmissionDetail failed", e)
+        if (!cancelled) {
+          setSubmissionDetail(null)
+          setSubmissionDetailError(
+            e instanceof Error ? e.message : "제출 상세를 불러오지 못했습니다. (권한 또는 네트워크를 확인하세요)"
+          )
+        }
+      } finally {
+        if (!cancelled) setIsLoadingSubmission(false)
+      }
+    }
+    loadSubmission()
+    return () => {
+      cancelled = true
+    }
+  }, [submissionId])
+
+  const displayName = useMemo(() => {
+    if (participantNameProp?.trim()) return participantNameProp.trim()
+    if (boardEntry?.name) return boardEntry.name
+    return "–"
+  }, [participantNameProp, boardEntry])
+
+  const submissionStatusLabel = useMemo(() => {
+    if (!boardEntry) return null
+    return formatBoardSubmissionLabelKo(boardEntry)
+  }, [boardEntry])
+
+  const scoreFromDetail = submissionDetail?.score
+  /** BE는 Score 행이 없어도 0으로 채워 보냄 → 전부 0이면 ‘실제 점수 없음’으로 간주 */
+  const detailScoresMeaningful =
+    scoreFromDetail &&
+    (Number(scoreFromDetail.prompt) !== 0 ||
+      Number(scoreFromDetail.perf) !== 0 ||
+      Number(scoreFromDetail.correctness) !== 0 ||
+      Number(scoreFromDetail.total) !== 0)
+
+  const showBoardTotalOnly =
+    boardEntry?.totalScore != null &&
+    !Number.isNaN(Number(boardEntry.totalScore)) &&
+    !detailScoresMeaningful
+
+  const effectiveTotalScore = useMemo((): number | null => {
+    if (detailScoresMeaningful && scoreFromDetail?.total != null) {
+      const n = Number(scoreFromDetail.total)
+      return Number.isNaN(n) ? null : n
+    }
+    if (boardEntry?.totalScore != null) {
+      const n = Number(boardEntry.totalScore)
+      return Number.isNaN(n) ? null : n
+    }
+    return null
+  }, [detailScoresMeaningful, scoreFromDetail, boardEntry])
 
   const showToast = (title: string, description: string) => {
     const id = crypto.randomUUID()
@@ -275,49 +239,88 @@ export function ParticipantEvaluationContent({ entryCode, participantName: parti
   }
 
   const handleExport = () => {
-    downloadCSV()
-    showToast("Participant results exported successfully.", "File: participants.csv")
+    try {
+      const examLabel = (examTitle ?? entryCode).trim() || "session"
+      const csvBody = buildKeyValueCsvBody([
+        { label: "이름", value: displayName },
+        { label: "시험", value: examLabel, excelTextValue: true },
+        { label: "제출 상태", value: submissionStatusLabel ?? "–" },
+        {
+          label: "총점",
+          value: effectiveTotalScore != null ? formatScore(effectiveTotalScore) : "–",
+        },
+        {
+          label: "프롬프트 점수",
+          value: detailScoresMeaningful ? formatScore(scoreFromDetail?.prompt ?? null) : "–",
+        },
+        {
+          label: "성능 점수",
+          value: detailScoresMeaningful ? formatScore(scoreFromDetail?.perf ?? null) : "–",
+        },
+        {
+          label: "정답률 점수",
+          value: detailScoresMeaningful ? formatScore(scoreFromDetail?.correctness ?? null) : "–",
+        },
+        {
+          label: "코드 LOC",
+          value:
+            submissionDetail?.metrics?.loc != null
+              ? String(submissionDetail.metrics.loc)
+              : "–",
+        },
+        { label: "제출 언어", value: submissionDetail?.lang ?? "–" },
+        { label: "참가자 ID", value: participantId },
+        ...(submissionId != null
+          ? [{ label: "제출 ID", value: String(submissionId) }]
+          : []),
+      ])
+
+      const filename = buildParticipantEvaluationCsvFilename(examLabel, displayName)
+      downloadUtf8Csv(filename, csvBody)
+      showToast("보내기 완료", filename)
+    } catch (e) {
+      console.error("[ParticipantEvaluation] CSV export failed", e)
+      showToast("보내기 실패", "CSV 파일을 생성하지 못했습니다.")
+    }
   }
 
+  const handleBackClick = (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+    e.preventDefault()
+    if (onBack) onBack()
+    else router.back()
+  }
 
-  const handleBackClick = (
-    e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>
-  ) => {
-    e.preventDefault();
-    if (onBack) {
-      onBack();       // 🔹 page.tsx 에서 만들어준 분기 로직 실행
-    } else {
-      router.back();  // 🔹 혹시 onBack이 없을 때 기본 동작
-    }
-  };
+  const langDisplay = submissionDetail?.lang ?? "–"
 
   return (
     <div className="flex h-full flex-1 flex-col">
-      {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">참가자 평가 상세</h1>
           <p className="text-sm text-[#6B7280]">
-            이 참가자의 평가 결과와 제출 세부 정보를 모두 확인할 수 있습니다.
+            보드 API와 관리자 전용 제출 상세 API에서 불러온 데이터입니다. 미제공 필드는 안내 문구로 표시됩니다.
           </p>
         </div>
       </header>
 
-      {/* Main Content Panel - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* Back Link */}
-        <div className="mb-4">
+      <div className="flex min-h-0 flex-1 flex-col px-6 pt-6 pb-12">
+        <div className="mb-4 shrink-0">
           <button
             type="button"
             onClick={handleBackClick}
             className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#4B5563]"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
-            이전 페이지로 돌아가기
+            {backLabel}
           </button>
         </div>
 
-        {/* Summary Cards - Row 1 */}
+        {boardError && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {boardError}
+          </div>
+        )}
+
         <div className="mb-4 grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">참가자</span>
@@ -326,192 +329,191 @@ export function ParticipantEvaluationContent({ entryCode, participantName: parti
                 <User className="h-5 w-5 text-[#3B82F6]" strokeWidth={1.5} />
               </div>
               <span className="text-base font-semibold text-[#1A1A1A]">
-                {isLoadingBoard ? "..." : displayName}
+                {isLoadingBoard ? "…" : displayName}
               </span>
             </div>
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">입장 코드</span>
-            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">{entryCode}</p>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              {examIdProp != null ? "시험" : "시험 구분 (URL)"}
+            </span>
+            <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">
+              {isLoadingBoard ? "…" : (examTitle ?? entryCode) || "–"}
+            </p>
+            {examId != null && <p className="mt-1 text-xs text-[#6B7280]">examId: {examId}</p>}
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">토큰 사용량</span>
             <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">
-              {isLoadingBoard ? "..." : tokenUsed !== null ? tokenUsed.toLocaleString() : "–"}
+              {isLoadingBoard || !boardEntry ? (
+                "…"
+              ) : (
+                <>
+                  {boardEntry.tokenUsed.toLocaleString()} / {boardEntry.tokenLimit.toLocaleString()}
+                </>
+              )}
             </p>
           </div>
         </div>
 
-        {/* Summary Cards - Row 2 */}
         <div className="mb-6 grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">참가자 ID</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              응시 참가 ID (examParticipantId)
+            </span>
             <p className="mt-3 text-base font-semibold text-[#1A1A1A]">{participantId}</p>
+            {submissionId != null && (
+              <p className="mt-2 text-xs text-[#6B7280]">submissionId: {submissionId}</p>
+            )}
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">성과 수준</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+              성과 수준 (총점 기준)
+            </span>
             <div className="mt-3">
-              <TrendBadge trend={participantData.trend} />
+              <PerformanceLevelBadge totalScore={effectiveTotalScore} />
             </div>
+            {effectiveTotalScore != null && (
+              <p className="mt-2 text-xs text-[#6B7280]">
+                기준: 80점 이상 높음 · 50점 이상 보통 · 50점 미만 낮음
+                {detailScoresMeaningful
+                  ? " (관리자 제출 상세 API 총점)"
+                  : showBoardTotalOnly
+                    ? " (관리자 보드 총점)"
+                    : ""}
+              </p>
+            )}
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출 상태</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출·채점 상태</span>
             <div className="mt-3">
               {isLoadingBoard ? (
-                <span className="text-sm text-[#6B7280]">...</span>
-              ) : submitted !== null ? (
-                <StatusBadge status={submitted ? "Submitted" : "In Progress"} />
+                <span className="text-sm text-[#6B7280]">…</span>
+              ) : submissionStatusLabel ? (
+                <span className="rounded-full bg-[#F3F4F6] px-3 py-1 text-xs font-medium text-[#374151]">
+                  {submissionStatusLabel}
+                </span>
               ) : (
-                <StatusBadge status={participantData.status} />
+                <span className="text-sm text-[#6B7280]">–</span>
+              )}
+            </div>
+            {boardEntry?.submittedAt && (
+              <p className="mt-2 text-xs text-[#6B7280]">제출 시각: {boardEntry.submittedAt}</p>
+            )}
+            {boardEntry?.evaluatedAt && (
+              <p className="text-xs text-[#6B7280]">점수 갱신: {boardEntry.evaluatedAt}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">평가 점수 세부 내역</h2>
+          {isLoadingSubmission && submissionId != null && (
+            <p className="mb-2 text-sm text-[#6B7280]">제출 상세를 불러오는 중…</p>
+          )}
+          {submissionDetailError && (
+            <p className="mb-2 text-sm text-red-600">{submissionDetailError}</p>
+          )}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
+              <p className="text-3xl font-bold text-[#1A1A1A]">
+                {detailScoresMeaningful ? formatScore(scoreFromDetail?.prompt ?? null) : "–"}
+              </p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">프롬프트 점수</p>
+              <p className="mt-1 text-xs text-[#6B7280]">관리자 제출 상세 API의 score.prompt</p>
+            </div>
+            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
+              <p className="text-3xl font-bold text-[#1A1A1A]">
+                {detailScoresMeaningful ? formatScore(scoreFromDetail?.perf ?? null) : "–"}
+              </p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">성능 점수</p>
+              <p className="mt-1 text-xs text-[#6B7280]">관리자 제출 상세 API의 score.perf</p>
+            </div>
+            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
+              <p className="text-3xl font-bold text-[#1A1A1A]">
+                {detailScoresMeaningful ? formatScore(scoreFromDetail?.correctness ?? null) : "–"}
+              </p>
+              <p className="mt-1 text-sm font-medium text-[#374151]">정답률 점수</p>
+              <p className="mt-1 text-xs text-[#6B7280]">
+                {detailScoresMeaningful
+                  ? "관리자 제출 상세 API score.correctness"
+                  : showBoardTotalOnly
+                    ? "항목별 값 없음 — 아래 총점만 보드 참고"
+                    : "데이터 없음"}
+              </p>
+            </div>
+          </div>
+          {detailScoresMeaningful && (
+            <p className="mt-3 text-center text-sm font-semibold text-[#1A1A1A]">
+              총점 {formatScore(scoreFromDetail?.total ?? null)} (관리자 제출 상세 API)
+            </p>
+          )}
+          {!detailScoresMeaningful && showBoardTotalOnly && (
+            <p className="mt-3 text-center text-sm font-semibold text-[#1A1A1A]">
+              총점 {formatScore(Number(boardEntry!.totalScore))} (관리자 보드 — 상세 점수 행 없음)
+            </p>
+          )}
+          {!detailScoresMeaningful && !showBoardTotalOnly && !isLoadingSubmission && (
+            <p className="mt-3 text-center text-sm text-[#6B7280]">표시할 점수 데이터가 없습니다.</p>
+          )}
+        </div>
+
+        <div className="mb-6">
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">제출한 코드</h2>
+          <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-3">
+              <div className="flex items-center gap-2">
+                <Code className="h-4 w-4 text-[#6B7280]" strokeWidth={1.5} />
+                <span className="text-sm font-medium text-[#374151]">코드</span>
+              </div>
+              <LanguageBadge language={langDisplay} />
+            </div>
+            <div className="max-h-[400px] overflow-y-auto p-4">
+              {isLoadingSubmission ? (
+                <p className="text-sm text-[#6B7280]">불러오는 중…</p>
+              ) : submissionDetail?.codeInline != null && submissionDetail.codeInline.trim() !== "" ? (
+                <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[#1A1A1A]">
+                  {submissionDetail.codeInline}
+                </pre>
+              ) : submissionDetail ? (
+                <p className="text-sm text-[#6B7280]">저장된 제출 코드가 없습니다.</p>
+              ) : (
+                <p className="text-sm text-[#6B7280]">제출 상세를 불러오면 표시됩니다.</p>
               )}
             </div>
           </div>
         </div>
 
-        {/* Evaluation Breakdown Section */}
         <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">평가 점수 세부 내역</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
-              <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.promptScore}%</p>
-              <p className="mt-1 text-sm font-medium text-[#374151]">프롬프트 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">이해 및 문제 해석 능력</p>
-            </div>
-            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
-              <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.performanceScore}%</p>
-              <p className="mt-1 text-sm font-medium text-[#374151]">성능 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">실행 효율 및 최적화</p>
-            </div>
-            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
-              <p className="text-3xl font-bold text-[#1A1A1A]">{participantData.correctnessScore}%</p>
-              <p className="mt-1 text-sm font-medium text-[#374151]">정답률 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">솔루션 정확도 및 테스트 결과 일치율</p>
-            </div>
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">AI 피드백 (루브릭·턴 평가)</h2>
+          <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
+            <ParticipantEvaluationRubricReport
+              rubricJson={submissionDetail?.rubricJson}
+              isLoading={isLoadingSubmission}
+            />
           </div>
         </div>
 
-        {/* Submitted Code Section */}
         <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">제출한 코드</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Code className="h-4 w-4 text-[#6B7280]" strokeWidth={1.5} />
-                  <span className="text-sm font-medium text-[#374151]">코드 구현</span>
-                </div>
-                <LanguageBadge language={participantData.language} />
-              </div>
-              <div className="max-h-[400px] flex-1 overflow-y-auto p-4">
-                <pre className="text-xs leading-relaxed text-[#374151]">
-                  <code>{dummyCode}</code>
-                </pre>
-              </div>
-            </div>
-            <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
-              <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-5 py-3">
-                <span className="text-sm font-medium text-[#374151]">AI 피드백 요약</span>
-              </div>
-              <div className="max-h-[400px] flex-1 overflow-y-auto p-5">
-                <div className="mb-4">
-                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#16A34A]">강점</h4>
-                  <ul className="space-y-1">
-                    {feedbackData.strengths.map((item, index) => (
-                      <li key={index} className="text-sm text-[#374151]">
-                        • {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-4">
-                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#DC2626]">약점</h4>
-                  <ul className="space-y-1">
-                    {feedbackData.weaknesses.map((item, index) => (
-                      <li key={index} className="text-sm text-[#374151]">
-                        • {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-4">
-                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#3B82F6]">개선 제안</h4>
-                  <ul className="space-y-1">
-                    {feedbackData.suggestions.map((item, index) => (
-                      <li key={index} className="text-sm text-[#374151]">
-                        • {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#D97706]">
-                    성능 관련 메모
-                  </h4>
-                  <ul className="space-y-1">
-                    {feedbackData.performanceNotes.map((item, index) => (
-                      <li key={index} className="text-sm text-[#374151]">
-                        • {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Test Case Results Section */}
-        <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">테스트 케이스 결과</h2>
-          <div className="rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
-            <div className="px-6 pt-4 pb-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">전체 테스트 케이스</span>
-            </div>
-            <div className="grid grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 border-b border-[#E5E5E5] bg-[#F9FAFB] px-6 py-3">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">테스트 케이스</span>
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">기대 출력값</span>
-              <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">제출된 출력값</span>
-              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">결과</span>
-              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                실행 시간
-              </span>
-              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">메모리 사용량</span>
-              <span className="text-center text-xs font-semibold uppercase tracking-wide text-[#6B7280]">토큰 수</span>
-            </div>
-            <div className="px-6">
-              {testCaseResults.map((testCase, index) => (
-                <div
-                  key={testCase.id}
-                  className={
-                    "grid grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] items-center gap-4 py-3 " +
-                    (index !== testCaseResults.length - 1 ? "border-b border-[#E5E5E5]" : "")
-                  }
-                >
-                  <span className="text-sm text-[#374151]">{testCase.testCase}</span>
-                  <span className="font-mono text-xs text-[#6B7280]">{testCase.expected}</span>
-                  <span className="font-mono text-xs text-[#6B7280]">{testCase.submitted}</span>
-                  <div className="flex justify-center">
-                    <TestResultBadge result={testCase.result} />
-                  </div>
-                  <span className="text-center text-sm text-[#6B7280]">{testCase.execTime}</span>
-                  <span className="text-center text-sm text-[#6B7280]">{testCase.memory}</span>
-                  <span className="text-center text-sm text-[#6B7280]">{testCase.tokens}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-6 flex justify-end">
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">채점·테스트 요약</h2>
+          <ParticipantEvaluationTestSummary
+            submissionId={submissionId}
+            isLoading={isLoadingSubmission}
+            detail={submissionDetail}
+            boardStatusLabel={submissionStatusLabel}
+          />
+          <div className="mt-6 flex justify-end pb-4">
             <button
+              type="button"
               onClick={handleExport}
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
             >
-              결과 내보내기 (CSV)
+              결과보내기 (CSV)
             </button>
           </div>
         </div>
       </div>
 
-      {/* Toast Notifications */}
       <div className="fixed right-6 top-6 z-50 flex flex-col gap-3">
         {toasts.map((toast) => (
           <div
@@ -526,6 +528,7 @@ export function ParticipantEvaluationContent({ entryCode, participantName: parti
               <p className="mt-0.5 text-xs text-[#6B7280]">{toast.description}</p>
             </div>
             <button
+              type="button"
               onClick={() => removeToast(toast.id)}
               className="shrink-0 rounded p-0.5 text-[#9CA3AF] transition-colors hover:bg-[#F3F4F6] hover:text-[#6B7280]"
             >
