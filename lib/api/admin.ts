@@ -364,6 +364,43 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminLogin
   }
 }
 
+export interface UpdateProblemAvailabilityRequest {
+  available: boolean;
+}
+
+/**
+ * 문제 사용 가능 여부 변경 — PATCH /api/admin/problems/{problemId}/availability
+ * available=true → PUBLISHED, false → ARCHIVED (시험 랜덤 배정 후보에 반영)
+ */
+export async function updateProblemAvailability(
+  problemId: number,
+  request: UpdateProblemAvailabilityRequest,
+): Promise<AdminProblem> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems/${problemId}/availability`;
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(request),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<AdminProblem> = await response.json().catch(() => ({
+    message: '문제 사용 가능 여부 변경에 실패했습니다.',
+  } as BaseResponse<AdminProblem>));
+
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(
+      data.message || '문제 사용 가능 여부 변경에 실패했습니다.',
+      response.status,
+      data.code,
+    );
+  }
+
+  return data.result;
+}
+
 /**
  * 문제 목록 조회 API 호출
  */
