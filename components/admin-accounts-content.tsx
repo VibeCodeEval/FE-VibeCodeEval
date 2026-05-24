@@ -32,6 +32,7 @@ import {
 } from "@/lib/api/master-admin-accounts"
 import { isMasterAdmin, isSystemMasterAdmin } from "@/lib/auth/utils"
 import { useRouter } from "next/navigation"
+import { AccountDeleteSuccessDialog } from "@/components/account-delete-success-dialog"
 import { AdminPageHeader } from "@/components/admin-page-header"
 
 function displayValue(value: string | null | undefined): string {
@@ -60,6 +61,8 @@ export function AdminAccountsContent() {
   const [tempPassword, setTempPassword] = useState("")
   const [tempPasswordCopied, setTempPasswordCopied] = useState(false)
   const [isDeleteAdminOpen, setIsDeleteAdminOpen] = useState(false)
+  const [isDeleteAdminSuccessOpen, setIsDeleteAdminSuccessOpen] = useState(false)
+  const [deleteAdminError, setDeleteAdminError] = useState("")
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isChangingStatus, setIsChangingStatus] = useState(false)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
@@ -324,12 +327,14 @@ export function AdminAccountsContent() {
       return;
     }
     
+    setDeleteAdminError("")
     setSelectedAdmin(admin)
     setIsDeleteAdminOpen(true)
   }
 
   const handleConfirmDeleteAdmin = async () => {
     if (!selectedAdmin) return
+    setDeleteAdminError("")
     setIsDeletingAdmin(true)
     try {
       await deleteMasterAdminAccount(selectedAdmin)
@@ -337,20 +342,13 @@ export function AdminAccountsContent() {
       setIsDeleteAdminOpen(false)
       setIsDetailsOpen(false)
       setSelectedAdmin(null)
-      toast({
-        title: "관리자 삭제 완료",
-        description: "관리자 계정이 삭제되었습니다.",
-      })
+      setIsDeleteAdminSuccessOpen(true)
     } catch (error) {
       const message =
         error instanceof LoginFailedError || error instanceof NetworkError
           ? error.message
           : "관리자 삭제에 실패했습니다."
-      toast({
-        title: "관리자 삭제 불가",
-        description: message,
-        variant: "destructive",
-      })
+      setDeleteAdminError(message)
     } finally {
       setIsDeletingAdmin(false)
     }
@@ -373,8 +371,9 @@ export function AdminAccountsContent() {
   }
 
   const handleDeleteAdminFromPanel = () => {
+    if (!selectedAdmin) return
     setIsDetailsOpen(false)
-    setIsDeleteAdminOpen(true)
+    handleOpenDeleteAdmin(selectedAdmin)
   }
 
   return (
@@ -994,9 +993,19 @@ export function AdminAccountsContent() {
             )}
 
             <p style={{ fontSize: "14px", color: "#374151" }}>해당 관리자의 접근 권한이 즉시 제거됩니다.</p>
+            {deleteAdminError && (
+              <p className="text-sm text-red-500">{deleteAdminError}</p>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteAdminOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteAdminError("")
+                setIsDeleteAdminOpen(false)
+              }}
+              disabled={isDeletingAdmin}
+            >
               취소
             </Button>
             <Button
@@ -1009,6 +1018,15 @@ export function AdminAccountsContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AccountDeleteSuccessDialog
+        open={isDeleteAdminSuccessOpen}
+        onOpenChange={setIsDeleteAdminSuccessOpen}
+        title="관리자 계정이 삭제되었습니다."
+        description="해당 관리자 계정이 정상적으로 삭제되었습니다."
+        buttonLabel="확인"
+        onConfirm={() => setIsDeleteAdminSuccessOpen(false)}
+      />
 
       <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <SheetContent side="right" className="w-[420px] max-w-full pl-4 pr-6 py-6 flex flex-col gap-6">

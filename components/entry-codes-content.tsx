@@ -78,6 +78,49 @@ function getExamEntryCodesActionPriority(state: string): number {
   return 0
 }
 
+const EXPIRES_AT_PAST_ERROR_MESSAGE = "만료일은 현재 이후여야 합니다."
+const TITLE_REQUIRED_FALLBACK_MESSAGE = "시험 제목은 필수입니다."
+
+/** 종료/만료 시각이 현재 이후인지 확인 (datetime-local 입력값 기준) */
+function isFutureDateTime(value: string): boolean {
+  if (!value) return false
+  const date = new Date(value)
+  return !Number.isNaN(date.getTime()) && date > new Date()
+}
+
+/** createExam 400 응답이 만료일(종료 시각) 검증 실패인지 여부 */
+function isExpiresAtValidationApiError(error: LoginFailedError, endsAt: string): boolean {
+  if (error.status !== 400) return false
+  if (error.fieldErrors?.endsAt) return true
+  const message = error.message ?? ""
+  if (message.includes("만료일") || message.includes("현재 이후")) return true
+  // BE가 공통 400 메시지만 내려줄 때, 과거 종료 시각이면 만료일 검증 실패로 처리
+  return !isFutureDateTime(endsAt)
+}
+
+/** createExam 400 응답에서 공통 오류 영역에 표시할 메시지 (필드 우선순위: title > endsAt > startsAt > message) */
+function resolveCreateExamValidationMessage(
+  error: LoginFailedError,
+  endsAt: string,
+  title: string,
+): string | null {
+  if (error.status !== 400) return null
+
+  const fields = error.fieldErrors ?? {}
+
+  if (fields.title) return fields.title
+  if (!title.trim()) return TITLE_REQUIRED_FALLBACK_MESSAGE
+
+  if (fields.endsAt) return fields.endsAt
+  if (isExpiresAtValidationApiError(error, endsAt)) {
+    return EXPIRES_AT_PAST_ERROR_MESSAGE
+  }
+
+  if (fields.startsAt) return fields.startsAt
+
+  return error.message || null
+}
+
 /** 상태 우선 정렬 후, 같은 그룹 내에서는 시작/생성 시각 내림차순(기존 시각 기준) */
 function sortExamsForEntryCodes<T extends Exam>(exams: T[]): T[] {
   return [...exams].sort((a, b) => {
@@ -94,6 +137,7 @@ export function EntryCodesContent() {
   const [examTitle, setExamTitle] = useState("")
   const [examStartsAt, setExamStartsAt] = useState("")
   const [examEndsAt, setExamEndsAt] = useState("")
+  const [createExamValidationError, setCreateExamValidationError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 시험 조회 상태
@@ -212,18 +256,18 @@ export function EntryCodesContent() {
 
   // 시험 생성 핸들러
   const handleCreateExam = async () => {
-    // 입력값 검증
-    if (!examTitle.trim() || !examStartsAt || !examEndsAt) {
+    if (!examStartsAt || !examEndsAt) {
       toast({
         title: "입력 오류",
-        description: "제목, 시작 시각, 종료 시각을 모두 입력해주세요.",
+        description: "시작 시각과 종료 시각을 입력해주세요.",
         variant: "destructive",
       })
       return
     }
 
-    // 시작 시각이 종료 시각보다 이전인지 확인
-    if (new Date(examStartsAt) >= new Date(examEndsAt)) {
+    // 시작/종료 순서 검증은 종료 시각이 미래일 때만 FE에서 처리.
+    // 종료 시각이 과거(만료)인 경우는 BE 400 응답으로 처리한다.
+    if (isFutureDateTime(examEndsAt) && new Date(examStartsAt) >= new Date(examEndsAt)) {
       toast({
         title: "입력 오류",
         description: "종료 시각은 시작 시각보다 이후여야 합니다.",
@@ -247,6 +291,7 @@ export function EntryCodesContent() {
     }
 
     setIsSubmitting(true)
+    setCreateExamValidationError("")
     try {
       const createdExam = await createExam(payload)
       const responseEntryCode = pickEntryCode(createdExam)
@@ -284,6 +329,7 @@ export function EntryCodesContent() {
       setExamTitle("")
       setExamStartsAt("")
       setExamEndsAt("")
+      setCreateExamValidationError("")
 
       // 성공 토스트 표시
       toast({
@@ -293,11 +339,20 @@ export function EntryCodesContent() {
     } catch (error) {
       console.error("Failed to create exam", error)
       if (error instanceof LoginFailedError) {
-        toast({
-          title: "시험 생성 실패",
-          description: error.message,
-          variant: "destructive",
-        })
+        const validationMessage = resolveCreateExamValidationMessage(
+          error,
+          examEndsAt,
+          examTitle,
+        )
+        if (validationMessage) {
+          setCreateExamValidationError(validationMessage)
+        } else {
+          toast({
+            title: "시험 생성 실패",
+            description: error.message,
+            variant: "destructive",
+          })
+        }
       } else if (error instanceof NetworkError) {
         toast({
           title: "네트워크 오류",
@@ -877,7 +932,12 @@ export function EntryCodesContent() {
                 type="text"
                 placeholder="시험 제목을 입력하세요"
                 value={examTitle}
-                onChange={(e) => setExamTitle(e.target.value)}
+                onChange={(e) => {
+                  setExamTitle(e.target.value)
+                  if (createExamValidationError) {
+                    setCreateExamValidationError("")
+                  }
+                }}
                 disabled={isSubmitting}
                 className="col-span-3"
               />
@@ -890,7 +950,12 @@ export function EntryCodesContent() {
                 id="exam-starts-at"
                 type="datetime-local"
                 value={examStartsAt}
-                onChange={(e) => setExamStartsAt(e.target.value)}
+                onChange={(e) => {
+                  setExamStartsAt(e.target.value)
+                  if (createExamValidationError) {
+                    setCreateExamValidationError("")
+                  }
+                }}
                 disabled={isSubmitting}
                 className="col-span-3"
               />
@@ -903,10 +968,18 @@ export function EntryCodesContent() {
                 id="exam-ends-at"
                 type="datetime-local"
                 value={examEndsAt}
-                onChange={(e) => setExamEndsAt(e.target.value)}
+                onChange={(e) => {
+                  setExamEndsAt(e.target.value)
+                  if (createExamValidationError) {
+                    setCreateExamValidationError("")
+                  }
+                }}
                 disabled={isSubmitting}
                 className="col-span-3"
               />
+              {createExamValidationError && (
+                <p className="text-sm text-red-500">{createExamValidationError}</p>
+              )}
             </div>
           </div>
           <DialogFooter className="flex flex-row justify-end gap-4">
@@ -917,12 +990,17 @@ export function EntryCodesContent() {
                 setExamTitle("")
                 setExamStartsAt("")
                 setExamEndsAt("")
+                setCreateExamValidationError("")
               }}
               disabled={isSubmitting}
             >
               취소
             </Button>
-            <Button onClick={handleCreateExam} disabled={isSubmitting}>
+            <Button
+              type="button"
+              onClick={handleCreateExam}
+              disabled={isSubmitting || !examStartsAt || !examEndsAt}
+            >
               {isSubmitting ? "생성 중..." : "생성"}
             </Button>
           </DialogFooter>

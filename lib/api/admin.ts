@@ -4,13 +4,31 @@
 export class LoginFailedError extends Error {
   status?: number;
   code?: string;
+  fieldErrors?: Record<string, string>;
   
-  constructor(message: string = '아이디 또는 비밀번호가 일치하지 않습니다.', status?: number, code?: string) {
+  constructor(
+    message: string = '아이디 또는 비밀번호가 일치하지 않습니다.',
+    status?: number,
+    code?: string,
+    fieldErrors?: Record<string, string>,
+  ) {
     super(message);
     this.name = 'LoginFailedError';
     this.status = status;
     this.code = code;
+    this.fieldErrors = fieldErrors;
   }
+}
+
+function isValidationFieldErrorMap(result: unknown): result is Record<string, string> {
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    return false;
+  }
+  const values = Object.values(result as Record<string, unknown>);
+  if (values.length === 0) {
+    return false;
+  }
+  return values.every((value) => typeof value === 'string');
 }
 
 export class NetworkError extends Error {
@@ -44,21 +62,62 @@ export function handleAdminAuthError(status: number): void {
   }
 }
 
+let reissueInFlight: Promise<boolean> | null = null;
+
 /**
  * admin refresh token으로 access token을 재발급한다.
  * BE가 새 access_token / refresh_token 쿠키를 Set-Cookie로 내려준다.
  * 성공 여부(boolean)를 반환한다.
+ * 동시 401 발생 시 reissue 요청은 1회만 실행된다.
  */
 export async function reissueAdminToken(): Promise<boolean> {
-  try {
-    const response = await fetch(`${getApiBaseUrl()}/api/auth/admin/reissue`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    return response.ok;
-  } catch {
-    return false;
+  if (reissueInFlight) {
+    return reissueInFlight;
   }
+
+  const isDev = process.env.NODE_ENV === 'development';
+
+  reissueInFlight = (async () => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/auth/admin/reissue`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        if (isDev) {
+          console.log('[Admin Reissue] 재발급 성공');
+        }
+        return true;
+      }
+
+      let errorBody: { code?: string; message?: string } | null = null;
+      try {
+        errorBody = await response.json();
+      } catch {
+        // JSON 파싱 실패 시 status만 로깅
+      }
+
+      if (isDev) {
+        console.warn('[Admin Reissue] 재발급 실패:', {
+          status: response.status,
+          code: errorBody?.code,
+          message: errorBody?.message,
+        });
+      }
+
+      return false;
+    } catch (error) {
+      if (isDev) {
+        console.warn('[Admin Reissue] 네트워크 오류:', error);
+      }
+      return false;
+    } finally {
+      reissueInFlight = null;
+    }
+  })();
+
+  return reissueInFlight;
 }
 
 /**
@@ -372,7 +431,7 @@ export async function getProblems(): Promise<AdminProblem[]> {
   const url = `${apiBaseUrl}/api/admin/problems`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -406,7 +465,7 @@ export async function getProblemSpecs(problemId: number): Promise<ProblemSpecRes
   const url = `${apiBaseUrl}/api/admin/problems/${problemId}/specs`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -440,7 +499,7 @@ export async function getProblemDetail(problemId: number): Promise<AdminProblemD
   const url = `${apiBaseUrl}/api/admin/problems/${problemId}/detail`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -479,7 +538,7 @@ export async function getAllAdmins(): Promise<AdminListResponse> {
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -585,7 +644,7 @@ export async function updateAdminNumber(
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
@@ -692,7 +751,7 @@ export async function resetAdminPasswordByMaster(
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -760,7 +819,7 @@ export async function issueAdminNumber(request: AdminNumberIssueRequest): Promis
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
@@ -1004,7 +1063,7 @@ export async function getMe(): Promise<MeResponse> {
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -1101,7 +1160,7 @@ export async function changeAdminPassword(request: ChangeAdminPasswordRequest): 
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
@@ -1182,6 +1241,64 @@ export async function changeAdminPassword(request: ChangeAdminPasswordRequest): 
       console.warn('[Change Admin Password] 예상치 못한 오류:', error);
     }
     throw new NetworkError('비밀번호 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+/**
+ * MASTER가 관리자 계정 삭제 API 호출 (soft delete)
+ */
+export async function deleteAdminByMaster(adminNumber: string): Promise<void> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/admin-numbers/${encodeURIComponent(adminNumber)}`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Delete Admin By Master] API 호출:', url);
+  }
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ message: '관리자 삭제에 실패했습니다.' } as BaseResponse<null>));
+    throw new LoginFailedError(data.message || '관리자 삭제에 실패했습니다.', response.status, data.code);
+  }
+
+  const data: BaseResponse<null> = await response.json();
+  if (data.code !== 'COMMON200') {
+    throw new LoginFailedError(data.message || '관리자 삭제에 실패했습니다.');
+  }
+}
+
+/**
+ * 로그인한 관리자 본인 계정 삭제 API 호출 (soft delete, 쿠키 삭제는 BE 응답)
+ */
+export async function deleteOwnAdminAccount(): Promise<void> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/account`;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log('[Delete Own Admin Account] API 호출:', url);
+  }
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ message: '계정 삭제에 실패했습니다.' } as BaseResponse<null>));
+    throw new LoginFailedError(data.message || '계정 삭제에 실패했습니다.', response.status, data.code);
+  }
+
+  const data: BaseResponse<null> = await response.json();
+  if (data.code !== 'COMMON200') {
+    throw new LoginFailedError(data.message || '계정 삭제에 실패했습니다.');
   }
 }
 
@@ -1273,7 +1390,7 @@ export async function createExam(request: CreateExamRequest): Promise<Exam> {
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
@@ -1312,15 +1429,21 @@ export async function createExam(request: CreateExamRequest): Promise<Exam> {
         errorMessage = data.message || '입력한 정보가 올바르지 않습니다.';
       }
 
+      const fieldErrors =
+        response.status === 400 && isValidationFieldErrorMap(data.result)
+          ? data.result
+          : undefined;
+
       if (isDev) {
         console.warn('[Create Exam] 생성 실패:', {
           status: response.status,
           code: data.code,
           message: errorMessage,
+          fieldErrors,
         });
       }
 
-      throw new LoginFailedError(errorMessage, response.status, data.code);
+      throw new LoginFailedError(errorMessage, response.status, data.code, fieldErrors);
     }
 
     if (isDev) {
@@ -1374,7 +1497,7 @@ export async function getExams(): Promise<Exam[]> {
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -1473,7 +1596,7 @@ export async function createEntryCode(request: CreateEntryCodeRequest): Promise<
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
@@ -1876,7 +1999,7 @@ export async function getEntryCodes(examId: number, isActive?: boolean): Promise
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchAdminWithRetry(url, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -2048,7 +2171,7 @@ export async function extendExam(examId: number, minutes: number): Promise<void>
   const apiBaseUrl = getApiBaseUrl();
   const url = `${apiBaseUrl}/api/admin/exams/${examId}/extend`;
 
-  const response = await fetch(url, {
+  const response = await fetchAdminWithRetry(url, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ minutes }),
@@ -2071,7 +2194,7 @@ export async function updateEntryCode(code: string, isActive: boolean): Promise<
   const apiBaseUrl = getApiBaseUrl();
   const url = `${apiBaseUrl}/api/admin/entry-codes/${encodeURIComponent(code)}`;
 
-  const response = await fetch(url, {
+  const response = await fetchAdminWithRetry(url, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify({ isActive }),
@@ -2093,7 +2216,7 @@ export async function deleteEntryCode(code: string): Promise<void> {
   const apiBaseUrl = getApiBaseUrl();
   const url = `${apiBaseUrl}/api/admin/entry-codes/${encodeURIComponent(code)}`;
 
-  const response = await fetch(url, {
+  const response = await fetchAdminWithRetry(url, {
     method: 'DELETE',
     headers: getAuthHeaders(),
     credentials: 'include',
@@ -2136,7 +2259,7 @@ export async function getMetrics(examId: number): Promise<AdminMetrics> {
   const apiBaseUrl = getApiBaseUrl();
   const url = `${apiBaseUrl}/api/admin/metrics?examId=${examId}`;
 
-  const response = await fetch(url, {
+  const response = await fetchAdminWithRetry(url, {
     method: 'GET',
     headers: getAuthHeaders(),
     credentials: 'include',
@@ -2157,7 +2280,7 @@ export async function getBoard(examId: number): Promise<ExamineeBoardEntry[]> {
   const apiBaseUrl = getApiBaseUrl();
   const url = `${apiBaseUrl}/api/admin/board?examId=${examId}`;
 
-  const response = await fetch(url, {
+  const response = await fetchAdminWithRetry(url, {
     method: 'GET',
     headers: getAuthHeaders(),
     credentials: 'include',
