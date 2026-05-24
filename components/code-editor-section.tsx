@@ -2,9 +2,13 @@
 
 import type React from "react"
 
-import { useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react"
+import { useState, useRef, useCallback, useImperativeHandle, forwardRef, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { submitCode, SubmissionStatus } from "@/lib/api/submissions"
+import { saveCodeDraft, getCodeDraft, submitCode, SubmissionStatus } from "@/lib/api/submissions"
+
+const DRAFT_SAVE_DEBOUNCE_MS = 3000
+
+const SUPPORTED_LANGUAGES = ["python", "java", "cpp", "javascript"] as const
 
 const defaultCodeTemplates: Record<string, string> = {
   python: `# 언어를 선택하시고
@@ -43,6 +47,25 @@ function compressString(s) {
     return "";
 }
 `,
+}
+
+function createDefaultLanguageCodes(): Record<string, string> {
+  return {
+    python: defaultCodeTemplates.python,
+    java: defaultCodeTemplates.java,
+    cpp: defaultCodeTemplates.cpp,
+    javascript: defaultCodeTemplates.javascript,
+  }
+}
+
+/** BE draft language → Select value */
+function normalizeDraftLanguage(raw: string | null | undefined): string {
+  const value = (raw ?? "python").trim().toLowerCase()
+  if (value.startsWith("python")) return "python"
+  if (value.startsWith("java")) return "java"
+  if (value === "cpp" || value === "c++" || value.startsWith("cpp")) return "cpp"
+  if (value === "javascript" || value === "js" || value.startsWith("javascript")) return "javascript"
+  return "python"
 }
 
 // 제출 상태 레이블 매핑
@@ -92,14 +115,16 @@ export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorS
   ref
 ) {
   const [language, setLanguage] = useState("python")
-  const [languageCodes, setLanguageCodes] = useState<Record<string, string>>({
-    python: defaultCodeTemplates.python,
-    java: defaultCodeTemplates.java,
-    cpp: defaultCodeTemplates.cpp,
-    javascript: defaultCodeTemplates.javascript,
-  })
-  const [code, setCode] = useState(defaultCodeTemplates.python)
+  const [languageCodes, setLanguageCodes] = useState<Record<string, string>>({})
+  const [code, setCode] = useState("")
   const [cursorPosition, setCursorPosition] = useState({ line: 1, col: 1 })
+
+  const applyDefaultTemplate = useCallback(() => {
+    const defaults = createDefaultLanguageCodes()
+    setLanguage("python")
+    setLanguageCodes(defaults)
+    setCode(defaults.python)
+  }, [])
 
   // 제출 상태
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -107,11 +132,65 @@ export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorS
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const lineNumberRef = useRef<HTMLDivElement | null>(null);
+  const [draftHydrated, setDraftHydrated] = useState(false);
+
+  // 시험 화면 진입 시 서버 draft 1회 로드 (Strict Mode remount 대응 — ref로 skip하지 않음)
+  useEffect(() => {
+    if (!examId) {
+      applyDefaultTemplate()
+      setDraftHydrated(true)
+      return
+    }
+
+    if (isReadOnly) {
+      applyDefaultTemplate()
+      setDraftHydrated(true)
+      return
+    }
+
+    let cancelled = false
+    setDraftHydrated(false)
+
+    getCodeDraft(examId)
+      .then((draft) => {
+        if (cancelled) return
+
+        const restored = draft?.codeInline?.trim()
+        if (restored) {
+          const lang = normalizeDraftLanguage(draft?.language)
+          const safeLang = SUPPORTED_LANGUAGES.includes(lang as (typeof SUPPORTED_LANGUAGES)[number])
+            ? lang
+            : "python"
+          setLanguage(safeLang)
+          setCode(restored)
+          setLanguageCodes({
+            ...createDefaultLanguageCodes(),
+            [safeLang]: restored,
+          })
+          return
+        }
+
+        applyDefaultTemplate()
+      })
+      .catch(() => {
+        if (!cancelled) applyDefaultTemplate()
+      })
+      .finally(() => {
+        if (!cancelled) setDraftHydrated(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [examId, isReadOnly, applyDefaultTemplate])
 
   const handleLanguageChange = (newLanguage: string) => {
     setLanguageCodes((prev) => {
       const updated = { ...prev, [language]: code }
-      const newCode = updated[newLanguage] || defaultCodeTemplates[newLanguage] || defaultCodeTemplates.python
+      const newCode =
+        updated[newLanguage] ||
+        defaultCodeTemplates[newLanguage] ||
+        defaultCodeTemplates.python
       setCode(newCode)
       return updated
     })
@@ -173,6 +252,19 @@ export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorS
     }),
     [handleSubmit]
   )
+
+  // 자동 제출용 코드 스냅샷 (debounce) — draft 로드 완료 후에만 저장
+  useEffect(() => {
+    if (!examId || isReadOnly || !draftHydrated || !code.trim()) return
+
+    const timer = window.setTimeout(() => {
+      saveCodeDraft(examId, { lang: language, code }).catch(() => {
+        // 초안 저장 실패는 시험 UX를 막지 않음
+      })
+    }, DRAFT_SAVE_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timer)
+  }, [examId, isReadOnly, draftHydrated, language, code])
 
   const MIN_LINES = 15;
   const actualLineCount = code.split("\n").length || 1;
@@ -242,14 +334,16 @@ export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorS
 
         {/* Code Area */}
         <textarea
+          key={examId != null ? `code-editor-${examId}` : "code-editor"}
           value={code}
           onChange={handleTextChange}
           onClick={(e) => updateCursorPosition(e.currentTarget)}
           onKeyUp={(e) => updateCursorPosition(e.currentTarget)}
           onScroll={handleEditorScroll}
           rows={15}
-          readOnly={isReadOnly}
-          disabled={isReadOnly}
+          readOnly={isReadOnly || (!draftHydrated && !!examId)}
+          disabled={isReadOnly || (!draftHydrated && !!examId)}
+          placeholder={!draftHydrated && examId ? "저장된 코드를 불러오는 중…" : undefined}
           className={`flex-1 p-4 font-mono text-sm text-[#1F2937] bg-white resize-none focus:outline-none leading-6 ${
             isReadOnly ? "cursor-not-allowed opacity-75" : ""
           }`}

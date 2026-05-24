@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { createExam, getExams, deleteExam, getEntryCodes, startExam, endExam, extendExam, Exam, LoginFailedError, NetworkError } from "@/lib/api/admin"
+import { getEffectiveExamState, isAdminExamEnded } from "@/lib/admin-users-participant-status"
 import { getExamSortTimestamp } from "@/lib/master-test-sessions"
 import { useToast } from "@/hooks/use-toast"
 
@@ -81,7 +82,9 @@ function getExamEntryCodesActionPriority(state: string): number {
 /** 상태 우선 정렬 후, 같은 그룹 내에서는 시작/생성 시각 내림차순(기존 시각 기준) */
 function sortExamsForEntryCodes<T extends Exam>(exams: T[]): T[] {
   return [...exams].sort((a, b) => {
-    const byAction = getExamEntryCodesActionPriority(a.state) - getExamEntryCodesActionPriority(b.state)
+    const byAction =
+      getExamEntryCodesActionPriority(getEffectiveExamState(a)) -
+      getExamEntryCodesActionPriority(getEffectiveExamState(b))
     if (byAction !== 0) return byAction
     return getExamSortTimestamp(b) - getExamSortTimestamp(a)
   })
@@ -561,8 +564,12 @@ export function EntryCodesContent() {
         {exams && exams.length > 0 && (
           <div className="mb-6 flex-1 space-y-4">
             {visibleExams.map((exam) => {
-              const isInProgress = exam.state === "RUNNING" || exam.state === "IN_PROGRESS"
-              const examStateLabel = getExamStateLabel(exam.state)
+              const effectiveState = getEffectiveExamState(exam)
+              const examEnded = isAdminExamEnded(exam)
+              const isInProgress =
+                !examEnded &&
+                (effectiveState === "RUNNING" || effectiveState === "IN_PROGRESS")
+              const examStateLabel = examEnded ? "종료" : getExamStateLabel(effectiveState)
               return (
                 <div
                   key={exam.id}
@@ -634,7 +641,7 @@ export function EntryCodesContent() {
 
                   {/* Right side: 시험 시작/종료 버튼, More menu */}
                   <div className="flex items-center gap-3">
-                    {exam.state === "ENDED" || exam.state === "COMPLETED" ? (
+                    {examEnded ? (
                       <span className="text-sm text-[#9CA3AF]">종료됨</span>
                     ) : isInProgress ? (
                       <button
@@ -660,7 +667,7 @@ export function EntryCodesContent() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-36">
-                        {(exam.state === "RUNNING" || exam.state === "IN_PROGRESS") && (
+                        {isInProgress && (
                           <DropdownMenuItem onClick={() => handleExtendExam(exam)}>
                             시간 연장
                           </DropdownMenuItem>

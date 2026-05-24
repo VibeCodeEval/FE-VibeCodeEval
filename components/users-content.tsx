@@ -47,9 +47,9 @@ function mapBoardEntry(entry: ExamineeBoardEntry, exam: Exam): Participant {
 
 function ConnectionBadge({ status }: { status: AdminUsersConnectionStatus }) {
   const styles: Record<AdminUsersConnectionStatus, string> = {
-    "응시 완료": "border-[#16A34A] bg-[#DCFCE7] text-[#16A34A]",
-    "응시 중": "border-[#3B82F6] bg-white text-[#3B82F6]",
-    "대기 중": "border-[#6B7280] bg-white text-[#6B7280]",
+    "응시완료": "border-[#16A34A] bg-[#DCFCE7] text-[#16A34A]",
+    "응시중": "border-[#3B82F6] bg-white text-[#3B82F6]",
+    "대기중": "border-[#6B7280] bg-white text-[#6B7280]",
     "종료됨": "border-[#9CA3AF] bg-[#F3F4F6] text-[#6B7280]",
   }
   return (
@@ -61,13 +61,9 @@ function ConnectionBadge({ status }: { status: AdminUsersConnectionStatus }) {
 
 function SubmissionBadge({ status }: { status: AdminUsersSubmissionStatus }) {
   const styles: Record<AdminUsersSubmissionStatus, string> = {
-    "시작 전": "bg-[#F3F4F6] text-[#6B7280]",
-    "진행 중": "bg-[#E0EDFF] text-[#3B82F6]",
-    "채점 중": "bg-[#FEF3C7] text-[#D97706]",
-    "제출 완료": "bg-[#DCFCE7] text-[#16A34A]",
-    "채점 완료": "bg-[#DCFCE7] text-[#16A34A]",
     "미제출": "bg-[#F3F4F6] text-[#6B7280]",
-    "제출 실패": "bg-[#FEE2E2] text-[#DC2626]",
+    "채점중": "bg-[#FEF3C7] text-[#D97706]",
+    "채점완료": "bg-[#DCFCE7] text-[#16A34A]",
   }
 
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>{status}</span>

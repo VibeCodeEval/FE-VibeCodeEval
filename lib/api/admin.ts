@@ -1262,6 +1262,8 @@ export interface Exam {
   id: number;
   title: string;
   state: string; // "WAITING" | "IN_PROGRESS" | "ENDED" 등
+  /** endsAt 경과 등 화면 표시용 (서버 state와 다를 수 있음) */
+  displayState?: string | null;
   startsAt: string; // ISO 8601 형식
   endsAt: string;   // ISO 8601 형식
   version: number;
@@ -2022,6 +2024,10 @@ export interface ExamineeBoardEntry {
   submittedAt?: string | null;
   /** 점수 행 기준 갱신 시각 (ISO 문자열) */
   evaluatedAt?: string | null;
+  /** BE 계산 응시상태: WAITING | IN_EXAM | SUBMITTED | ENDED */
+  attendanceStatus?: string | null;
+  /** BE 계산 제출상태: NOT_SUBMITTED | GRADING | GRADED */
+  submissionDisplayStatus?: string | null;
 }
 
 /**

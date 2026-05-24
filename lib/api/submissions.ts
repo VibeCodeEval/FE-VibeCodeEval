@@ -32,6 +32,12 @@ export interface SubmitResponse {
   status: SubmissionStatus;
 }
 
+export interface CodeDraftResponse {
+  language: string;
+  codeInline: string;
+  savedAt?: string | null;
+}
+
 export interface SubmissionDetailResponse {
   id: number;
   status: SubmissionStatus;
@@ -65,6 +71,52 @@ export interface SubmissionDetailResponse {
  * POST /api/exams/{examId}/submissions
  * HTTP 202 Accepted 반환 (비동기 채점)
  */
+/**
+ * 코드 초안 조회
+ * GET /api/exams/{examId}/code-draft
+ * draft 없음 또는 이미 제출된 경우 result=null
+ */
+export async function getCodeDraft(examId: number): Promise<CodeDraftResponse | null> {
+  const response = await userApiFetch(`/api/exams/${examId}/code-draft`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: USER_JSON_HEADERS,
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data: BaseResponse<CodeDraftResponse> = await response.json().catch(() => ({
+    timestamp: '',
+    code: '',
+    message: '',
+    result: null,
+  }));
+
+  return data.result ?? null;
+}
+
+/**
+ * 코드 초안 저장 (자동 제출용 스냅샷)
+ * PUT /api/exams/{examId}/code-draft
+ */
+export async function saveCodeDraft(examId: number, request: SubmitRequest): Promise<void> {
+  const response = await userApiFetch(`/api/exams/${examId}/code-draft`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: USER_JSON_HEADERS,
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok && response.status !== 204) {
+    const data = await response.json().catch(() => ({}));
+    const err: any = new Error((data as any).message || '코드 저장에 실패했습니다.');
+    err.status = response.status;
+    throw err;
+  }
+}
+
 export async function submitCode(examId: number, request: SubmitRequest): Promise<SubmitResponse> {
   const response = await userApiFetch(`/api/exams/${examId}/submissions`, {
     method: 'POST',
