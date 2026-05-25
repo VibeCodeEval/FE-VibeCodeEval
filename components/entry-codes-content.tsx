@@ -84,7 +84,26 @@ const TITLE_REQUIRED_FALLBACK_MESSAGE = "시험 제목은 필수입니다."
 /** 종료/만료 시각이 현재 이후인지 확인 (datetime-local 입력값 기준) */
 function isFutureDateTime(value: string): boolean {
   if (!value) return false
-  const date = new Date(value)
+  const [datePart, timePart] = value.split("T")
+  if (!datePart || !timePart) return false
+
+  const [year, month, day] = datePart.split("-").map(Number)
+  const [hour, minute] = timePart.split(":").map(Number)
+  if ([year, month, day, hour, minute].some((part) => !Number.isFinite(part))) {
+    return false
+  }
+
+  const date = new Date(year, month - 1, day, hour, minute)
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day ||
+    date.getHours() !== hour ||
+    date.getMinutes() !== minute
+  ) {
+    return false
+  }
+
   return !Number.isNaN(date.getTime()) && date > new Date()
 }
 

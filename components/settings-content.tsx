@@ -55,6 +55,7 @@ export function SettingsContent() {
     adminNumber: adminProfile.adminNumber,
     role: adminProfile.role,
   })
+  const canDeleteOwnAccount = !isLoading && !isMasterAccount
 
   const router = useRouter();
   const { toast } = useToast()
@@ -127,6 +128,9 @@ export function SettingsContent() {
   }
 
   const handleDeleteAccount = async () => {
+    if (isLoading) {
+      return
+    }
     if (isMasterAccount) {
       setDeleteAccountError("마스터 관리자 계정은 삭제할 수 없습니다.")
       return
@@ -338,9 +342,9 @@ export function SettingsContent() {
               </div>
               <Button
                 className="bg-[#DC2626] hover:bg-[#B91C1C] text-white disabled:opacity-50"
-                disabled={isMasterAccount}
+                disabled={!canDeleteOwnAccount}
                 onClick={() => {
-                  if (isMasterAccount) return
+                  if (!canDeleteOwnAccount) return
                   setDeleteAccountError("")
                   setShowDeleteModal(true)
                 }}
@@ -411,7 +415,7 @@ export function SettingsContent() {
             </Button>
             <Button
               onClick={handleDeleteAccount}
-              disabled={isDeletingAccount}
+              disabled={isDeletingAccount || !canDeleteOwnAccount}
               className="bg-[#DC2626] hover:bg-[#B91C1C] text-white disabled:opacity-50"
             >
               {isDeletingAccount ? "삭제 중..." : "계정 삭제"}

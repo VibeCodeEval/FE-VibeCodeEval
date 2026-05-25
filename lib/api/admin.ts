@@ -1262,12 +1262,29 @@ export async function deleteAdminByMaster(adminNumber: string): Promise<void> {
     credentials: 'include',
   });
 
+  const contentType = response.headers.get('content-type') ?? '';
+  const contentLength = response.headers.get('content-length');
+  const hasJsonBody =
+    response.status !== 204 &&
+    contentLength !== '0' &&
+    contentType.toLowerCase().includes('application/json');
+
   if (!response.ok) {
-    const data = await response.json().catch(() => ({ message: '관리자 삭제에 실패했습니다.' } as BaseResponse<null>));
+    const data = hasJsonBody
+      ? await response.json().catch(() => ({ message: '관리자 삭제에 실패했습니다.' } as BaseResponse<null>))
+      : ({ message: '관리자 삭제에 실패했습니다.' } as BaseResponse<null>);
     throw new LoginFailedError(data.message || '관리자 삭제에 실패했습니다.', response.status, data.code);
   }
 
-  const data: BaseResponse<null> = await response.json();
+  if (!hasJsonBody) {
+    return;
+  }
+
+  const data: BaseResponse<null> | null = await response.json().catch(() => null);
+  if (!data) {
+    return;
+  }
+
   if (data.code !== 'COMMON200') {
     throw new LoginFailedError(data.message || '관리자 삭제에 실패했습니다.');
   }
@@ -1291,12 +1308,29 @@ export async function deleteOwnAdminAccount(): Promise<void> {
     credentials: 'include',
   });
 
+  const contentType = response.headers.get('content-type') ?? '';
+  const contentLength = response.headers.get('content-length');
+  const hasJsonBody =
+    response.status !== 204 &&
+    contentLength !== '0' &&
+    contentType.toLowerCase().includes('application/json');
+
   if (!response.ok) {
-    const data = await response.json().catch(() => ({ message: '계정 삭제에 실패했습니다.' } as BaseResponse<null>));
+    const data = hasJsonBody
+      ? await response.json().catch(() => ({ message: '계정 삭제에 실패했습니다.' } as BaseResponse<null>))
+      : ({ message: '계정 삭제에 실패했습니다.' } as BaseResponse<null>);
     throw new LoginFailedError(data.message || '계정 삭제에 실패했습니다.', response.status, data.code);
   }
 
-  const data: BaseResponse<null> = await response.json();
+  if (!hasJsonBody) {
+    return;
+  }
+
+  const data: BaseResponse<null> | null = await response.json().catch(() => null);
+  if (!data) {
+    return;
+  }
+
   if (data.code !== 'COMMON200') {
     throw new LoginFailedError(data.message || '계정 삭제에 실패했습니다.');
   }
