@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { User, LogOut, AlertTriangle, CheckCircle } from "lucide-react"
+import { AccountDeleteSuccessDialog } from "@/components/account-delete-success-dialog"
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -18,19 +19,21 @@ import {
   logoutAdmin,
   getMe,
   changeAdminPassword,
+  deleteOwnAdminAccount,
   LoginFailedError,
   NetworkError,
   resolveAdminDisplayNameFromMe,
   resolveAdminNumberFromMe,
 } from "@/lib/api/admin"
+import { isMasterAdmin } from "@/lib/auth/utils"
 import { useToast } from "@/hooks/use-toast"
-import { Lock } from "lucide-react"
 
 export function SettingsContent() {
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showDeletedSuccessModal, setShowDeletedSuccessModal] = useState(false)
   const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false)
+  const [showPasswordChangeSuccessModal, setShowPasswordChangeSuccessModal] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
@@ -40,11 +43,19 @@ export function SettingsContent() {
     confirmPassword: "",
   })
   const [passwordError, setPasswordError] = useState("")
+  const [deleteAccountError, setDeleteAccountError] = useState("")
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [adminProfile, setAdminProfile] = useState({
-    name: "", // 더미 데이터
-    email: "", // participant.phone에서 가져옴
-    adminNumber: "", // participant.name에서 가져옴
+    name: "",
+    email: "",
+    adminNumber: "",
+    role: "",
   })
+  const isMasterAccount = isMasterAdmin({
+    adminNumber: adminProfile.adminNumber,
+    role: adminProfile.role,
+  })
+  const canDeleteOwnAccount = !isLoading && !isMasterAccount
 
   const router = useRouter();
   const { toast } = useToast()
@@ -59,6 +70,7 @@ export function SettingsContent() {
           name: resolveAdminDisplayNameFromMe(response),
           email: response.participant.phone || "",
           adminNumber: resolveAdminNumberFromMe(response),
+          role: response.role || "",
         });
       } catch (error) {
         if (error instanceof LoginFailedError) {
@@ -115,9 +127,32 @@ export function SettingsContent() {
     }
   }
 
-  const handleDeleteAccount = () => {
-    setShowDeleteModal(false)
-    setShowDeletedSuccessModal(true)
+  const handleDeleteAccount = async () => {
+    if (isLoading) {
+      return
+    }
+    if (isMasterAccount) {
+      setDeleteAccountError("마스터 관리자 계정은 삭제할 수 없습니다.")
+      return
+    }
+
+    setDeleteAccountError("")
+    setIsDeletingAccount(true)
+    try {
+      await deleteOwnAdminAccount()
+      setShowDeleteModal(false)
+      setShowDeletedSuccessModal(true)
+    } catch (error) {
+      if (error instanceof LoginFailedError) {
+        setDeleteAccountError(error.message)
+      } else if (error instanceof NetworkError) {
+        setDeleteAccountError(error.message)
+      } else {
+        setDeleteAccountError("계정 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+      }
+    } finally {
+      setIsDeletingAccount(false)
+    }
   }
 
   const handleGoToLogin = () => {
@@ -125,14 +160,18 @@ export function SettingsContent() {
     window.location.href = "/"
   }
 
-  const handlePasswordChangeClick = () => {
-    setShowPasswordChangeModal(true)
+  const resetPasswordForm = () => {
     setPasswordForm({
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     })
     setPasswordError("")
+  }
+
+  const handlePasswordChangeClick = () => {
+    setShowPasswordChangeModal(true)
+    resetPasswordForm()
   }
 
   const handlePasswordFormChange = (field: "currentPassword" | "newPassword" | "confirmPassword", value: string) => {
@@ -172,18 +211,9 @@ export function SettingsContent() {
         newPassword: passwordForm.newPassword.trim(),
       })
 
-      toast({
-        title: "비밀번호 변경 성공",
-        description: "비밀번호가 성공적으로 변경되었습니다.",
-      })
-
       setShowPasswordChangeModal(false)
-      setPasswordForm({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      })
-      setPasswordError("")
+      resetPasswordForm()
+      setShowPasswordChangeSuccessModal(true)
     } catch (error) {
       if (error instanceof LoginFailedError) {
         setPasswordError(error.message)
@@ -305,10 +335,20 @@ export function SettingsContent() {
               <div>
                 <h2 className="text-lg font-semibold text-[#111111]">계정 삭제</h2>
                 <p className="text-sm text-[#6B7280] mt-1">
-                  관리자 계정을 삭제하면 대시보드 접근 권한이 영구적으로 제거됩니다.
+                  {isMasterAccount
+                    ? "마스터 관리자 계정은 삭제할 수 없습니다."
+                    : "관리자 계정을 삭제하면 대시보드 접근 권한이 영구적으로 제거됩니다."}
                 </p>
               </div>
-              <Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white" onClick={() => setShowDeleteModal(true)}>
+              <Button
+                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white disabled:opacity-50"
+                disabled={!canDeleteOwnAccount}
+                onClick={() => {
+                  if (!canDeleteOwnAccount) return
+                  setDeleteAccountError("")
+                  setShowDeleteModal(true)
+                }}
+              >
                 계정 삭제
               </Button>
             </div>
@@ -357,41 +397,41 @@ export function SettingsContent() {
             <DialogDescription className="text-[#6B7280] mt-4">
               이 작업은 되돌릴 수 없습니다. 관리자 계정을 삭제하면 대시보드 접근 권한이 모두 제거됩니다.
             </DialogDescription>
+            {deleteAccountError && (
+              <p className="text-sm text-red-500 mt-2">{deleteAccountError}</p>
+            )}
           </DialogHeader>
           <DialogFooter className="flex flex-row justify-end gap-4 mt-4">
             <Button
               variant="outline"
-              onClick={() => setShowDeleteModal(false)}
+              onClick={() => {
+                setDeleteAccountError("")
+                setShowDeleteModal(false)
+              }}
               className="border-[#E5E5E5] text-[#374151]"
+              disabled={isDeletingAccount}
             >
               취소
             </Button>
-            <Button onClick={handleDeleteAccount} className="bg-[#DC2626] hover:bg-[#B91C1C] text-white">
-              계정 삭제
+            <Button
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount || !canDeleteOwnAccount}
+              className="bg-[#DC2626] hover:bg-[#B91C1C] text-white disabled:opacity-50"
+            >
+              {isDeletingAccount ? "삭제 중..." : "계정 삭제"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Modal #3: Account Deleted Success */}
-      <Dialog open={showDeletedSuccessModal} onOpenChange={setShowDeletedSuccessModal}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-full bg-[#D1FAE5] flex items-center justify-center mb-4">
-              <CheckCircle className="w-8 h-8 text-[#10B981]" />
-            </div>
-            <DialogTitle className="text-lg font-semibold">계정이 삭제되었습니다.</DialogTitle>
-            <DialogDescription className="text-[#6B7280] mt-2">
-              계정이 정상적으로 삭제되었습니다. 더 이상 관리자 대시보드에 접근할 수 없습니다.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex justify-center mt-4">
-            <Button onClick={handleGoToLogin} className="bg-[#3B82F6] hover:bg-[#2563EB] text-white">
-              로그인 페이지로 이동
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AccountDeleteSuccessDialog
+        open={showDeletedSuccessModal}
+        onOpenChange={setShowDeletedSuccessModal}
+        title="계정이 삭제되었습니다."
+        description="계정이 정상적으로 삭제되었습니다. 더 이상 관리자 대시보드에 접근할 수 없습니다."
+        buttonLabel="로그인 페이지로 이동"
+        onConfirm={handleGoToLogin}
+      />
 
       {/* Modal #4: Change Password */}
       <Dialog open={showPasswordChangeModal} onOpenChange={setShowPasswordChangeModal}>
@@ -453,12 +493,7 @@ export function SettingsContent() {
               variant="outline"
               onClick={() => {
                 setShowPasswordChangeModal(false)
-                setPasswordForm({
-                  currentPassword: "",
-                  newPassword: "",
-                  confirmPassword: "",
-                })
-                setPasswordError("")
+                resetPasswordForm()
               }}
               disabled={isChangingPassword}
               className="border-[#E5E5E5] text-[#374151]"
@@ -471,6 +506,29 @@ export function SettingsContent() {
               className="bg-[#3B82F6] hover:bg-[#2563EB] text-white disabled:opacity-50"
             >
               {isChangingPassword ? "변경 중..." : "비밀번호 변경"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal #5: Password Change Success */}
+      <Dialog open={showPasswordChangeSuccessModal} onOpenChange={setShowPasswordChangeSuccessModal}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-[#D1FAE5] flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-[#10B981]" />
+            </div>
+            <DialogTitle className="text-lg font-semibold">비밀번호 변경 완료</DialogTitle>
+            <DialogDescription className="text-[#6B7280] mt-2">
+              비밀번호가 성공적으로 변경되었습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex w-full justify-center sm:justify-center">
+            <Button
+              onClick={() => setShowPasswordChangeSuccessModal(false)}
+              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+            >
+              확인
             </Button>
           </DialogFooter>
         </DialogContent>
