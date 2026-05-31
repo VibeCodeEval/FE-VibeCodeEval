@@ -9,10 +9,12 @@ import Link from "next/link";
 import {
   getBoard,
   getExams,
+  getMasterActivityLogs,
   getSystemStatus,
   issueAdminNumber,
   LoginFailedError,
   NetworkError,
+  type MasterActivityLogEntry,
 } from "@/lib/api/admin"
 import {
   countActiveExamSessions,
@@ -38,12 +40,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AdminPageHeader } from "@/components/admin-page-header"
-
-const recentLogs = [
-  { id: 1, timestamp: "오전 10:33", type: "관리자", description: "관리자 'john.smith'가 플랫폼 설정을 업데이트했습니다" },
-  { id: 2, timestamp: "오전 09:15", type: "시스템", description: "예정된 유지보수가 성공적으로 완료되었습니다" },
-  { id: 3, timestamp: "오전 08:45", type: "오류", description: "평가 서비스 연결 실패 (재시도됨)" },
-]
+import {
+  formatMasterActivityLogDateTime,
+  getMasterActivityLogColors,
+  getMasterActivityLogStatusLabel,
+} from "@/lib/master-activity-logs"
 
 type DashboardContentProps = {
   onNavigate?: (page: string) => void
@@ -65,6 +66,9 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
   const [recentSessions, setRecentSessions] = useState<MasterRecentSession[]>([])
   const [recentSessionsLoading, setRecentSessionsLoading] = useState(true)
   const [recentSessionsError, setRecentSessionsError] = useState(false)
+  const [recentLogs, setRecentLogs] = useState<MasterActivityLogEntry[]>([])
+  const [recentLogsLoading, setRecentLogsLoading] = useState(true)
+  const [recentLogsError, setRecentLogsError] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -127,6 +131,36 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
     }
 
     loadKpi()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadRecentLogs() {
+      setRecentLogsLoading(true)
+      setRecentLogsError(false)
+      try {
+        const result = await getMasterActivityLogs({ page: 0, size: 5 })
+        if (!cancelled) {
+          setRecentLogs(result.content)
+        }
+      } catch (e) {
+        console.error("[MasterDashboard] Failed to load recent logs", e)
+        if (!cancelled) {
+          setRecentLogs([])
+          setRecentLogsError(true)
+        }
+      } finally {
+        if (!cancelled) {
+          setRecentLogsLoading(false)
+        }
+      }
+    }
+
+    void loadRecentLogs()
     return () => {
       cancelled = true
     }
@@ -366,7 +400,21 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           </CardHeader>
           <CardContent className="pt-0 flex flex-col flex-1">
             <div className="flex flex-col gap-3 flex-1 mb-5">
-              {recentLogs.map((log) => (
+              {recentLogsLoading && (
+                <p style={{ fontSize: "13px", color: "#9CA3AF" }}>로그를 불러오는 중...</p>
+              )}
+              {!recentLogsLoading && recentLogsError && (
+                <p style={{ fontSize: "13px", color: "#9CA3AF" }}>최근 로그를 불러오지 못했습니다.</p>
+              )}
+              {!recentLogsLoading && !recentLogsError && recentLogs.length === 0 && (
+                <p style={{ fontSize: "13px", color: "#9CA3AF" }}>표시할 활동 로그가 없습니다.</p>
+              )}
+              {!recentLogsLoading &&
+                !recentLogsError &&
+                recentLogs.map((log) => {
+                  const colors = getMasterActivityLogColors(log.type)
+                  const label = getMasterActivityLogStatusLabel(log.type)
+                  return (
                 <div
                   key={log.id}
                   className="flex items-start gap-3 p-3"
@@ -382,33 +430,35 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      backgroundColor: log.type === "관리자" ? "#3B82F6" : log.type === "시스템" ? "#6B7280" : "#EF4444",
+                      backgroundColor: colors.marker,
                       flexShrink: 0,
                     }}
                   />
                   <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span style={{ fontSize: "12px", color: "#9CA3AF" }}>{log.timestamp}</span>
+                      <span style={{ fontSize: "12px", color: "#9CA3AF" }}>
+                        {formatMasterActivityLogDateTime(log.createdAt)}
+                      </span>
                       <Badge
                         style={{
-                          backgroundColor:
-                            log.type === "관리자" ? "#DBEAFE" : log.type === "시스템" ? "#F3F4F6" : "#FEE2E2",
-                          color: log.type === "관리자" ? "#3B82F6" : log.type === "시스템" ? "#6B7280" : "#EF4444",
+                          backgroundColor: colors.bg,
+                          color: colors.text,
                           fontWeight: 500,
                           fontSize: "10px",
                           padding: "2px 6px",
                           border: "none",
                         }}
                       >
-                        {log.type}
+                        {label}
                       </Badge>
                     </div>
                     <span style={{ fontSize: "13px", color: "#4B5563", lineHeight: "1.4" }} className="truncate">
-                      {log.description}
+                      {log.message}
                     </span>
                   </div>
                 </div>
-              ))}
+                  )
+                })}
             </div>
             <div className="mt-auto pt-3" style={{ borderTop: "1px solid #E5E5E5" }}>
               <Button

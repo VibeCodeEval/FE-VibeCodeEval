@@ -2546,3 +2546,99 @@ export async function getAdminActivityLogs(
     throw new NetworkError("활동 로그 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
   }
 }
+
+// ─── 마스터 활동 로그 ───────────────────────────────────────────────────────────
+
+export type MasterActivityLogType =
+  | "ADMIN_SIGNUP_CODE_ISSUED"
+  | "ADMIN_SIGNUP_CODE_DEACTIVATED"
+  | "ADMIN_SIGNUP_CODE_REACTIVATED"
+  | "ADMIN_SIGNED_UP"
+  | "ADMIN_ACCOUNT_DELETED"
+  | "ADMIN_PASSWORD_RESET"
+
+export interface MasterActivityLogEntry {
+  id: number
+  type: MasterActivityLogType
+  title: string
+  message: string
+  createdAt: string
+  targetAdminId: number | null
+}
+
+export interface MasterActivityLogPageResult {
+  content: MasterActivityLogEntry[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface GetMasterActivityLogsParams {
+  keyword?: string
+  type?: MasterActivityLogType
+  page?: number
+  size?: number
+}
+
+/**
+ * 마스터 활동 로그 조회 API (GET /api/admin/master/logs) — MASTER 전용
+ */
+export async function getMasterActivityLogs(
+  params: GetMasterActivityLogsParams = {}
+): Promise<MasterActivityLogPageResult> {
+  const apiBaseUrl = getApiBaseUrl()
+  const query = new URLSearchParams()
+  const keyword = params.keyword?.trim()
+  if (keyword) {
+    query.set("keyword", keyword)
+  }
+  if (params.type) {
+    query.set("type", params.type)
+  }
+  query.set("page", String(params.page ?? 0))
+  query.set("size", String(params.size ?? 20))
+
+  const url = `${apiBaseUrl}/api/admin/master/logs?${query.toString()}`
+  const isDev = process.env.NODE_ENV === "development"
+
+  if (isDev) {
+    console.log("[Get Master Activity Logs] API 호출:", url)
+  }
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      credentials: "include",
+    })
+
+    let data: BaseResponse<MasterActivityLogPageResult>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "마스터 활동 로그 조회에 실패했습니다."
+      if (response.status === 401) {
+        errorMessage = "인증이 필요합니다. 다시 로그인해주세요."
+      } else if (response.status === 403) {
+        errorMessage = "권한이 없습니다. MASTER 계정으로 로그인해주세요."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "마스터 활동 로그 조회에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("마스터 활동 로그 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+  }
+}
