@@ -3,47 +3,12 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Users, CheckCircle, Play, Plus, BarChart3, ArrowRight } from "lucide-react"
-import { getExams, getBoard } from "@/lib/api/admin"
+import { getExams, getBoard, getAdminActivityLogs, LoginFailedError, type AdminActivityLogEntry } from "@/lib/api/admin"
 import { computeSessionAnalytics } from "@/lib/admin-board-analytics"
-
-// Sample recent activity data (정적 - 활동 로그 API 미지원)
-const recentActivity = [
-  {
-    id: 1,
-    timestamp: "2024-01-15 14:32",
-    status: "채점 과정이 성공적으로 완료되었습니다.",
-    message: "참가자 김민준님의 채점이 완료되었습니다",
-  },
-  { id: 2, timestamp: "2024-01-15 14:15", status: "시험 세션이 시작되었습니다.", message: "시험 세션 AIV-2024-001이 시작되었습니다" },
-  {
-    id: 3,
-    timestamp: "2024-01-15 13:45",
-    status: "시험 방 생성됨",
-    message: "새 입장 코드 AIV-2024-005가 생성되었습니다",
-  },
-  {
-    id: 4,
-    timestamp: "2024-01-15 12:30",
-    status: "채점 과정이 성공적으로 완료되었습니다.",
-    message: "참가자 박지연님의 채점이 완료되었습니다",
-  },
-  { id: 5, timestamp: "2024-01-15 11:20", status: "시험 세션이 시작되었습니다.", message: "시험 세션 AIV-2024-002가 시작되었습니다" },
-]
-
-function getStatusColor(status: string) {
-  switch (status) {
-    case "시험 세션이 시작되었습니다.":
-      return "bg-purple-500"
-    case "채점 과정이 성공적으로 완료되었습니다.":
-      return "bg-green-500"
-    case "시험 방 생성됨":
-      return "bg-blue-500"
-    case "시험 세션이 종료되었습니다.":
-      return "bg-red-500"
-    default:
-      return "bg-gray-500"
-  }
-}
+import {
+  formatActivityLogDateTime,
+  getActivityLogDotClass,
+} from "@/lib/admin-activity-logs"
 
 export function DashboardContent() {
   const [totalParticipants, setTotalParticipants] = useState<number | null>(null)
@@ -51,6 +16,9 @@ export function DashboardContent() {
   const [runningExams, setRunningExams] = useState<number | null>(null)
   const [avgPromptScore, setAvgPromptScore] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [recentActivity, setRecentActivity] = useState<AdminActivityLogEntry[]>([])
+  const [isActivityLoading, setIsActivityLoading] = useState(true)
+  const [activityError, setActivityError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadStats() {
@@ -77,6 +45,28 @@ export function DashboardContent() {
       }
     }
     loadStats()
+  }, [])
+
+  useEffect(() => {
+    async function loadRecentActivity() {
+      setIsActivityLoading(true)
+      setActivityError(null)
+      try {
+        const result = await getAdminActivityLogs({ page: 0, size: 5 })
+        setRecentActivity(result.content)
+      } catch (e) {
+        console.error("Failed to load recent activity", e)
+        setRecentActivity([])
+        if (e instanceof LoginFailedError) {
+          setActivityError(e.message)
+        } else {
+          setActivityError("최근 활동을 불러오지 못했습니다.")
+        }
+      } finally {
+        setIsActivityLoading(false)
+      }
+    }
+    void loadRecentActivity()
   }, [])
 
   const displayValue = (val: number | null) =>
@@ -164,7 +154,11 @@ export function DashboardContent() {
           </div>
 
           <div className="mt-6">
-            {recentActivity.length > 0 ? (
+            {isActivityLoading ? (
+              <p className="py-8 text-center text-sm text-gray-400">최근 활동을 불러오는 중...</p>
+            ) : activityError ? (
+              <p className="py-8 text-center text-sm text-red-500">{activityError}</p>
+            ) : recentActivity.length > 0 ? (
               <div className="relative">
                 {/* Vertical timeline line */}
                 <div className="absolute left-[5px] top-2 bottom-2 w-[2px] bg-gray-200" />
@@ -173,15 +167,17 @@ export function DashboardContent() {
                   {recentActivity.map((event) => (
                     <div key={event.id} className="flex items-start gap-3 pl-6 relative">
                       {/* Timeline dot */}
-                      <div className={`absolute left-0 top-1.5 h-3 w-3 rounded-full ${getStatusColor(event.status)}`} />
+                      <div className={`absolute left-0 top-1.5 h-3 w-3 rounded-full ${getActivityLogDotClass(event.type)}`} />
 
                       {/* Content */}
                       <div className="flex flex-1 items-center justify-between border-b border-gray-100 pb-4">
                         <div className="flex flex-col gap-1">
-                          <span className="text-sm font-medium text-gray-700">{event.status}</span>
+                          <span className="text-sm font-medium text-gray-700">{event.title}</span>
                           <span className="text-sm text-gray-500">{event.message}</span>
                         </div>
-                        <span className="text-xs text-gray-400 whitespace-nowrap ml-4">{event.timestamp}</span>
+                        <span className="text-xs text-gray-400 whitespace-nowrap ml-4">
+                          {formatActivityLogDateTime(event.createdAt)}
+                        </span>
                       </div>
                     </div>
                   ))}

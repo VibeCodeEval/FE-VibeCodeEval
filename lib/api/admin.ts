@@ -2451,3 +2451,98 @@ export async function getAdminSubmissionDetail(
 // ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────
 // streamScoringResult는 lib/api/submissions.ts 에서 정의·export됩니다.
 // 이전에 이 파일에 존재하던 구버전 구현은 submissions.ts 의 콜백 기반 버전으로 통합되었습니다.
+
+// ─── 관리자 활동 로그 ───────────────────────────────────────────────────────────
+
+export type AdminActivityLogType =
+  | "ROOM_CREATED"
+  | "EXAM_STARTED"
+  | "EVALUATION_COMPLETED"
+  | "EXAM_ENDED"
+
+export interface AdminActivityLogEntry {
+  id: number
+  type: AdminActivityLogType
+  title: string
+  message: string
+  createdAt: string
+  examId: number
+  participantId: number | null
+}
+
+export interface AdminActivityLogPageResult {
+  content: AdminActivityLogEntry[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface GetAdminActivityLogsParams {
+  keyword?: string
+  type?: AdminActivityLogType
+  page?: number
+  size?: number
+}
+
+/**
+ * 관리자 활동 로그 조회 API (GET /api/admin/logs)
+ */
+export async function getAdminActivityLogs(
+  params: GetAdminActivityLogsParams = {}
+): Promise<AdminActivityLogPageResult> {
+  const apiBaseUrl = getApiBaseUrl()
+  const query = new URLSearchParams()
+  const keyword = params.keyword?.trim()
+  if (keyword) {
+    query.set("keyword", keyword)
+  }
+  if (params.type) {
+    query.set("type", params.type)
+  }
+  query.set("page", String(params.page ?? 0))
+  query.set("size", String(params.size ?? 20))
+
+  const url = `${apiBaseUrl}/api/admin/logs?${query.toString()}`
+  const isDev = process.env.NODE_ENV === "development"
+
+  if (isDev) {
+    console.log("[Get Admin Activity Logs] API 호출:", url)
+  }
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      credentials: "include",
+    })
+
+    let data: BaseResponse<AdminActivityLogPageResult>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "활동 로그 조회에 실패했습니다."
+      if (response.status === 401) {
+        errorMessage = "인증이 필요합니다. 다시 로그인해주세요."
+      } else if (response.status === 403) {
+        errorMessage = "권한이 없습니다."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "활동 로그 조회에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("활동 로그 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+  }
+}
