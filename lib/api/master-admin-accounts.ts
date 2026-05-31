@@ -7,6 +7,7 @@ import {
   issueAdminNumber,
   updateAdminNumber,
   resetAdminPasswordByMaster,
+  deleteAdminByMaster,
   resolveAdminAccountDisplayName,
   LoginFailedError,
   NetworkError,
@@ -186,14 +187,9 @@ export async function resetMasterAdminPassword(
   return { temporaryPassword: result.temporaryPassword };
 }
 
-/**
- * TODO(BE): 관리자 계정 삭제 API 미구현
- */
+/** MASTER가 타 관리자 계정 삭제 (soft delete) */
 export async function deleteMasterAdminAccount(
-  _account: MasterAdminAccount
+  account: MasterAdminAccount
 ): Promise<void> {
-  throw new LoginFailedError(
-    '관리자 삭제 API가 아직 제공되지 않습니다. 백엔드 연동 후 호출해 주세요.',
-    501
-  );
+  await deleteAdminByMaster(account.adminNumber);
 }
