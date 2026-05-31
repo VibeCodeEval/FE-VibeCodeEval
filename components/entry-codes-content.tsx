@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Copy, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
@@ -79,19 +79,24 @@ function getExamEntryCodesActionPriority(state: string): number {
   return 0
 }
 
+/** 관리자 시험 목록 자동 갱신 주기 (BE 자동 시작 스케줄러 10초 + 여유) */
+const EXAM_LIST_POLL_INTERVAL_MS = 15_000
+
 const EXPIRES_AT_PAST_ERROR_MESSAGE = "만료일은 현재 이후여야 합니다."
+const STARTS_AT_PAST_ERROR_MESSAGE = "시작 시각은 현재 이후여야 합니다."
+const ENDS_AT_BEFORE_STARTS_AT_ERROR_MESSAGE = "종료 시각은 시작 시각보다 이후여야 합니다."
 const TITLE_REQUIRED_FALLBACK_MESSAGE = "시험 제목은 필수입니다."
 
-/** 종료/만료 시각이 현재 이후인지 확인 (datetime-local 입력값 기준) */
-function isFutureDateTime(value: string): boolean {
-  if (!value) return false
+/** datetime-local 입력값을 로컬 시각 Date로 변환 */
+function parseDateTimeLocal(value: string): Date | null {
+  if (!value) return null
   const [datePart, timePart] = value.split("T")
-  if (!datePart || !timePart) return false
+  if (!datePart || !timePart) return null
 
   const [year, month, day] = datePart.split("-").map(Number)
   const [hour, minute] = timePart.split(":").map(Number)
   if ([year, month, day, hour, minute].some((part) => !Number.isFinite(part))) {
-    return false
+    return null
   }
 
   const date = new Date(year, month - 1, day, hour, minute)
@@ -102,10 +107,16 @@ function isFutureDateTime(value: string): boolean {
     date.getHours() !== hour ||
     date.getMinutes() !== minute
   ) {
-    return false
+    return null
   }
 
-  return !Number.isNaN(date.getTime()) && date > new Date()
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+/** 종료/만료 시각이 현재 이후인지 확인 (datetime-local 입력값 기준) */
+function isFutureDateTime(value: string): boolean {
+  const date = parseDateTimeLocal(value)
+  return date !== null && date > new Date()
 }
 
 /** createExam 400 응답이 만료일(종료 시각) 검증 실패인지 여부 */
@@ -152,6 +163,13 @@ function sortExamsForEntryCodes<T extends Exam>(exams: T[]): T[] {
   })
 }
 
+type FetchExamsOptions = {
+  /** true면 로딩/토스트/페이지 리셋 없이 목록만 갱신 (백그라운드 폴링) */
+  silent?: boolean
+  /** true면 조회 성공 후 1페이지로 이동 */
+  resetPage?: boolean
+}
+
 export function EntryCodesContent() {
 
   // 시험 생성 모달 상태
@@ -159,6 +177,7 @@ export function EntryCodesContent() {
   const [examTitle, setExamTitle] = useState("")
   const [examStartsAt, setExamStartsAt] = useState("")
   const [examEndsAt, setExamEndsAt] = useState("")
+  const [examStartsAtError, setExamStartsAtError] = useState("")
   const [createExamValidationError, setCreateExamValidationError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -192,6 +211,8 @@ export function EntryCodesContent() {
 
   const { toast } = useToast()
 
+  const fetchExamsInFlightRef = useRef(false)
+
   // 시험 목록 페이지네이션
   const [currentExamPage, setCurrentExamPage] = useState(1)
   const examPageSize = 8
@@ -205,79 +226,109 @@ export function EntryCodesContent() {
   const examDisplayStart = exams && exams.length > 0 ? examStartIndex + 1 : 0
   const examDisplayEnd = exams ? Math.min(examEndIndex, exams.length) : 0
 
-  // 시험 조회 핸들러
-  const handleFetchExams = async () => {
-    try {
-      setIsLoadingExams(true)
-      setExamError(null)
-      
-      // 1. 시험 목록 가져오기
-      const examsData = await getExams()
-      
-      // 2. 각 시험에 대해 입장 코드 가져오기 (병렬 처리)
-      const examsWithEntryCodes = await Promise.all(
-        examsData.map(async (exam) => {
-          try {
-            // 각 시험의 입장 코드 목록 가져오기
-            const entryCodes = await getEntryCodes(exam.id)
-            // 첫 번째 활성 입장 코드를 사용하거나, 없으면 첫 번째 코드 사용
-            const activeEntryCode = entryCodes.find((ec) => ec.isActive) || entryCodes[0]
-            return {
-              ...exam,
-              entryCode: activeEntryCode?.code || pickEntryCode(exam),
-            }
-          } catch (entryCodeError) {
-            // 입장 코드 조회 실패 시 해당 시험의 입장 코드는 undefined로 유지
-            console.warn(`Failed to fetch entry codes for exam ${exam.id}:`, entryCodeError)
-            return {
-              ...exam,
-              entryCode: pickEntryCode(exam),
-            }
-          }
-        })
-      )
-      
-      setExams(sortExamsForEntryCodes(examsWithEntryCodes))
-      // 시험 목록을 새로 가져올 때 페이지를 1로 리셋
-      setCurrentExamPage(1)
-    } catch (error) {
-      console.error("Failed to fetch exams", error)
-      if (error instanceof LoginFailedError) {
-        setExamError(error.message)
-        toast({
-          title: "시험 목록 조회 실패",
-          description: error.message,
-          variant: "destructive",
-        })
-      } else if (error instanceof NetworkError) {
-        setExamError(error.message)
-        toast({
-          title: "네트워크 오류",
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        setExamError("시험 목록을 불러오는 데 실패했습니다.")
-        toast({
-          title: "오류",
-          description: "시험 목록을 불러오는 데 실패했습니다.",
-          variant: "destructive",
-        })
-      }
-      // 에러 발생 시에도 기존 데이터는 유지
-    } finally {
-      setIsLoadingExams(false)
-    }
-  }
+  // 시험 조회 핸들러 (getExams + 입장 코드 병렬 조회)
+  const handleFetchExams = useCallback(
+    async (options: FetchExamsOptions = {}) => {
+      const silent = options.silent ?? false
+      const resetPage = options.resetPage ?? !silent
 
-  // 페이지 로드 시 자동으로 시험 목록 조회
+      if (fetchExamsInFlightRef.current) {
+        return
+      }
+      fetchExamsInFlightRef.current = true
+
+      try {
+        if (!silent) {
+          setIsLoadingExams(true)
+          setExamError(null)
+        }
+
+        const examsData = await getExams()
+
+        const examsWithEntryCodes = await Promise.all(
+          examsData.map(async (exam) => {
+            try {
+              const entryCodes = await getEntryCodes(exam.id)
+              const activeEntryCode = entryCodes.find((ec) => ec.isActive) || entryCodes[0]
+              return {
+                ...exam,
+                entryCode: activeEntryCode?.code || pickEntryCode(exam),
+              }
+            } catch (entryCodeError) {
+              console.warn(`Failed to fetch entry codes for exam ${exam.id}:`, entryCodeError)
+              return {
+                ...exam,
+                entryCode: pickEntryCode(exam),
+              }
+            }
+          })
+        )
+
+        setExams(sortExamsForEntryCodes(examsWithEntryCodes))
+        if (resetPage) {
+          setCurrentExamPage(1)
+        }
+      } catch (error) {
+        console.error("Failed to fetch exams", error)
+        if (silent) {
+          return
+        }
+        if (error instanceof LoginFailedError) {
+          setExamError(error.message)
+          toast({
+            title: "시험 목록 조회 실패",
+            description: error.message,
+            variant: "destructive",
+          })
+        } else if (error instanceof NetworkError) {
+          setExamError(error.message)
+          toast({
+            title: "네트워크 오류",
+            description: error.message,
+            variant: "destructive",
+          })
+        } else {
+          setExamError("시험 목록을 불러오는 데 실패했습니다.")
+          toast({
+            title: "오류",
+            description: "시험 목록을 불러오는 데 실패했습니다.",
+            variant: "destructive",
+          })
+        }
+      } finally {
+        if (!silent) {
+          setIsLoadingExams(false)
+        }
+        fetchExamsInFlightRef.current = false
+      }
+    },
+    [toast]
+  )
+
+  // 최초 로드
   useEffect(() => {
-    handleFetchExams()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    void handleFetchExams({ resetPage: true })
+  }, [handleFetchExams])
+
+  // BE 자동 시작 등 상태 변경 반영 — 시험 생성 모달 작성 중에는 건너뜀
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (isCreateExamOpen) {
+        return
+      }
+      void handleFetchExams({ silent: true, resetPage: false })
+    }, EXAM_LIST_POLL_INTERVAL_MS)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [handleFetchExams, isCreateExamOpen])
 
   // 시험 생성 핸들러
   const handleCreateExam = async () => {
+    setExamStartsAtError("")
+    setCreateExamValidationError("")
+
     if (!examStartsAt || !examEndsAt) {
       toast({
         title: "입력 오류",
@@ -287,14 +338,27 @@ export function EntryCodesContent() {
       return
     }
 
-    // 시작/종료 순서 검증은 종료 시각이 미래일 때만 FE에서 처리.
-    // 종료 시각이 과거(만료)인 경우는 BE 400 응답으로 처리한다.
-    if (isFutureDateTime(examEndsAt) && new Date(examStartsAt) >= new Date(examEndsAt)) {
-      toast({
-        title: "입력 오류",
-        description: "종료 시각은 시작 시각보다 이후여야 합니다.",
-        variant: "destructive",
-      })
+    let shouldBlockSubmit = false
+
+    if (!isFutureDateTime(examStartsAt)) {
+      setExamStartsAtError(STARTS_AT_PAST_ERROR_MESSAGE)
+      shouldBlockSubmit = true
+    }
+
+    const startDate = parseDateTimeLocal(examStartsAt)
+    const endDate = parseDateTimeLocal(examEndsAt)
+
+    if (!isFutureDateTime(examEndsAt)) {
+      setCreateExamValidationError(EXPIRES_AT_PAST_ERROR_MESSAGE)
+      if (!isFutureDateTime(examStartsAt)) {
+        shouldBlockSubmit = true
+      }
+    } else if (startDate && endDate && startDate >= endDate) {
+      setCreateExamValidationError(ENDS_AT_BEFORE_STARTS_AT_ERROR_MESSAGE)
+      shouldBlockSubmit = true
+    }
+
+    if (shouldBlockSubmit) {
       return
     }
 
@@ -313,7 +377,6 @@ export function EntryCodesContent() {
     }
 
     setIsSubmitting(true)
-    setCreateExamValidationError("")
     try {
       const createdExam = await createExam(payload)
       const responseEntryCode = pickEntryCode(createdExam)
@@ -351,6 +414,7 @@ export function EntryCodesContent() {
       setExamTitle("")
       setExamStartsAt("")
       setExamEndsAt("")
+      setExamStartsAtError("")
       setCreateExamValidationError("")
 
       // 성공 토스트 표시
@@ -366,7 +430,9 @@ export function EntryCodesContent() {
           examEndsAt,
           examTitle,
         )
-        if (validationMessage) {
+        if (error.fieldErrors?.startsAt) {
+          setExamStartsAtError(error.fieldErrors.startsAt)
+        } else if (validationMessage) {
           setCreateExamValidationError(validationMessage)
         } else {
           toast({
@@ -411,7 +477,7 @@ export function EntryCodesContent() {
       // 2) 최신 시험 목록 재조회
       // handleFetchExams() 내부에서 이미 setExams()를 호출하므로
       // startAt / status 등을 DB 기준으로 통째로 갱신됨
-      await handleFetchExams()
+      await handleFetchExams({ resetPage: true })
 
       // 모달 닫기
       setIsStartExamModalOpen(false)
@@ -466,7 +532,7 @@ export function EntryCodesContent() {
       // 2) 최신 시험 목록 재조회
       // handleFetchExams() 내부에서 이미 setExams()를 호출하므로
       // endAt / status 등을 DB 기준으로 통째로 갱신됨
-      await handleFetchExams()
+      await handleFetchExams({ resetPage: true })
 
       // 모달 닫기
       setIsEndExamModalOpen(false)
@@ -526,7 +592,7 @@ export function EntryCodesContent() {
     setIsExtendingExam(true)
     try {
       await extendExam(selectedExamForExtend.id, mins)
-      await handleFetchExams()
+      await handleFetchExams({ resetPage: true })
       setIsExtendExamModalOpen(false)
       setSelectedExamForExtend(null)
       toast({
@@ -977,14 +1043,25 @@ export function EntryCodesContent() {
                 type="datetime-local"
                 value={examStartsAt}
                 onChange={(e) => {
+                  const nextExamStartsAt = e.target.value
                   setExamStartsAt(e.target.value)
-                  if (createExamValidationError) {
-                    setCreateExamValidationError("")
+                  if (examStartsAtError && isFutureDateTime(nextExamStartsAt)) {
+                    setExamStartsAtError("")
+                  }
+                  if (createExamValidationError === ENDS_AT_BEFORE_STARTS_AT_ERROR_MESSAGE) {
+                    const nextStartDate = parseDateTimeLocal(nextExamStartsAt)
+                    const endDate = parseDateTimeLocal(examEndsAt)
+                    if (nextStartDate && endDate && nextStartDate < endDate) {
+                      setCreateExamValidationError("")
+                    }
                   }
                 }}
                 disabled={isSubmitting}
                 className="col-span-3"
               />
+              {examStartsAtError && (
+                <p className="text-sm text-red-500">{examStartsAtError}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label htmlFor="exam-ends-at" className="text-sm font-medium text-[#1A1A1A]">
@@ -995,9 +1072,14 @@ export function EntryCodesContent() {
                 type="datetime-local"
                 value={examEndsAt}
                 onChange={(e) => {
-                  setExamEndsAt(e.target.value)
-                  if (createExamValidationError) {
-                    setCreateExamValidationError("")
+                  const nextExamEndsAt = e.target.value
+                  setExamEndsAt(nextExamEndsAt)
+                  if (createExamValidationError && isFutureDateTime(nextExamEndsAt)) {
+                    const nextStartDate = parseDateTimeLocal(examStartsAt)
+                    const nextEndDate = parseDateTimeLocal(nextExamEndsAt)
+                    if (nextStartDate && nextEndDate && nextStartDate < nextEndDate) {
+                      setCreateExamValidationError("")
+                    }
                   }
                 }}
                 disabled={isSubmitting}
@@ -1016,6 +1098,7 @@ export function EntryCodesContent() {
                 setExamTitle("")
                 setExamStartsAt("")
                 setExamEndsAt("")
+                setExamStartsAtError("")
                 setCreateExamValidationError("")
               }}
               disabled={isSubmitting}
