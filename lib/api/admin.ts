@@ -2556,6 +2556,7 @@ export type MasterActivityLogType =
   | "ADMIN_SIGNED_UP"
   | "ADMIN_ACCOUNT_DELETED"
   | "ADMIN_PASSWORD_RESET"
+  | "PLATFORM_SETTINGS_UPDATED"
 
 export interface MasterActivityLogEntry {
   id: number
@@ -2640,5 +2641,105 @@ export async function getMasterActivityLogs(
       throw error
     }
     throw new NetworkError("마스터 활동 로그 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+  }
+}
+
+// ─── 마스터 플랫폼 전역 설정 ───────────────────────────────────────────────────
+
+export interface MasterPlatformSettings {
+  logRetentionDays: number
+  submissionRetentionDays: number
+  autoDeleteExpiredData: boolean
+  updatedAt: string | null
+}
+
+export interface UpdateMasterPlatformSettingsPayload {
+  logRetentionDays: number
+  submissionRetentionDays: number
+  autoDeleteExpiredData: boolean
+}
+
+/**
+ * MASTER 플랫폼 전역 설정 조회 (GET /api/admin/master/settings)
+ */
+export async function getMasterPlatformSettings(): Promise<MasterPlatformSettings> {
+  const url = `${getApiBaseUrl()}/api/admin/master/settings`
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      credentials: "include",
+    })
+
+    let data: BaseResponse<MasterPlatformSettings>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "플랫폼 설정 조회에 실패했습니다."
+      if (response.status === 403) {
+        errorMessage = "권한이 없습니다. MASTER 계정으로 로그인해주세요."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "플랫폼 설정 조회에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("플랫폼 설정 조회 중 오류가 발생했습니다.")
+  }
+}
+
+/**
+ * MASTER 플랫폼 전역 설정 저장 (PUT /api/admin/master/settings)
+ */
+export async function updateMasterPlatformSettings(
+  payload: UpdateMasterPlatformSettingsPayload
+): Promise<MasterPlatformSettings> {
+  const url = `${getApiBaseUrl()}/api/admin/master/settings`
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      credentials: "include",
+      body: JSON.stringify(payload),
+    })
+
+    let data: BaseResponse<MasterPlatformSettings>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "플랫폼 설정 저장에 실패했습니다."
+      if (response.status === 403) {
+        errorMessage = "권한이 없습니다. MASTER 계정으로 로그인해주세요."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "플랫폼 설정 저장에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("플랫폼 설정 저장 중 오류가 발생했습니다.")
   }
 }

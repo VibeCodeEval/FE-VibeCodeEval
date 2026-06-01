@@ -7,6 +7,7 @@ export type MasterActivityLogStatusLabel =
   | "관리자 가입 완료"
   | "계정 삭제"
   | "비밀번호 재설정"
+  | "전역 설정 변경"
 
 export const MASTER_ACTIVITY_LOG_TYPE_LABEL: Record<MasterActivityLogType, MasterActivityLogStatusLabel> = {
   ADMIN_SIGNUP_CODE_ISSUED: "가입 번호 발급",
@@ -15,6 +16,7 @@ export const MASTER_ACTIVITY_LOG_TYPE_LABEL: Record<MasterActivityLogType, Maste
   ADMIN_SIGNED_UP: "관리자 가입 완료",
   ADMIN_ACCOUNT_DELETED: "계정 삭제",
   ADMIN_PASSWORD_RESET: "비밀번호 재설정",
+  PLATFORM_SETTINGS_UPDATED: "전역 설정 변경",
 }
 
 export const masterActivityLogStatusColors: Record<
@@ -27,6 +29,7 @@ export const masterActivityLogStatusColors: Record<
   "관리자 가입 완료": { bg: "#F0EBFA", text: "#7A5AF8", marker: "#7A5AF8" },
   "계정 삭제": { bg: "#FEF2F2", text: "#DC2626", marker: "#DC2626" },
   "비밀번호 재설정": { bg: "#FFF7ED", text: "#EA580C", marker: "#EA580C" },
+  "전역 설정 변경": { bg: "#F3F4F6", text: "#6B7280", marker: "#6B7280" },
 }
 
 const FILTER_TO_TYPE: Record<string, MasterActivityLogType | undefined> = {
@@ -37,6 +40,7 @@ const FILTER_TO_TYPE: Record<string, MasterActivityLogType | undefined> = {
   "관리자 가입 완료": "ADMIN_SIGNED_UP",
   "계정 삭제": "ADMIN_ACCOUNT_DELETED",
   "비밀번호 재설정": "ADMIN_PASSWORD_RESET",
+  "전역 설정 변경": "PLATFORM_SETTINGS_UPDATED",
 }
 
 export const MASTER_ACTIVITY_LOG_FILTER_OPTIONS = [
@@ -47,6 +51,7 @@ export const MASTER_ACTIVITY_LOG_FILTER_OPTIONS = [
   "관리자 가입 완료",
   "계정 삭제",
   "비밀번호 재설정",
+  "전역 설정 변경",
 ] as const
 
 export function mapMasterActivityLogFilterToType(filter: string): MasterActivityLogType | undefined {
