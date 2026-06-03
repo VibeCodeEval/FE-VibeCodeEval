@@ -385,9 +385,10 @@ export function AdminAccountsContent() {
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
       {/* Admin Users Card */}
-      <Card className="border border-[#E5E5E5] shadow-sm flex-1 flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between py-2 px-6">
+      <Card className="flex min-w-0 flex-1 flex-col border border-[#E5E5E5] shadow-sm">
+        <CardHeader className="flex min-w-0 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <CardTitle
+            className="min-w-0 shrink"
             style={{
               fontSize: "20px",
               fontWeight: 700,
@@ -398,6 +399,7 @@ export function AdminAccountsContent() {
           </CardTitle>
           <Button
             size="sm"
+            className="w-full shrink-0 sm:w-auto"
             onClick={handleOpenGenerateModal}
             style={{
               backgroundColor: "#3B82F6",
@@ -409,7 +411,7 @@ export function AdminAccountsContent() {
             + 관리자 번호 발급
           </Button>
         </CardHeader>
-        <CardContent className="px-0 pb-0 pt-0 flex-1 flex flex-col overflow-hidden">
+        <CardContent className="flex min-w-0 flex-1 flex-col overflow-hidden px-0 pb-0 pt-0">
           {listError && !isLoading && (
             <p
               className="mx-6 mb-3 rounded-lg border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]"
@@ -418,8 +420,9 @@ export function AdminAccountsContent() {
               {listError}
             </p>
           )}
-          <ScrollArea className="flex-1 h-[520px]">
-            <Table className="w-full table-fixed">
+          <div className="min-w-0 flex-1 overflow-x-auto">
+            <ScrollArea className="h-[520px]">
+            <Table className="w-full min-w-[1048px] table-fixed">
               <TableHeader>
                 <TableRow className="border-t border-[#E5E5E5] hover:bg-transparent">
                   <TableHead
@@ -512,7 +515,7 @@ export function AdminAccountsContent() {
                     return (
                       <TableRow key={user.id} className="border-t border-[#E5E5E5] hover:bg-[#F9FAFB]">
                         <TableCell
-                          className="w-[220px]"
+                          className="max-w-[220px] min-w-0 overflow-hidden w-[220px]"
                           style={{
                             fontSize: "14px",
                             fontWeight: 500,
@@ -520,11 +523,17 @@ export function AdminAccountsContent() {
                             paddingLeft: "24px",
                           }}
                         >
-                          <div className="flex items-center gap-2">
-                            {user.adminNumber}
+                          <div className="flex min-w-0 max-w-full items-center gap-2">
+                            <span
+                              className="min-w-0 truncate whitespace-nowrap"
+                              title={user.adminNumber}
+                            >
+                              {user.adminNumber}
+                            </span>
                             {isMaster && (
                               <Badge
                                 variant="default"
+                                className="shrink-0"
                                 style={{
                                   fontSize: "10px",
                                   fontWeight: 600,
@@ -539,13 +548,18 @@ export function AdminAccountsContent() {
                           </div>
                         </TableCell>
                         <TableCell
-                          className="w-[320px]"
+                          className="max-w-[320px] min-w-0 overflow-hidden w-[320px]"
                           style={{
                             fontSize: "14px",
                             color: "#6B7280",
                           }}
                         >
-                          {user.email}
+                          <span
+                            className="block max-w-full truncate whitespace-nowrap"
+                            title={user.email}
+                          >
+                            {user.email}
+                          </span>
                         </TableCell>
                         <TableCell className="w-[108px] text-center align-middle">
                           <div className="flex justify-center items-center">
@@ -649,6 +663,7 @@ export function AdminAccountsContent() {
               </TableBody>
             </Table>
           </ScrollArea>
+          </div>
         </CardContent>
       </Card>
 
