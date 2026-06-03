@@ -77,10 +77,12 @@ export function ServerStatusContent() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="shrink-0 border-b border-[#E5E5E5] bg-white px-8 py-6">
-        <h1 className="text-2xl font-semibold text-[#111111]">서버 상태</h1>
-        <p className="mt-1 text-sm text-[#6B7280]">핵심 서비스 연결 상태</p>
-      </div>
+      <header className="flex h-[88px] shrink-0 items-center border-b border-[#E5E5E5] bg-white px-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">서버 상태</h1>
+          <p className="text-sm text-[#6B7280]">핵심 서비스 연결 상태</p>
+        </div>
+      </header>
 
       <div className="flex-1 overflow-y-auto p-8">
         <div className="rounded-xl border border-[#E5E5E5] bg-white px-8 py-6 md:px-12">

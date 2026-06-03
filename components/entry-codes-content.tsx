@@ -675,14 +675,14 @@ export function EntryCodesContent() {
   }
 
   return (
-    <div className="flex h-full flex-1 flex-col">
+    <div className="flex h-full min-w-0 flex-1 flex-col">
       {/* Top Header Bar */}
       <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8">
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">코드 관리</h1>
           <p className="text-sm text-[#6B7280]">참가자 시험 입장 코드를 관리합니다</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 lg:mr-8 xl:mr-12 2xl:mr-16">
           <button
             onClick={() => setIsCreateExamOpen(true)}
             className="rounded-full bg-[#3B82F6] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
@@ -693,7 +693,7 @@ export function EntryCodesContent() {
       </header>
 
       {/* Main Content Panel */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto p-4 sm:p-6">
         {/* 시험 목록 카드 영역 (상단) */}
         {examError && (
           <div className="mb-3">
@@ -713,18 +713,18 @@ export function EntryCodesContent() {
               return (
                 <div
                   key={exam.id}
-                  className="flex items-center justify-between rounded-xl border border-[#E5E5E5] bg-white px-6 py-4 shadow-sm"
+                  className="flex flex-col gap-4 rounded-xl border border-[#E5E5E5] bg-white px-4 py-4 shadow-sm sm:px-6 xl:flex-row xl:items-center xl:justify-between"
                 >
-                  {/* Left side: 제목, 입장 코드, 상태, 시작일, 종료일 (가로 정렬, 한 줄, 고정 열 정렬, 중앙 정렬) */}
-                  <div className="flex items-center gap-x-2 flex-1 min-w-0">
+                  {/* Left side: 제목, 입장 코드, 상태, 시작일, 종료일 — xl 이상에서 기존 한 줄 */}
+                  <div className="flex min-w-0 flex-1 flex-col gap-3 xl:flex-row xl:flex-nowrap xl:items-center xl:gap-x-2">
                     {/* 제목 */}
-                    <span className="text-base font-semibold text-[#1A1A1A] w-48 shrink-0 truncate">
+                    <span className="min-w-0 truncate text-base font-semibold text-[#1A1A1A] xl:w-48 xl:shrink-0">
                       {exam.title}
                     </span>
                     {/* 구분자 */}
-                    <span className="px-3 text-[#9CA3AF] shrink-0">|</span>
-                    {/* 입장 코드: 고정 너비로 정렬, 중앙 정렬 */}
-                    <div className="w-56 shrink-0 flex items-center justify-center gap-2 min-w-0">
+                    <span className="hidden shrink-0 px-3 text-[#9CA3AF] xl:inline">|</span>
+                    {/* 입장 코드 */}
+                    <div className="flex min-w-0 w-full items-center gap-2 xl:w-56 xl:shrink-0 xl:justify-center">
                       {exam.entryCode ? (
                         <>
                           <span className="text-xs text-[#9CA3AF] truncate">
@@ -748,9 +748,9 @@ export function EntryCodesContent() {
                       )}
                     </div>
                     {/* 구분자 */}
-                    <span className="px-3 text-[#9CA3AF] shrink-0">|</span>
-                    {/* 상태 배지: 고정 너비로 정렬, 중앙 정렬 */}
-                    <div className="w-20 shrink-0 flex justify-center">
+                    <span className="hidden shrink-0 px-3 text-[#9CA3AF] xl:inline">|</span>
+                    {/* 상태 배지 */}
+                    <div className="flex w-full shrink-0 justify-start xl:w-20 xl:justify-center">
                       <span
                         className={`rounded-full px-2.5 py-0.5 text-xs whitespace-nowrap text-center ${
                           isInProgress
@@ -762,32 +762,32 @@ export function EntryCodesContent() {
                       </span>
                     </div>
                     {/* 구분자 */}
-                    <span className="px-3 text-[#9CA3AF] shrink-0">|</span>
-                    {/* 시작일: 고정 너비로 정렬, 중앙 정렬 */}
-                    <div className="w-48 shrink-0 text-center">
-                      <span className="text-xs text-[#9CA3AF] truncate block">
+                    <span className="hidden shrink-0 px-3 text-[#9CA3AF] xl:inline">|</span>
+                    {/* 시작일 */}
+                    <div className="min-w-0 w-full shrink-0 text-left xl:w-48 xl:text-center">
+                      <span className="block truncate whitespace-nowrap text-xs text-[#9CA3AF]">
                         시작: {formatExamDateTime(exam.startsAt)}
                       </span>
                     </div>
                     {/* 구분자 */}
-                    <span className="px-3 text-[#9CA3AF] shrink-0">|</span>
-                    {/* 종료일: 고정 너비로 정렬, 중앙 정렬 */}
-                    <div className="w-48 shrink-0 text-center">
-                      <span className="text-xs text-[#9CA3AF] truncate block">
+                    <span className="hidden shrink-0 px-3 text-[#9CA3AF] xl:inline">|</span>
+                    {/* 종료일 */}
+                    <div className="min-w-0 w-full shrink-0 text-left xl:w-48 xl:text-center">
+                      <span className="block truncate whitespace-nowrap text-xs text-[#9CA3AF]">
                         종료: {formatExamDateTime(exam.endsAt)}
                       </span>
                     </div>
                   </div>
 
                   {/* Right side: 시험 시작/종료 버튼, More menu */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3 xl:w-auto xl:flex-nowrap">
                     {examEnded ? (
                       <span className="text-sm text-[#9CA3AF]">종료됨</span>
                     ) : isInProgress ? (
                       <button
                         onClick={() => handleEndExam(exam)}
                         disabled={isEndingExam && selectedExamForEnd?.id === exam.id}
-                        className="rounded-full border border-red-600 bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="shrink-0 whitespace-nowrap rounded-full border border-red-600 bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {isEndingExam && selectedExamForEnd?.id === exam.id ? "종료 중..." : "시험 종료"}
                       </button>
@@ -795,7 +795,7 @@ export function EntryCodesContent() {
                       <button
                         onClick={() => handleStartExam(exam)}
                         disabled={isStartingExam && selectedExamForStart?.id === exam.id}
-                        className="rounded-full border border-[#3B82F6] bg-white px-4 py-1.5 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-[#E0EDFF] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="shrink-0 whitespace-nowrap rounded-full border border-[#3B82F6] bg-white px-4 py-1.5 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {isStartingExam && selectedExamForStart?.id === exam.id ? "시작 중..." : "시험 시작 >"}
                       </button>
@@ -829,14 +829,14 @@ export function EntryCodesContent() {
 
         {/* 시험 목록 페이지네이션 */}
         {exams && exams.length > 0 && (
-          <div className="mt-4 flex shrink-0 items-center justify-between border-t border-[#E5E7EB] pt-4">
+          <div className="mt-4 flex shrink-0 flex-col gap-3 border-t border-[#E5E7EB] pt-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Left side: Showing X-Y of N */}
-            <span className="text-sm text-[#6B7280]">
+            <span className="min-w-0 text-sm text-[#6B7280]">
               총 {exams.length}개의 시험 목록 중 {examDisplayStart}–{examDisplayEnd} 표시
             </span>
 
             {/* Right side: Pagination controls */}
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-end gap-1">
               {/* Prev button */}
               <button
                 onClick={() => setCurrentExamPage((p) => Math.max(1, p - 1))}
@@ -885,7 +885,7 @@ export function EntryCodesContent() {
 
       {/* Start Exam Confirmation Modal */}
       <Dialog open={isStartExamModalOpen} onOpenChange={setIsStartExamModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="flex max-h-[min(90dvh,90vh)] w-full max-w-[calc(100%-2rem)] flex-col gap-4 overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>시험을 시작하시겠습니까?</DialogTitle>
             <DialogDescription className="whitespace-pre-line pt-2 text-[#6B7280]">
@@ -894,11 +894,11 @@ export function EntryCodesContent() {
                 : "시험을 시작하시겠습니까?"}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-row justify-end gap-4">
-            <Button variant="outline" onClick={() => setIsStartExamModalOpen(false)} disabled={isStartingExam}>
+          <DialogFooter className="gap-2 sm:justify-end">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsStartExamModalOpen(false)} disabled={isStartingExam}>
               취소
             </Button>
-            <Button onClick={handleConfirmStartExam} disabled={isStartingExam}>
+            <Button className="w-full sm:w-auto" onClick={handleConfirmStartExam} disabled={isStartingExam}>
               {isStartingExam ? "시작 중..." : "시험 시작"}
             </Button>
           </DialogFooter>
@@ -907,7 +907,7 @@ export function EntryCodesContent() {
 
       {/* End Exam Confirmation Modal */}
       <Dialog open={isEndExamModalOpen} onOpenChange={setIsEndExamModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="flex max-h-[min(90dvh,90vh)] w-full max-w-[calc(100%-2rem)] flex-col gap-4 overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>시험을 종료하시겠습니까?</DialogTitle>
             <DialogDescription className="whitespace-pre-line pt-2 text-[#6B7280]">
@@ -916,14 +916,14 @@ export function EntryCodesContent() {
                 : "시험을 종료하시겠습니까?"}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-row justify-end gap-4">
-            <Button variant="outline" onClick={() => setIsEndExamModalOpen(false)} disabled={isEndingExam}>
+          <DialogFooter className="gap-2 sm:justify-end">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsEndExamModalOpen(false)} disabled={isEndingExam}>
               취소
             </Button>
             <Button 
               onClick={handleConfirmEndExam} 
               disabled={isEndingExam} 
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="w-full bg-red-600 text-white hover:bg-red-700 sm:w-auto"
             >
               {isEndingExam ? "종료 중..." : "시험 종료"}
             </Button>
@@ -933,7 +933,7 @@ export function EntryCodesContent() {
 
       {/* Delete Exam Confirmation Modal */}
       <Dialog open={isDeleteExamModalOpen} onOpenChange={setIsDeleteExamModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="flex max-h-[min(90dvh,90vh)] w-full max-w-[calc(100%-2rem)] flex-col gap-4 overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>시험 삭제</DialogTitle>
             <DialogDescription className="pt-2 text-[#6B7280]">
@@ -952,11 +952,11 @@ export function EntryCodesContent() {
               </div>
             </div>
           )}
-          <DialogFooter className="flex flex-row justify-end gap-4">
-            <Button variant="outline" onClick={() => setIsDeleteExamModalOpen(false)} disabled={isDeletingExam}>
+          <DialogFooter className="gap-2 sm:justify-end">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsDeleteExamModalOpen(false)} disabled={isDeletingExam}>
               취소
             </Button>
-            <Button onClick={handleConfirmDeleteExam} disabled={isDeletingExam} variant="destructive">
+            <Button className="w-full sm:w-auto" onClick={handleConfirmDeleteExam} disabled={isDeletingExam} variant="destructive">
               {isDeletingExam ? "삭제 중..." : "삭제"}
             </Button>
           </DialogFooter>
@@ -965,7 +965,7 @@ export function EntryCodesContent() {
 
       {/* Extend Exam Modal */}
       <Dialog open={isExtendExamModalOpen} onOpenChange={setIsExtendExamModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="flex max-h-[min(90dvh,90vh)] w-full max-w-[calc(100%-2rem)] flex-col gap-4 overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>시험 시간 연장</DialogTitle>
             <DialogDescription className="pt-2 text-[#6B7280]">
@@ -974,8 +974,8 @@ export function EntryCodesContent() {
                 : "시험 시간을 연장합니다."}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
+          <div className="grid min-w-0 gap-4 py-4">
+            <div className="min-w-0 space-y-2">
               <label htmlFor="extend-minutes" className="text-sm font-medium text-[#1A1A1A]">
                 연장 시간 (분)
               </label>
@@ -987,18 +987,20 @@ export function EntryCodesContent() {
                 value={extendMinutes}
                 onChange={(e) => setExtendMinutes(e.target.value)}
                 disabled={isExtendingExam}
+                className="w-full min-w-0"
               />
             </div>
           </div>
-          <DialogFooter className="flex flex-row justify-end gap-4">
+          <DialogFooter className="gap-2 sm:justify-end">
             <Button
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={() => setIsExtendExamModalOpen(false)}
               disabled={isExtendingExam}
             >
               취소
             </Button>
-            <Button onClick={handleConfirmExtendExam} disabled={isExtendingExam}>
+            <Button className="w-full sm:w-auto" onClick={handleConfirmExtendExam} disabled={isExtendingExam}>
               {isExtendingExam ? "연장 중..." : "연장"}
             </Button>
           </DialogFooter>
@@ -1007,15 +1009,15 @@ export function EntryCodesContent() {
 
       {/* Create Exam Modal */}
       <Dialog open={isCreateExamOpen} onOpenChange={setIsCreateExamOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="flex max-h-[min(90dvh,90vh)] w-full max-w-[calc(100%-2rem)] flex-col gap-4 overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>시험 생성</DialogTitle>
             <DialogDescription className="pt-2 text-[#6B7280]">
               새로운 시험을 생성합니다. 제목과 시작/종료 시각을 입력해주세요.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
+          <div className="grid min-w-0 gap-4 py-4">
+            <div className="min-w-0 space-y-2">
               <label htmlFor="exam-title" className="text-sm font-medium text-[#1A1A1A]">
                 제목
               </label>
@@ -1031,10 +1033,10 @@ export function EntryCodesContent() {
                   }
                 }}
                 disabled={isSubmitting}
-                className="col-span-3"
+                className="w-full min-w-0"
               />
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <label htmlFor="exam-starts-at" className="text-sm font-medium text-[#1A1A1A]">
                 시작 시각
               </label>
@@ -1057,13 +1059,13 @@ export function EntryCodesContent() {
                   }
                 }}
                 disabled={isSubmitting}
-                className="col-span-3"
+                className="w-full min-w-0 max-w-full"
               />
               {examStartsAtError && (
                 <p className="text-sm text-red-500">{examStartsAtError}</p>
               )}
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <label htmlFor="exam-ends-at" className="text-sm font-medium text-[#1A1A1A]">
                 종료 시각
               </label>
@@ -1083,16 +1085,17 @@ export function EntryCodesContent() {
                   }
                 }}
                 disabled={isSubmitting}
-                className="col-span-3"
+                className="w-full min-w-0 max-w-full"
               />
               {createExamValidationError && (
                 <p className="text-sm text-red-500">{createExamValidationError}</p>
               )}
             </div>
           </div>
-          <DialogFooter className="flex flex-row justify-end gap-4">
+          <DialogFooter className="gap-2 sm:justify-end">
             <Button
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={() => {
                 setIsCreateExamOpen(false)
                 setExamTitle("")
@@ -1107,6 +1110,7 @@ export function EntryCodesContent() {
             </Button>
             <Button
               type="button"
+              className="w-full sm:w-auto"
               onClick={handleCreateExam}
               disabled={isSubmitting || !examStartsAt || !examEndsAt}
             >

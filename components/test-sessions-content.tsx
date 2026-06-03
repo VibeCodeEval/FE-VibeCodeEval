@@ -228,22 +228,22 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
               <TableHeader>
                 <TableRow className="border-b border-[#E5E5E5]">
                   <TableHead
-                    className="text-[#6B7280]"
+                    className="text-[#6B7280] max-w-[220px]"
                     style={{
                       fontSize: "13px",
                       fontWeight: 500,
-                      width: "160px",
+                      width: "220px",
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
                     세션 ID
                   </TableHead>
                   <TableHead
-                    className="text-[#6B7280]"
+                    className="text-[#6B7280] max-w-[120px]"
                     style={{
                       fontSize: "13px",
                       fontWeight: 500,
-                      width: "200px",
+                      width: "120px",
                       fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                     }}
                   >
@@ -299,26 +299,36 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                 {paginatedSessions.map((session) => (
                   <TableRow key={session.id} className="border-b border-[#E5E5E5]">
                     <TableCell
-                      className="text-[#1A1A1A]"
+                      className="max-w-[220px] min-w-0 overflow-hidden text-[#1A1A1A]"
                       style={{
                         fontSize: "14px",
                         fontWeight: 500,
-                        width: "160px",
+                        width: "220px",
                         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                       }}
                     >
-                      {session.sessionId}
+                      <span
+                        className="block max-w-full truncate whitespace-nowrap overflow-hidden"
+                        title={session.sessionId}
+                      >
+                        {session.sessionId}
+                      </span>
                     </TableCell>
                     <TableCell
-                      className="text-[#1A1A1A]"
+                      className="max-w-[120px] min-w-0 overflow-hidden text-[#1A1A1A]"
                       style={{
                         fontSize: "14px",
                         fontWeight: 400,
-                        width: "200px",
+                        width: "120px",
                         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
                       }}
                     >
-                      {session.createdBy}
+                      <span
+                        className="block max-w-full truncate whitespace-nowrap overflow-hidden"
+                        title={session.createdBy}
+                      >
+                        {session.createdBy}
+                      </span>
                     </TableCell>
                     <TableCell
                       className="text-[#6B7280] text-center"
