@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useChatSocket } from "@/hooks/use-chat-socket"
 import { updateTokenUsage, getChatHistory } from "@/lib/api/chat"
+import { MarkdownContent } from "@/components/markdown-content"
 
 interface Message {
   id: number
@@ -14,7 +15,15 @@ interface Message {
 }
 
 const MESSAGE_BUBBLE_BASE_CLASS =
-  "min-w-0 max-w-[280px] break-words rounded-2xl px-4 py-3 text-sm leading-relaxed [overflow-wrap:anywhere] whitespace-pre-wrap"
+  "min-w-0 max-w-[280px] break-words rounded-2xl px-4 py-3 text-sm leading-relaxed [overflow-wrap:anywhere]"
+
+/** 회색 말풍선 — 코드 블록 대비 */
+const CHAT_MARKDOWN_ASSISTANT_CLASS =
+  "[&_pre]:border-[#E5E7EB] [&_pre]:bg-white [&_code]:bg-white"
+
+/** 파란 말풍선 — 밝은 배경용 MarkdownContent 오버라이드 */
+const CHAT_MARKDOWN_USER_CLASS =
+  "text-white [&_p]:text-white [&_strong]:text-white [&_em]:text-white/90 [&_li]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h4]:text-white [&_blockquote]:border-white/40 [&_blockquote]:text-white/90 [&_a]:text-blue-100 [&_hr]:border-white/30 [&_code]:bg-white/20 [&_code]:text-white [&_pre]:border-white/25 [&_pre]:bg-[#1D4ED8] [&_pre]:text-white [&_table]:border-white/25 [&_thead]:bg-white/15 [&_th]:text-white [&_td]:text-white/95"
 
 /** 공용 Textarea(min-h-16) 오버라이드 — 내용에 따라 늘어나되 최대 15줄, 이후 내부 스크롤 */
 const CHAT_INPUT_CLASS =
@@ -246,11 +255,18 @@ export function AiAssistantSidebar({
               <div
                 className={`${MESSAGE_BUBBLE_BASE_CLASS} ${
                   message.role === "assistant"
-                    ? "bg-[#F3F4F6] text-[#1F2937] rounded-tl-sm"
-                    : "bg-[#2563EB] text-white rounded-tr-sm"
+                    ? "bg-[#F3F4F6] rounded-tl-sm"
+                    : "bg-[#2563EB] rounded-tr-sm"
                 }`}
               >
-                {message.content}
+                <MarkdownContent
+                  content={message.content}
+                  className={
+                    message.role === "assistant"
+                      ? CHAT_MARKDOWN_ASSISTANT_CLASS
+                      : CHAT_MARKDOWN_USER_CLASS
+                  }
+                />
               </div>
             </div>
           ))}
