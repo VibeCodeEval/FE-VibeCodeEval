@@ -350,9 +350,7 @@ export function EntryCodesContent() {
 
     if (!isFutureDateTime(examEndsAt)) {
       setCreateExamValidationError(EXPIRES_AT_PAST_ERROR_MESSAGE)
-      if (!isFutureDateTime(examStartsAt)) {
-        shouldBlockSubmit = true
-      }
+      shouldBlockSubmit = true
     } else if (startDate && endDate && startDate >= endDate) {
       setCreateExamValidationError(ENDS_AT_BEFORE_STARTS_AT_ERROR_MESSAGE)
       shouldBlockSubmit = true

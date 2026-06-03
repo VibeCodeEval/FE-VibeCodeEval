@@ -24,7 +24,22 @@ export function daysToRetentionLabel(days: number): string {
   return found?.label ?? `${days}일`
 }
 
+const RETENTION_LABEL_DAYS_PATTERN = /^(\d+)\s*일?\s*$/
+
 export function retentionLabelToDays(label: string): number {
   const found = RETENTION_DAY_OPTIONS.find((o) => o.label === label)
-  return found?.days ?? 90
+  if (found) {
+    return found.days
+  }
+
+  const trimmed = label.trim()
+  const parsed = trimmed.match(RETENTION_LABEL_DAYS_PATTERN)
+  if (parsed) {
+    const days = Number.parseInt(parsed[1], 10)
+    if (Number.isFinite(days) && days > 0) {
+      return days
+    }
+  }
+
+  return 90
 }
