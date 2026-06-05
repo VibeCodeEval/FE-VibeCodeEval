@@ -40,6 +40,17 @@ function formStatesEqual(a: FormState, b: FormState): boolean {
   )
 }
 
+/** 서버에서 내려온 label이 RETENTION_DAY_OPTIONS에 없을 때 Select value 매칭용 */
+function buildRetentionSelectOptions(selectedLabel: string) {
+  if (RETENTION_DAY_OPTIONS.some((o) => o.label === selectedLabel)) {
+    return [...RETENTION_DAY_OPTIONS]
+  }
+  return [
+    ...RETENTION_DAY_OPTIONS,
+    { label: selectedLabel, days: retentionLabelToDays(selectedLabel) },
+  ]
+}
+
 export function GlobalSettingsContent() {
   const [form, setForm] = useState<FormState | null>(null)
   const [savedForm, setSavedForm] = useState<FormState | null>(null)
@@ -193,7 +204,7 @@ export function GlobalSettingsContent() {
                       <SelectValue placeholder="기간 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      {RETENTION_DAY_OPTIONS.map((opt) => (
+                      {buildRetentionSelectOptions(form.logRetentionLabel).map((opt) => (
                         <SelectItem key={opt.days} value={opt.label}>
                           {opt.label}
                         </SelectItem>
@@ -216,7 +227,7 @@ export function GlobalSettingsContent() {
                       <SelectValue placeholder="기간 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      {RETENTION_DAY_OPTIONS.map((opt) => (
+                      {buildRetentionSelectOptions(form.submissionRetentionLabel).map((opt) => (
                         <SelectItem key={opt.days} value={opt.label}>
                           {opt.label}
                         </SelectItem>
