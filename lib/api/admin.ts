@@ -423,6 +423,43 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminLogin
   }
 }
 
+export interface UpdateProblemAvailabilityRequest {
+  available: boolean;
+}
+
+/**
+ * 문제 사용 가능 여부 변경 — PATCH /api/admin/problems/{problemId}/availability
+ * available=true → PUBLISHED, false → ARCHIVED (시험 랜덤 배정 후보에 반영)
+ */
+export async function updateProblemAvailability(
+  problemId: number,
+  request: UpdateProblemAvailabilityRequest,
+): Promise<AdminProblem> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}/api/admin/problems/${problemId}/availability`;
+
+  const response = await fetchAdminWithRetry(url, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(request),
+    credentials: 'include',
+  });
+
+  const data: BaseResponse<AdminProblem> = await response.json().catch(() => ({
+    message: '문제 사용 가능 여부 변경에 실패했습니다.',
+  } as BaseResponse<AdminProblem>));
+
+  if (!response.ok || data.code !== 'COMMON200' || !data.result) {
+    throw new LoginFailedError(
+      data.message || '문제 사용 가능 여부 변경에 실패했습니다.',
+      response.status,
+      data.code,
+    );
+  }
+
+  return data.result;
+}
+
 /**
  * 문제 목록 조회 API 호출
  */
@@ -1376,6 +1413,8 @@ export interface Exam {
   id: number;
   title: string;
   state: string; // "WAITING" | "IN_PROGRESS" | "ENDED" 등
+  /** endsAt 경과 등 화면 표시용 (서버 state와 다를 수 있음) */
+  displayState?: string | null;
   startsAt: string; // ISO 8601 형식
   endsAt: string;   // ISO 8601 형식
   version: number;
@@ -2142,6 +2181,10 @@ export interface ExamineeBoardEntry {
   submittedAt?: string | null;
   /** 점수 행 기준 갱신 시각 (ISO 문자열) */
   evaluatedAt?: string | null;
+  /** BE 계산 응시상태: WAITING | IN_EXAM | SUBMITTED | ENDED */
+  attendanceStatus?: string | null;
+  /** BE 계산 제출상태: NOT_SUBMITTED | GRADING | GRADED */
+  submissionDisplayStatus?: string | null;
 }
 
 /**
@@ -2408,3 +2451,295 @@ export async function getAdminSubmissionDetail(
 // ─── SSE 채점 결과 스트리밍 ────────────────────────────────────────────────────
 // streamScoringResult는 lib/api/submissions.ts 에서 정의·export됩니다.
 // 이전에 이 파일에 존재하던 구버전 구현은 submissions.ts 의 콜백 기반 버전으로 통합되었습니다.
+
+// ─── 관리자 활동 로그 ───────────────────────────────────────────────────────────
+
+export type AdminActivityLogType =
+  | "ROOM_CREATED"
+  | "EXAM_STARTED"
+  | "EVALUATION_COMPLETED"
+  | "EXAM_ENDED"
+
+export interface AdminActivityLogEntry {
+  id: number
+  type: AdminActivityLogType
+  title: string
+  message: string
+  createdAt: string
+  examId: number
+  participantId: number | null
+}
+
+export interface AdminActivityLogPageResult {
+  content: AdminActivityLogEntry[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface GetAdminActivityLogsParams {
+  keyword?: string
+  type?: AdminActivityLogType
+  page?: number
+  size?: number
+}
+
+/**
+ * 관리자 활동 로그 조회 API (GET /api/admin/logs)
+ */
+export async function getAdminActivityLogs(
+  params: GetAdminActivityLogsParams = {}
+): Promise<AdminActivityLogPageResult> {
+  const apiBaseUrl = getApiBaseUrl()
+  const query = new URLSearchParams()
+  const keyword = params.keyword?.trim()
+  if (keyword) {
+    query.set("keyword", keyword)
+  }
+  if (params.type) {
+    query.set("type", params.type)
+  }
+  query.set("page", String(params.page ?? 0))
+  query.set("size", String(params.size ?? 20))
+
+  const url = `${apiBaseUrl}/api/admin/logs?${query.toString()}`
+  const isDev = process.env.NODE_ENV === "development"
+
+  if (isDev) {
+    console.log("[Get Admin Activity Logs] API 호출:", url)
+  }
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      credentials: "include",
+    })
+
+    let data: BaseResponse<AdminActivityLogPageResult>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "활동 로그 조회에 실패했습니다."
+      if (response.status === 401) {
+        errorMessage = "인증이 필요합니다. 다시 로그인해주세요."
+      } else if (response.status === 403) {
+        errorMessage = "권한이 없습니다."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "활동 로그 조회에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("활동 로그 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+  }
+}
+
+// ─── 마스터 활동 로그 ───────────────────────────────────────────────────────────
+
+export type MasterActivityLogType =
+  | "ADMIN_SIGNUP_CODE_ISSUED"
+  | "ADMIN_SIGNUP_CODE_DEACTIVATED"
+  | "ADMIN_SIGNUP_CODE_REACTIVATED"
+  | "ADMIN_SIGNED_UP"
+  | "ADMIN_ACCOUNT_DELETED"
+  | "ADMIN_PASSWORD_RESET"
+  | "PLATFORM_SETTINGS_UPDATED"
+
+export interface MasterActivityLogEntry {
+  id: number
+  type: MasterActivityLogType
+  title: string
+  message: string
+  createdAt: string
+  targetAdminId: number | null
+}
+
+export interface MasterActivityLogPageResult {
+  content: MasterActivityLogEntry[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface GetMasterActivityLogsParams {
+  keyword?: string
+  type?: MasterActivityLogType
+  page?: number
+  size?: number
+}
+
+/**
+ * 마스터 활동 로그 조회 API (GET /api/admin/master/logs) — MASTER 전용
+ */
+export async function getMasterActivityLogs(
+  params: GetMasterActivityLogsParams = {}
+): Promise<MasterActivityLogPageResult> {
+  const apiBaseUrl = getApiBaseUrl()
+  const query = new URLSearchParams()
+  const keyword = params.keyword?.trim()
+  if (keyword) {
+    query.set("keyword", keyword)
+  }
+  if (params.type) {
+    query.set("type", params.type)
+  }
+  query.set("page", String(params.page ?? 0))
+  query.set("size", String(params.size ?? 20))
+
+  const url = `${apiBaseUrl}/api/admin/master/logs?${query.toString()}`
+  const isDev = process.env.NODE_ENV === "development"
+
+  if (isDev) {
+    console.log("[Get Master Activity Logs] API 호출:", url)
+  }
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      credentials: "include",
+    })
+
+    let data: BaseResponse<MasterActivityLogPageResult>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "마스터 활동 로그 조회에 실패했습니다."
+      if (response.status === 401) {
+        errorMessage = "인증이 필요합니다. 다시 로그인해주세요."
+      } else if (response.status === 403) {
+        errorMessage = "권한이 없습니다. MASTER 계정으로 로그인해주세요."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "마스터 활동 로그 조회에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("마스터 활동 로그 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+  }
+}
+
+// ─── 마스터 플랫폼 전역 설정 ───────────────────────────────────────────────────
+
+export interface MasterPlatformSettings {
+  logRetentionDays: number
+  submissionRetentionDays: number
+  autoDeleteExpiredData: boolean
+  updatedAt: string | null
+}
+
+export interface UpdateMasterPlatformSettingsPayload {
+  logRetentionDays: number
+  submissionRetentionDays: number
+  autoDeleteExpiredData: boolean
+}
+
+/**
+ * MASTER 플랫폼 전역 설정 조회 (GET /api/admin/master/settings)
+ */
+export async function getMasterPlatformSettings(): Promise<MasterPlatformSettings> {
+  const url = `${getApiBaseUrl()}/api/admin/master/settings`
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      credentials: "include",
+    })
+
+    let data: BaseResponse<MasterPlatformSettings>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "플랫폼 설정 조회에 실패했습니다."
+      if (response.status === 403) {
+        errorMessage = "권한이 없습니다. MASTER 계정으로 로그인해주세요."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "플랫폼 설정 조회에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("플랫폼 설정 조회 중 오류가 발생했습니다.")
+  }
+}
+
+/**
+ * MASTER 플랫폼 전역 설정 저장 (PUT /api/admin/master/settings)
+ */
+export async function updateMasterPlatformSettings(
+  payload: UpdateMasterPlatformSettingsPayload
+): Promise<MasterPlatformSettings> {
+  const url = `${getApiBaseUrl()}/api/admin/master/settings`
+
+  try {
+    const response = await fetchAdminWithRetry(url, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      credentials: "include",
+      body: JSON.stringify(payload),
+    })
+
+    let data: BaseResponse<MasterPlatformSettings>
+    try {
+      data = await response.json()
+    } catch {
+      throw new LoginFailedError("서버 응답을 파싱할 수 없습니다.", response.status)
+    }
+
+    if (!response.ok) {
+      let errorMessage = data.message || "플랫폼 설정 저장에 실패했습니다."
+      if (response.status === 403) {
+        errorMessage = "권한이 없습니다. MASTER 계정으로 로그인해주세요."
+      }
+      throw new LoginFailedError(errorMessage, response.status, data.code)
+    }
+
+    if (data.code !== "COMMON200" || !data.result) {
+      throw new LoginFailedError(data.message || "플랫폼 설정 저장에 실패했습니다.")
+    }
+
+    return data.result
+  } catch (error) {
+    if (error instanceof LoginFailedError || error instanceof NetworkError) {
+      throw error
+    }
+    throw new NetworkError("플랫폼 설정 저장 중 오류가 발생했습니다.")
+  }
+}

@@ -89,6 +89,7 @@ export default function UserTestScreen() {
   const [isModalSubmitting, setIsModalSubmitting] = useState(false)
 
   const codeEditorRef = useRef<CodeEditorSectionHandle>(null)
+  const timeExpiredAutoSubmitRef = useRef(false)
 
   // ── 초기 토큰 사용량 로드 (getChatHistory.totalTokens) ──────────────────────
   useEffect(() => {
@@ -187,11 +188,24 @@ export default function UserTestScreen() {
     };
   }, []);
 
-  // ── 시간 만료 핸들러 ─────────────────────────────────────────────────────────
-  const handleTimeExpired = () => {
+  // ── 시간 만료 핸들러 (00:00:00 → 기존 제출 API 자동 호출) ─────────────────────
+  const handleTimeExpired = useCallback(async () => {
     if (showTimeOverModal || showFinishedModal || showEndModal) return;
+
+    if (!timeExpiredAutoSubmitRef.current) {
+      timeExpiredAutoSubmitRef.current = true;
+      setIsExamEnded(true);
+      try {
+        await codeEditorRef.current?.submit();
+      } catch (err) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("[UserTestScreen] 타이머 만료 자동 제출 실패:", err);
+        }
+      }
+    }
+
     setShowTimeOverModal(true);
-  };
+  }, [showTimeOverModal, showFinishedModal, showEndModal]);
 
   // ── 시험 상태 폴링 ───────────────────────────────────────────────────────────
   useEffect(() => {

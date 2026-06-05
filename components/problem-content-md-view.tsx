@@ -1,8 +1,10 @@
+import { MarkdownContent, MARKDOWN_CONTENT_CLASS } from "@/components/markdown-content"
+
 /**
  * 문제 본문(contentMd) 표시 — 사용자 시험 화면(problem-section)과 동일한 스타일
+ * @deprecated MARKDOWN_CONTENT_CLASS 사용 권장; 하위 호환용 유지
  */
-export const PROBLEM_CONTENT_MD_CLASS =
-  "text-[#4B5563] text-sm leading-relaxed whitespace-pre-wrap"
+export const PROBLEM_CONTENT_MD_CLASS = MARKDOWN_CONTENT_CLASS
 
 type ProblemContentMdViewProps = {
   contentMd: string | null | undefined
@@ -28,12 +30,10 @@ export function ProblemContentMdView({
 
   return (
     <div
-      className={[PROBLEM_CONTENT_MD_CLASS, scrollable ? "overflow-y-auto" : "", className]
-        .filter(Boolean)
-        .join(" ")}
+      className={[scrollable ? "overflow-y-auto" : "", className].filter(Boolean).join(" ")}
       style={maxHeight ? { maxHeight } : undefined}
     >
-      {text}
+      <MarkdownContent content={text} />
     </div>
   )
 }

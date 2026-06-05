@@ -1,402 +1,288 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { AdminPageHeader } from "@/components/admin-page-header"
+import { LoginFailedError } from "@/lib/api/admin"
+import {
+  getMasterPlatformSettings,
+  updateMasterPlatformSettings,
+  RETENTION_DAY_OPTIONS,
+  daysToRetentionLabel,
+  retentionLabelToDays,
+  type MasterPlatformSettings,
+} from "@/lib/api/master-platform-settings"
 
-type Settings = {
-  defaultTestDuration: string
-  defaultTokenLimit: string
-  logRetentionPeriod: string
-  submissionStoragePeriod: string
+type FormState = {
+  logRetentionLabel: string
+  submissionRetentionLabel: string
   autoDeleteExpiredData: boolean
-  lastUpdated?: string
 }
 
-const STORAGE_KEY = "ai-vibe-global-settings"
+function toFormState(settings: MasterPlatformSettings): FormState {
+  return {
+    logRetentionLabel: daysToRetentionLabel(settings.logRetentionDays),
+    submissionRetentionLabel: daysToRetentionLabel(settings.submissionRetentionDays),
+    autoDeleteExpiredData: settings.autoDeleteExpiredData,
+  }
+}
 
-const defaultSettings: Settings = {
-  defaultTestDuration: "60",
-  defaultTokenLimit: "10000",
-  logRetentionPeriod: "90 days",
-  submissionStoragePeriod: "90 days",
-  autoDeleteExpiredData: true,
+function formStatesEqual(a: FormState, b: FormState): boolean {
+  return (
+    a.logRetentionLabel === b.logRetentionLabel &&
+    a.submissionRetentionLabel === b.submissionRetentionLabel &&
+    a.autoDeleteExpiredData === b.autoDeleteExpiredData
+  )
+}
+
+/** 서버에서 내려온 label이 RETENTION_DAY_OPTIONS에 없을 때 Select value 매칭용 */
+function buildRetentionSelectOptions(selectedLabel: string) {
+  if (RETENTION_DAY_OPTIONS.some((o) => o.label === selectedLabel)) {
+    return [...RETENTION_DAY_OPTIONS]
+  }
+  return [
+    ...RETENTION_DAY_OPTIONS,
+    { label: selectedLabel, days: retentionLabelToDays(selectedLabel) },
+  ]
 }
 
 export function GlobalSettingsContent() {
-  const [settings, setSettings] = useState<Settings>(defaultSettings)
-  const [savedSettings, setSavedSettings] = useState<Settings>(defaultSettings)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [form, setForm] = useState<FormState | null>(null)
+  const [savedForm, setSavedForm] = useState<FormState | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
+  const loadSettings = useCallback(async () => {
+    setIsLoading(true)
+    setLoadError(null)
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored) as Settings
-        setSettings(parsed)
-        setSavedSettings(parsed)
-      }
+      const settings = await getMasterPlatformSettings()
+      const next = toFormState(settings)
+      setForm(next)
+      setSavedForm(next)
+      setLastUpdated(settings.updatedAt)
     } catch (e) {
-      // If parsing fails, use defaults
+      console.error("Failed to load platform settings", e)
+      setForm(null)
+      setSavedForm(null)
+      if (e instanceof LoginFailedError) {
+        setLoadError(e.message)
+      } else {
+        setLoadError("플랫폼 설정을 불러오지 못했습니다.")
+      }
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoaded(true)
   }, [])
 
+  useEffect(() => {
+    void loadSettings()
+  }, [loadSettings])
+
   const isDirty =
-    settings.defaultTestDuration !== savedSettings.defaultTestDuration ||
-    settings.defaultTokenLimit !== savedSettings.defaultTokenLimit ||
-    settings.logRetentionPeriod !== savedSettings.logRetentionPeriod ||
-    settings.submissionStoragePeriod !== savedSettings.submissionStoragePeriod ||
-    settings.autoDeleteExpiredData !== savedSettings.autoDeleteExpiredData
+    form !== null && savedForm !== null && !formStatesEqual(form, savedForm)
 
-  const handleSave = () => {
-    const duration = Number.parseInt(settings.defaultTestDuration)
-    const tokenLimit = Number.parseInt(settings.defaultTokenLimit)
+  const handleSave = async () => {
+    if (!form) return
 
-    if (isNaN(duration) || duration <= 0) {
+    setIsSaving(true)
+    try {
+      const result = await updateMasterPlatformSettings({
+        logRetentionDays: retentionLabelToDays(form.logRetentionLabel),
+        submissionRetentionDays: retentionLabelToDays(form.submissionRetentionLabel),
+        autoDeleteExpiredData: form.autoDeleteExpiredData,
+      })
+      const next = toFormState(result)
+      setForm(next)
+      setSavedForm(next)
+      setLastUpdated(result.updatedAt)
       toast({
-        title: "유효하지 않은 시간",
-        description: "테스트 시간은 양수여야 합니다.",
+        title: "설정 저장됨",
+        description: "변경 사항이 성공적으로 저장되었습니다.",
+      })
+    } catch (e) {
+      console.error("Failed to save platform settings", e)
+      const message =
+        e instanceof LoginFailedError ? e.message : "설정 저장에 실패했습니다. 잠시 후 다시 시도해주세요."
+      toast({
+        title: "저장 실패",
+        description: message,
         variant: "destructive",
       })
-      return
+    } finally {
+      setIsSaving(false)
     }
-
-    if (isNaN(tokenLimit) || tokenLimit <= 0) {
-      toast({
-        title: "유효하지 않은 토큰 제한",
-        description: "토큰 제한은 양수여야 합니다.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const updatedSettings: Settings = {
-      ...settings,
-      lastUpdated: new Date().toISOString(),
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings))
-    setSettings(updatedSettings)
-    setSavedSettings(updatedSettings)
-
-    toast({
-      title: "설정 저장됨",
-      description: "변경 사항이 성공적으로 저장되었습니다.",
-    })
   }
 
   const handleCancel = () => {
-    setSettings(savedSettings)
+    if (savedForm) {
+      setForm(savedForm)
+    }
   }
 
-  const formatLastUpdated = (isoString?: string) => {
+  const formatLastUpdated = (isoString: string | null) => {
     if (!isoString) return null
-    const date = new Date(isoString)
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const hours = date.getHours()
-    const minutes = date.getMinutes()
-    const ampm = hours >= 12 ? "오후" : "오전"
-    const displayHours = hours % 12 || 12
-    const displayMinutes = minutes.toString().padStart(2, "0")
-    return `${year}년 ${month}월 ${day}일 ${ampm} ${displayHours}:${displayMinutes}`
+    try {
+      return new Date(isoString).toLocaleString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    } catch {
+      return null
+    }
   }
 
-  // Don't render until localStorage is loaded to prevent hydration mismatch
-  if (!isLoaded) {
-    return null
+  if (isLoading) {
+    return (
+      <div className="flex h-full flex-1 flex-col">
+        <AdminPageHeader
+          title="전역 설정"
+          description="플랫폼 데이터 보관 정책을 관리합니다"
+        />
+        <main className="flex flex-1 items-center justify-center p-6">
+          <p className="text-sm text-[#6B7280]">설정을 불러오는 중...</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (loadError || !form) {
+    return (
+      <div className="flex h-full flex-1 flex-col">
+        <AdminPageHeader
+          title="전역 설정"
+          description="플랫폼 데이터 보관 정책을 관리합니다"
+        />
+        <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
+          <p className="text-sm text-red-600">{loadError ?? "설정을 불러올 수 없습니다."}</p>
+          <Button variant="outline" onClick={() => void loadSettings()}>
+            다시 시도
+          </Button>
+        </main>
+      </div>
+    )
   }
 
   return (
     <div className="flex h-full flex-1 flex-col">
       <AdminPageHeader
         title="전역 설정"
-        description="플랫폼 전역 설정 및 시스템 보안 정책을 관리합니다"
+        description="플랫폼 데이터 보관 정책을 관리합니다"
       />
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
-      {/* Settings Cards Container */}
-      <div className="flex flex-col gap-6 flex-1">
-        {/* Section 1: Test Configuration */}
         <Card className="border border-[#E5E5E5] shadow-sm">
           <CardHeader className="py-4 px-6">
-            <CardTitle
-              style={{
-                fontSize: "18px",
-                fontWeight: 600,
-                color: "#1A1A1A",
-                fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-              }}
-            >
-              테스트 설정
-            </CardTitle>
-            <CardDescription
-              style={{
-                fontSize: "14px",
-                color: "#6B7280",
-                fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-              }}
-            >
-              모든 평가에 대한 기본 테스트 매개변수를 설정합니다.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Default Test Duration */}
-              <div className="flex flex-col gap-2">
-                <Label
-                  htmlFor="test-duration"
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#1A1A1A",
-                    fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                  }}
-                >
-                  기본 테스트 시간
-                </Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    id="test-duration"
-                    type="number"
-                    value={settings.defaultTestDuration}
-                    onChange={(e) => setSettings({ ...settings, defaultTestDuration: e.target.value })}
-                    className="flex-1"
-                    style={{
-                      fontSize: "14px",
-                      fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      color: "#6B7280",
-                      fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    분
-                  </span>
-                </div>
-              </div>
-
-              {/* Default Token Limit */}
-              <div className="flex flex-col gap-2">
-                <Label
-                  htmlFor="token-limit"
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#1A1A1A",
-                    fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                  }}
-                >
-                  기본 토큰 제한
-                </Label>
-                <Input
-                  id="token-limit"
-                  type="number"
-                  value={settings.defaultTokenLimit}
-                  onChange={(e) => setSettings({ ...settings, defaultTokenLimit: e.target.value })}
-                  style={{
-                    fontSize: "14px",
-                    fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                  }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Section 2: Data Retention */}
-        <Card className="border border-[#E5E5E5] shadow-sm">
-          <CardHeader className="py-4 px-6">
-            <CardTitle
-              style={{
-                fontSize: "18px",
-                fontWeight: 600,
-                color: "#1A1A1A",
-                fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-              }}
-            >
-              데이터 보관
-            </CardTitle>
-            <CardDescription
-              style={{
-                fontSize: "14px",
-                color: "#6B7280",
-                fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-              }}
-            >
+            <CardTitle className="text-lg font-semibold text-[#1A1A1A]">데이터 보관</CardTitle>
+            <CardDescription className="text-sm text-[#6B7280]">
               플랫폼 기록이 저장되는 기간을 관리합니다.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 pb-6 pt-2">
             <div className="flex flex-col gap-6">
-              {/* Two column dropdowns */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Log Retention Period */}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <Label
-                    htmlFor="log-retention"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      color: "#1A1A1A",
-                      fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                    }}
-                  >
+                  <Label htmlFor="log-retention" className="text-sm font-medium">
                     로그 보관 기간
                   </Label>
                   <Select
-                    value={settings.logRetentionPeriod}
-                    onValueChange={(value) => setSettings({ ...settings, logRetentionPeriod: value })}
+                    value={form.logRetentionLabel}
+                    onValueChange={(value) => setForm({ ...form, logRetentionLabel: value })}
                   >
-                    <SelectTrigger
-                      id="log-retention"
-                      className="w-full"
-                      style={{
-                        fontSize: "14px",
-                        fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                      }}
-                    >
+                    <SelectTrigger id="log-retention" className="w-full">
                       <SelectValue placeholder="기간 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="30 days">30일</SelectItem>
-                      <SelectItem value="90 days">90일</SelectItem>
-                      <SelectItem value="6 months">6개월</SelectItem>
-                      <SelectItem value="1 year">1년</SelectItem>
+                      {buildRetentionSelectOptions(form.logRetentionLabel).map((opt) => (
+                        <SelectItem key={opt.days} value={opt.label}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Submission Storage Period */}
                 <div className="flex flex-col gap-2">
-                  <Label
-                    htmlFor="submission-storage"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      color: "#1A1A1A",
-                      fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                    }}
-                  >
+                  <Label htmlFor="submission-storage" className="text-sm font-medium">
                     제출물 보관 기간
                   </Label>
                   <Select
-                    value={settings.submissionStoragePeriod}
-                    onValueChange={(value) => setSettings({ ...settings, submissionStoragePeriod: value })}
+                    value={form.submissionRetentionLabel}
+                    onValueChange={(value) =>
+                      setForm({ ...form, submissionRetentionLabel: value })
+                    }
                   >
-                    <SelectTrigger
-                      id="submission-storage"
-                      className="w-full"
-                      style={{
-                        fontSize: "14px",
-                        fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                      }}
-                    >
+                    <SelectTrigger id="submission-storage" className="w-full">
                       <SelectValue placeholder="기간 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="30 days">30일</SelectItem>
-                      <SelectItem value="90 days">90일</SelectItem>
-                      <SelectItem value="6 months">6개월</SelectItem>
-                      <SelectItem value="1 year">1년</SelectItem>
+                      {buildRetentionSelectOptions(form.submissionRetentionLabel).map((opt) => (
+                        <SelectItem key={opt.days} value={opt.label}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              {/* Auto-Delete Toggle */}
-              <div className="flex items-center justify-between py-2">
+              <div className="flex items-center justify-between gap-4 py-2">
                 <div className="flex flex-col gap-1">
-                  <Label
-                    htmlFor="auto-delete"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      color: "#1A1A1A",
-                      fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                    }}
-                  >
+                  <Label htmlFor="auto-delete" className="text-sm font-medium">
                     만료된 데이터 자동 삭제
                   </Label>
-                  <span
-                    style={{
-                      fontSize: "13px",
-                      color: "#6B7280",
-                      fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-                    }}
-                  >
-                    보관 기간 후 데이터를 자동으로 삭제합니다.
+                  <span className="text-[13px] text-[#6B7280]">
+                    보관 기간이 지난 데이터의 자동 삭제 정책을 설정합니다. 실제 삭제 작업은
+                    서버 스케줄러가 활성화된 환경에서 실행됩니다.
                   </span>
                 </div>
                 <Switch
                   id="auto-delete"
-                  checked={settings.autoDeleteExpiredData}
-                  onCheckedChange={(checked) => setSettings({ ...settings, autoDeleteExpiredData: checked })}
-                  className="data-[state=checked]:bg-[#7C3AED]"
+                  checked={form.autoDeleteExpiredData}
+                  onCheckedChange={(checked) =>
+                    setForm({ ...form, autoDeleteExpiredData: checked })
+                  }
+                  className="shrink-0 data-[state=checked]:bg-[#7C3AED]"
                 />
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Footer Actions */}
-      <div className="flex flex-col items-center gap-2 pt-4 pb-2">
-        <div className="flex justify-center gap-4">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-              paddingLeft: "24px",
-              paddingRight: "24px",
-            }}
-          >
-            취소
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!isDirty}
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-              backgroundColor: isDirty ? "#7C3AED" : undefined,
-              paddingLeft: "24px",
-              paddingRight: "24px",
-            }}
-            className={isDirty ? "hover:bg-[#6D28D9]" : ""}
-          >
-            변경 사항 저장
-          </Button>
+        <div className="flex flex-col items-center gap-2 pt-4 pb-2">
+          <div className="flex justify-center gap-4">
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              disabled={!isDirty || isSaving}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={() => void handleSave()}
+              disabled={!isDirty || isSaving}
+              className={isDirty ? "bg-[#7C3AED] hover:bg-[#6D28D9]" : ""}
+            >
+              {isSaving ? "저장 중..." : "변경 사항 저장"}
+            </Button>
+          </div>
+          {lastUpdated && (
+            <span className="text-xs text-[#9CA3AF]">
+              마지막 저장: {formatLastUpdated(lastUpdated)}
+            </span>
+          )}
         </div>
-        {savedSettings.lastUpdated && (
-          <span
-            style={{
-              fontSize: "12px",
-              color: "#9CA3AF",
-              fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-            }}
-          >
-            마지막 저장: {formatLastUpdated(savedSettings.lastUpdated)}
-          </span>
-        )}
-      </div>
       </main>
     </div>
   )

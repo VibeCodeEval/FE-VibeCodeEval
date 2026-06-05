@@ -2,7 +2,13 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { Search, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
-import { getProblems, type AdminProblem } from "@/lib/api/admin"
+import {
+  getProblems,
+  updateProblemAvailability,
+  LoginFailedError,
+  NetworkError,
+  type AdminProblem,
+} from "@/lib/api/admin"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
 
@@ -17,6 +23,16 @@ interface Problem {
 
 type FilterOption = "전체" | "사용 가능만 보기" | "사용 불가만 보기"
 
+const TOGGLE_ERROR_DEFAULT = "문제 사용 가능 상태를 변경하지 못했습니다."
+
+function resolveToggleErrorMessage(error: unknown): string {
+  if (error instanceof LoginFailedError || error instanceof NetworkError) {
+    const trimmed = error.message?.trim()
+    if (trimmed) return trimmed
+  }
+  return TOGGLE_ERROR_DEFAULT
+}
+
 function DifficultyBadge({ difficulty }: { difficulty: "쉬움" | "중간" | "어려움" }) {
   const styles = {
     쉬움: "bg-[#D1FAE5] text-[#059669]",
@@ -29,6 +45,8 @@ function DifficultyBadge({ difficulty }: { difficulty: "쉬움" | "중간" | "�
 export function ProblemsContent() {
   const [problems, setProblems] = useState<Problem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [togglingProblemId, setTogglingProblemId] = useState<string | null>(null)
+  const [toggleError, setToggleError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [filter, setFilter] = useState<FilterOption>("전체")
   const [currentPage, setCurrentPage] = useState(1)
@@ -57,7 +75,7 @@ export function ProblemsContent() {
           title: problem.title,
           version: "v1.0",
           difficulty,
-          available: problem.status === "PUBLISHED" || problem.status === "ACTIVE",
+          available: problem.status === "PUBLISHED",
           tags,
         }
       })
@@ -97,10 +115,34 @@ export function ProblemsContent() {
   const displayStart = filteredProblems.length === 0 ? 0 : startIndex + 1
   const displayEnd = Math.min(endIndex, filteredProblems.length)
 
-  const handleToggleAvailability = (id: string) => {
+  const handleToggleAvailability = async (id: string, nextAvailable: boolean) => {
+    const previous = problems.find((problem) => problem.id === id)
+    if (!previous) return
+
+    setTogglingProblemId(id)
+    setToggleError(null)
     setProblems((prev) =>
-      prev.map((problem) => (problem.id === id ? { ...problem, available: !problem.available } : problem)),
+      prev.map((problem) => (problem.id === id ? { ...problem, available: nextAvailable } : problem)),
     )
+
+    try {
+      const updated = await updateProblemAvailability(Number(id), { available: nextAvailable })
+      setToggleError(null)
+      setProblems((prev) =>
+        prev.map((problem) =>
+          problem.id === id
+            ? { ...problem, available: updated.status === "PUBLISHED" }
+            : problem,
+        ),
+      )
+    } catch (error) {
+      setProblems((prev) =>
+        prev.map((problem) => (problem.id === id ? { ...problem, available: previous.available } : problem)),
+      )
+      setToggleError(resolveToggleErrorMessage(error))
+    } finally {
+      setTogglingProblemId(null)
+    }
   }
 
   const handleSearchChange = (value: string) => {
@@ -159,6 +201,12 @@ export function ProblemsContent() {
           </DropdownMenu>
         </div>
 
+        {toggleError && (
+          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3" role="alert">
+            <p className="text-sm font-medium text-red-600">{toggleError}</p>
+          </div>
+        )}
+
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
           {visibleProblems.length === 0 ? (
             <div className="flex h-32 items-center justify-center rounded-xl border border-[#E5E5E5] bg-white text-sm text-[#9CA3AF] shadow-sm">
@@ -207,7 +255,8 @@ export function ProblemsContent() {
                     </span>
                     <Switch
                       checked={problem.available}
-                      onCheckedChange={() => handleToggleAvailability(problem.id)}
+                      disabled={togglingProblemId === problem.id}
+                      onCheckedChange={(checked) => void handleToggleAvailability(problem.id, checked)}
                       className="data-[state=checked]:bg-[#3B82F6]"
                     />
                   </div>

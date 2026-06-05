@@ -1,42 +1,51 @@
 /**
- * 관리자 참가자 목록(/admin/users) — 응시·제출 상태 표시 (FE 보정, API 변경 없음).
+ * 관리자 참가자 목록(/admin/users) — 응시·제출 상태 표시.
+ * BE가 내려주는 attendanceStatus / submissionDisplayStatus를 우선 사용한다.
  */
 
 import type { Exam, ExamineeBoardEntry } from "@/lib/api/admin"
-import { isExamSessionEnded } from "@/lib/master-test-sessions"
 
-export type AdminUsersConnectionStatus = "응시 완료" | "응시 중" | "대기 중" | "종료됨"
+export type AdminUsersConnectionStatus = "대기중" | "응시중" | "응시완료" | "종료됨"
 
-export type AdminUsersSubmissionStatus =
-  | "시작 전"
-  | "진행 중"
-  | "채점 중"
-  | "제출 완료"
-  | "채점 완료"
-  | "미제출"
-  | "제출 실패"
+export type AdminUsersSubmissionStatus = "미제출" | "채점중" | "채점완료"
 
-const PARTICIPANT_WAITING_STATES = new Set(["WAITING", "PENDING", "IDLE"])
+export type ParticipantAttendanceStatusBe =
+  | "WAITING"
+  | "IN_EXAM"
+  | "SUBMITTED"
+  | "ENDED"
 
-const PARTICIPANT_EXAMINING_STATES = new Set([
-  "ACTIVE",
-  "RUNNING",
-  "IN_PROGRESS",
-  "ENTRANCE",
-  "STARTED",
-  "JOINED",
-])
+export type ParticipantSubmissionDisplayStatusBe =
+  | "NOT_SUBMITTED"
+  | "GRADING"
+  | "GRADED"
 
-function normalizeParticipantState(state: string | null | undefined): string {
-  return (state ?? "").trim().toUpperCase()
+const ATTENDANCE_LABEL: Record<ParticipantAttendanceStatusBe, AdminUsersConnectionStatus> = {
+  WAITING: "대기중",
+  IN_EXAM: "응시중",
+  SUBMITTED: "응시완료",
+  ENDED: "종료됨",
 }
 
-function normalizeSubmissionStatus(status: string | null | undefined): string {
-  return (status ?? "").trim().toUpperCase()
+const SUBMISSION_LABEL: Record<ParticipantSubmissionDisplayStatusBe, AdminUsersSubmissionStatus> = {
+  NOT_SUBMITTED: "미제출",
+  GRADING: "채점중",
+  GRADED: "채점완료",
+}
+
+/** 시험 세션 종료 여부 (BE displayState 또는 endsAt 보정) */
+export function getEffectiveExamState(exam: Exam): string {
+  const display = exam.displayState?.trim().toUpperCase()
+  if (display) return display
+  if (isAdminExamEnded(exam)) return "ENDED"
+  return (exam.state ?? "").trim().toUpperCase()
 }
 
 export function isAdminExamEnded(exam: Exam): boolean {
-  if (isExamSessionEnded(exam.state)) return true
+  const effective = exam.displayState?.trim().toUpperCase()
+  if (effective === "ENDED" || effective === "COMPLETED") return true
+  const state = (exam.state ?? "").trim().toUpperCase()
+  if (state === "ENDED" || state === "COMPLETED" || state === "CLOSED") return true
   if (exam.endsAt) {
     const endMs = new Date(exam.endsAt).getTime()
     if (!Number.isNaN(endMs) && endMs <= Date.now()) return true
@@ -44,55 +53,20 @@ export function isAdminExamEnded(exam: Exam): boolean {
   return false
 }
 
-function isWaitingParticipant(entry: ExamineeBoardEntry): boolean {
-  const state = normalizeParticipantState(entry.state)
-  if (PARTICIPANT_WAITING_STATES.has(state)) return true
-  if (!state && (entry.tokenUsed ?? 0) === 0 && !entry.submitted) return true
-  return false
+function mapAttendanceFromBe(
+  value: string | null | undefined
+): AdminUsersConnectionStatus | null {
+  if (!value) return null
+  const key = value.trim().toUpperCase() as ParticipantAttendanceStatusBe
+  return ATTENDANCE_LABEL[key] ?? null
 }
 
-/** 응시가 진행 중인지 (시험·응시 종료 전용 판단에는 사용하지 않음) */
-export function isExamineeInProgress(entry: ExamineeBoardEntry): boolean {
-  if (entry.submitted) return false
-  const state = normalizeParticipantState(entry.state)
-  if (PARTICIPANT_EXAMINING_STATES.has(state)) return true
-  if ((entry.tokenUsed ?? 0) > 0) return true
-  if (
-    entry.submissionStatus === "QUEUED" ||
-    entry.submissionStatus === "RUNNING"
-  ) {
-    return true
-  }
-  return false
-}
-
-export function isSubmissionGradingComplete(entry: ExamineeBoardEntry): boolean {
-  if (!entry.submitted) return false
-  const status = normalizeSubmissionStatus(entry.submissionStatus)
-  if (status === "FAILED") return true
-
-  if (entry.evaluatedAt) return true
-  if (entry.totalScore != null && entry.totalScore !== undefined) {
-    const n = Number(entry.totalScore)
-    if (!Number.isNaN(n)) return true
-  }
-  if (status === "DONE") return true
-  return false
-}
-
-function isSubmissionGradingInFlight(entry: ExamineeBoardEntry): boolean {
-  const status = normalizeSubmissionStatus(entry.submissionStatus)
-  return status === "QUEUED" || status === "RUNNING"
-}
-
-export function isExamineeSessionEnded(
-  connectionStatus: AdminUsersConnectionStatus,
-  exam: Exam
-): boolean {
-  if (connectionStatus === "종료됨" || connectionStatus === "응시 완료") {
-    return true
-  }
-  return isAdminExamEnded(exam)
+function mapSubmissionFromBe(
+  value: string | null | undefined
+): AdminUsersSubmissionStatus | null {
+  if (!value) return null
+  const key = value.trim().toUpperCase() as ParticipantSubmissionDisplayStatusBe
+  return SUBMISSION_LABEL[key] ?? null
 }
 
 /** 응시 상태 (관리자 참가자 목록) */
@@ -100,51 +74,39 @@ export function resolveAdminUsersConnectionStatus(
   entry: ExamineeBoardEntry,
   exam: Exam
 ): AdminUsersConnectionStatus {
+  const fromBe = mapAttendanceFromBe(entry.attendanceStatus)
+  if (fromBe) return fromBe
+
   if (isAdminExamEnded(exam)) return "종료됨"
-  if (entry.submitted) return "응시 완료"
-  if (isWaitingParticipant(entry)) return "대기 중"
-  if (isExamineeInProgress(entry)) return "응시 중"
-  return "대기 중"
+  if (entry.submitted) return "응시완료"
+  const state = (entry.state ?? "").trim().toUpperCase()
+  if (["WAITING", "PENDING", "IDLE"].includes(state)) return "대기중"
+  if ((entry.tokenUsed ?? 0) > 0 || ["RUNNING", "IN_PROGRESS", "ACTIVE"].includes(state)) {
+    return "응시중"
+  }
+  return "대기중"
 }
 
-/**
- * 제출 상태 — 응시가 종료된 경우 `진행 중`을 쓰지 않음.
- */
+/** 제출 상태 */
 export function resolveAdminUsersSubmissionStatus(
   entry: ExamineeBoardEntry,
-  exam: Exam,
-  connectionStatus: AdminUsersConnectionStatus
+  _exam: Exam,
+  _connectionStatus: AdminUsersConnectionStatus
 ): AdminUsersSubmissionStatus {
-  const examineeEnded = isExamineeSessionEnded(connectionStatus, exam)
+  const fromBe = mapSubmissionFromBe(entry.submissionDisplayStatus)
+  if (fromBe) return fromBe
 
-  if (!examineeEnded) {
-    if (!entry.submitted) {
-      if (isExamineeInProgress(entry)) return "진행 중"
-      return "시작 전"
-    }
-    if (normalizeSubmissionStatus(entry.submissionStatus) === "FAILED") {
-      return "제출 실패"
-    }
-    if (isSubmissionGradingComplete(entry)) return "채점 완료"
-    if (isSubmissionGradingInFlight(entry)) return "채점 중"
-    return "제출 완료"
-  }
-
-  if (!entry.submitted) {
-    return "미제출"
-  }
-
-  if (normalizeSubmissionStatus(entry.submissionStatus) === "FAILED") {
-    return "제출 실패"
-  }
-  if (isSubmissionGradingComplete(entry)) return "채점 완료"
-  if (isSubmissionGradingInFlight(entry)) return "채점 중"
-  return "제출 완료"
+  if (!entry.submitted) return "미제출"
+  if (entry.totalScore != null && !Number.isNaN(Number(entry.totalScore))) return "채점완료"
+  if (entry.evaluatedAt) return "채점완료"
+  const status = (entry.submissionStatus ?? "").trim().toUpperCase()
+  if (status === "DONE" || status === "FAILED") return "채점완료"
+  return "채점중"
 }
 
-/** 제출·채점이 끝난 것으로 집계할 상태 (통계용) */
+/** 제출·채점 완료 집계 (통계용) */
 export function isAdminUsersSubmissionCountedComplete(
   status: AdminUsersSubmissionStatus
 ): boolean {
-  return status === "제출 완료" || status === "채점 완료"
+  return status === "채점완료"
 }
