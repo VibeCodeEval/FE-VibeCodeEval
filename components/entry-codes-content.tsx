@@ -675,12 +675,12 @@ export function EntryCodesContent() {
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col">
       {/* Top Header Bar */}
-      <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8">
+      <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8 lg:pr-8 xl:pr-10">
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">코드 관리</h1>
           <p className="text-sm text-[#6B7280]">참가자 시험 입장 코드를 관리합니다</p>
         </div>
-        <div className="flex gap-2 lg:mr-8 xl:mr-12 2xl:mr-16">
+        <div className="flex shrink-0 gap-2">
           <button
             onClick={() => setIsCreateExamOpen(true)}
             className="rounded-full bg-[#3B82F6] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
