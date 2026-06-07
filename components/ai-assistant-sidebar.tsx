@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Send, Bot, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useChatSocket } from "@/hooks/use-chat-socket"
-import { updateTokenUsage, getChatHistory } from "@/lib/api/chat"
+import { getChatHistory } from "@/lib/api/chat"
 import { MarkdownContent } from "@/components/markdown-content"
 
 interface Message {
@@ -128,16 +128,9 @@ export function AiAssistantSidebar({
     const tokensDelta: number = response.tokenCount ?? 0;
 
     if (tokensDelta > 0) {
-      updateTokenUsage({ examId, participantId, tokens: tokensDelta })
-        .then(() => { onTokensUpdate(tokensDelta); })
-        .catch((err) => {
-          if (process.env.NODE_ENV === "development") {
-            console.warn("[WS Chat] Token update failed:", err);
-          }
-          onTokensUpdate(tokensDelta);
-        });
+      onTokensUpdate(tokensDelta);
     }
-  }, [examId, participantId, onTokensUpdate]);
+  }, [onTokensUpdate]);
 
   const handleChatError = useCallback((errorMessage: string) => {
     console.error('[AiAssistant] WS 에러로 로딩 해제:', errorMessage);
