@@ -253,7 +253,7 @@ export function GlobalSettingsContent() {
                   onCheckedChange={(checked) =>
                     setForm({ ...form, autoDeleteExpiredData: checked })
                   }
-                  className="shrink-0 data-[state=checked]:bg-[#7C3AED]"
+                  className="shrink-0 data-[state=checked]:bg-primary"
                 />
               </div>
             </div>
@@ -272,7 +272,7 @@ export function GlobalSettingsContent() {
             <Button
               onClick={() => void handleSave()}
               disabled={!isDirty || isSaving}
-              className={isDirty ? "bg-[#7C3AED] hover:bg-[#6D28D9]" : ""}
+              className={isDirty ? "bg-primary hover:bg-primary/90" : ""}
             >
               {isSaving ? "저장 중..." : "변경 사항 저장"}
             </Button>

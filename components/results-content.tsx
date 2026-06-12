@@ -130,7 +130,7 @@ export function ResultsContent() {
                 setSearchQuery(e.target.value)
                 setCurrentPage(1)
               }}
-              className="w-full rounded-lg border border-[#E5E5E5] bg-white py-2.5 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+              className="w-full rounded-lg border border-[#E5E5E5] bg-white py-2.5 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
             />
           </div>
         </div>
@@ -241,7 +241,7 @@ export function ResultsContent() {
                   type="button"
                   onClick={() => handleDownload(result)}
                   disabled={downloadingExamId === result.id}
-                  className="flex items-center gap-2 rounded-lg bg-[#3B82F6] px-4 py-2 text-white transition-colors hover:bg-[#2563EB] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
                     fontSize: "14px",
                     fontWeight: 500,
@@ -256,7 +256,7 @@ export function ResultsContent() {
                 </button>
                 <Link
                   href={`/admin/results/${encodeURIComponent(result.entryCode)}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-app-accent-soft-foreground transition-colors hover:bg-app-accent-soft"
                   style={{
                     fontSize: "14px",
                     fontWeight: 500,
@@ -333,7 +333,7 @@ export function ResultsContent() {
             key={toast.id}
             className="flex w-[360px] items-start gap-3 rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-lg animate-in slide-in-from-right-full duration-300"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]">
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
               <CheckCircle className="h-3.5 w-3.5 text-white" strokeWidth={2} />
             </div>
             <div className="flex-1">

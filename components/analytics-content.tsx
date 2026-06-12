@@ -105,7 +105,7 @@ function ParticipantCard({ row }: { row: BoardRow }) {
             from: "analytics",
             participantName: entry.name,
           })}
-          className="text-sm font-medium text-[#3B82F6] transition-colors hover:text-[#2563EB]"
+          className="text-sm font-medium text-app-accent-soft-foreground transition-colors hover:text-foreground"
         >
           상세 보기 →
         </Link>
@@ -271,7 +271,7 @@ export function AnalyticsContent() {
                 value={selectedExamId}
                 onChange={(e) => setSelectedExamId(e.target.value)}
                 disabled={isLoadingExams}
-                className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] disabled:opacity-50"
+                className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring disabled:opacity-50"
               >
                 <option value="all">모든 세션</option>
                 {exams.map((exam) => (
@@ -288,7 +288,7 @@ export function AnalyticsContent() {
             type="button"
             onClick={handleExport}
             disabled={metricsLoading || boardRows.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download className="h-4 w-4" strokeWidth={2} />
             결과보내기 (CSV)
@@ -374,7 +374,7 @@ export function AnalyticsContent() {
             key={toast.id}
             className="flex w-[360px] items-start gap-3 rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-lg animate-in slide-in-from-right-full duration-300"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]">
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
               <CheckCircle className="h-3.5 w-3.5 text-white" strokeWidth={2} />
             </div>
             <div className="flex-1">

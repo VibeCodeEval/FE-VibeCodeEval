@@ -179,7 +179,7 @@ export function ProblemsContent() {
               placeholder="문제 검색…"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="h-10 w-72 rounded-lg border border-[#E5E5E5] bg-white pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+              className="h-10 w-72 rounded-lg border border-[#E5E5E5] bg-white pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
             />
           </div>
 
@@ -248,7 +248,9 @@ export function ProblemsContent() {
                     <span
                       className={
                         "rounded-full px-2.5 py-0.5 text-xs font-medium " +
-                        (problem.available ? "bg-[#E0EDFF] text-[#3B82F6]" : "bg-[#F3F4F6] text-[#6B7280]")
+                        (problem.available
+                          ? "bg-app-accent-soft text-app-accent-soft-foreground"
+                          : "border border-border bg-muted text-muted-foreground")
                       }
                     >
                       {problem.available ? "사용 가능" : "사용 불가"}
@@ -257,7 +259,7 @@ export function ProblemsContent() {
                       checked={problem.available}
                       disabled={togglingProblemId === problem.id}
                       onCheckedChange={(checked) => void handleToggleAvailability(problem.id, checked)}
-                      className="data-[state=checked]:bg-[#3B82F6]"
+                      className="data-[state=checked]:bg-primary"
                     />
                   </div>
                 </div>

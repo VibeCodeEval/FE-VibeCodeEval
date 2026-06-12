@@ -43,7 +43,7 @@ export function AccountDeleteSuccessDialog({
           <DialogDescription className="mt-2 text-[#6B7280]">{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className={ACCOUNT_DELETE_SUCCESS_FOOTER_CLASS}>
-          <Button onClick={onConfirm} className="bg-[#3B82F6] text-white hover:bg-[#2563EB]">
+          <Button onClick={onConfirm} className="bg-primary text-primary-foreground hover:bg-primary/90">
             {buttonLabel}
           </Button>
         </DialogFooter>

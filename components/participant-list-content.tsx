@@ -143,7 +143,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
         <div className="mb-4 shrink-0">
           <Link
             href="/admin/results"
-            className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#3B82F6]"
+            className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-app-accent-soft-foreground"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
             평가 결과로 돌아가기
@@ -229,7 +229,7 @@ export function ParticipantListContent({ entryCode }: ParticipantListContentProp
                         from: "results",
                         participantName: participant.name,
                       })}
-                      className="inline-flex items-center gap-1.5 rounded-md border-[#3B82F6] bg-white px-3 py-1.5 text-sm text-[#3B82F6] hover:bg-[#EFF6FF]"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-app-ring/40 bg-white px-3 py-1.5 text-sm text-app-accent-soft-foreground hover:bg-app-accent-soft"
                     >
                       <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
                       상세 보기

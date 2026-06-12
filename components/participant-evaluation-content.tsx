@@ -506,7 +506,7 @@ export function ParticipantEvaluationContent({
             <button
               type="button"
               onClick={handleExport}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               결과보내기 (CSV)
             </button>
@@ -520,7 +520,7 @@ export function ParticipantEvaluationContent({
             key={toast.id}
             className="flex w-[360px] items-start gap-3 rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-lg animate-in slide-in-from-right-full duration-300"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]">
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
               <CheckCircle className="h-3.5 w-3.5 text-white" strokeWidth={2} />
             </div>
             <div className="flex-1">
