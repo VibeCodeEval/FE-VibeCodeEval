@@ -143,21 +143,21 @@ export function ParticipantEvaluationTestSummary({
               <p className="mt-2 font-semibold text-[#1A1A1A]">
                 {detail.metrics?.timeMsMedian != null ? `${detail.metrics.timeMsMedian} ms` : "–"}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280]">중앙값 (submission_runs)</p>
+              <p className="mt-1 text-xs text-[#6B7280]">테스트 실행 기준</p>
             </div>
             <div className="rounded-lg border border-[#F3F4F6] bg-[#FAFAFA] p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">메모리</p>
               <p className="mt-2 font-semibold text-[#1A1A1A]">
                 {detail.metrics?.memKbPeak != null ? `${detail.metrics.memKbPeak} KB` : "–"}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280]">peak (submission_runs)</p>
+              <p className="mt-1 text-xs text-[#6B7280]">최대 사용량</p>
             </div>
             <div className="rounded-lg border border-[#F3F4F6] bg-[#FAFAFA] p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">코드 LOC</p>
               <p className="mt-2 font-semibold text-[#1A1A1A]">
                 {detail.metrics?.loc != null ? detail.metrics.loc : "–"}
               </p>
-              <p className="mt-1 text-xs text-[#6B7280]">submissions.code_loc</p>
+              <p className="mt-1 text-xs text-[#6B7280]">제출 코드 기준</p>
             </div>
           </div>
 
@@ -196,14 +196,14 @@ export function ParticipantEvaluationTestSummary({
                 </div>
                 {detail.tc?.passRateWeighted != null && (
                   <p className="mt-2 text-xs text-[#6B7280]">
-                    가중 통과율 (API): {(Number(detail.tc.passRateWeighted) * 100).toFixed(1)}%
+                    가중 통과율: {(Number(detail.tc.passRateWeighted) * 100).toFixed(1)}%
                   </p>
                 )}
               </>
             ) : (
               <p className="rounded-lg border border-dashed border-[#E5E5E5] bg-[#FAFAFA] px-4 py-3 text-[#6B7280]">
-                submission_runs 집계 데이터가 없습니다. 채점 완료 후에도 비어 있으면 테스트 결과가 DB에
-                저장되지 않았을 수 있습니다.
+                테스트 실행 집계 데이터가 없습니다. 채점 완료 후에도 비어 있으면 테스트 결과가 저장되지 않았을
+                수 있습니다.
               </p>
             )}
           </div>
@@ -242,19 +242,11 @@ export function ParticipantEvaluationTestSummary({
                   </tbody>
                 </table>
               </div>
-              <p className="mt-2 text-xs text-[#6B7280]">출처: 관리자 API runs[] (submission_runs)</p>
             </div>
           ) : hasAnyTcData ? (
             <p className="text-xs text-[#6B7280]">모든 기록된 케이스가 정답(AC)입니다.</p>
           ) : null}
 
-          <div className="rounded-lg border border-[#F3F4F6] bg-[#FAFAFA] px-4 py-3 text-xs text-[#6B7280]">
-            <p className="font-medium text-[#374151]">현재 API에서 제공되지 않음</p>
-            <ul className="mt-2 list-inside list-disc space-y-1">
-              <li>테스트 케이스별 expected / actual 입·출력 상세</li>
-              <li>표준 출력·에러 본문 (stdout_bytes / stderr_bytes는 API 미노출)</li>
-            </ul>
-          </div>
         </div>
       )}
     </div>

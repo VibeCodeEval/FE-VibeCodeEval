@@ -321,7 +321,7 @@ export default function LoginCard() {
                 <button
                   type="button"
                   onClick={() => router.push("/admin-signup")}
-                  className="text-blue-600 underline hover:text-primary/80"
+                  className="cursor-pointer font-medium text-blue-600 underline transition-colors hover:text-blue-700"
                 >
                   회원가입하기
                 </button>

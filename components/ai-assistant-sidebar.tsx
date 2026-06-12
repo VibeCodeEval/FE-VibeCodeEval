@@ -21,9 +21,9 @@ const MESSAGE_BUBBLE_BASE_CLASS =
 const CHAT_MARKDOWN_ASSISTANT_CLASS =
   "[&_pre]:border-[#E5E7EB] [&_pre]:bg-white [&_code]:bg-white"
 
-/** 파란 말풍선 — 밝은 배경용 MarkdownContent 오버라이드 */
+/** 사용자 말풍선 — soft accent 배경용 MarkdownContent 오버라이드 */
 const CHAT_MARKDOWN_USER_CLASS =
-  "text-primary-foreground [&_p]:text-primary-foreground [&_strong]:text-primary-foreground [&_em]:text-primary-foreground/90 [&_li]:text-primary-foreground [&_h1]:text-primary-foreground [&_h2]:text-primary-foreground [&_h3]:text-primary-foreground [&_h4]:text-primary-foreground [&_blockquote]:border-primary-foreground/40 [&_blockquote]:text-primary-foreground/90 [&_a]:text-primary-foreground/80 [&_hr]:border-primary-foreground/30 [&_code]:bg-primary-foreground/20 [&_code]:text-primary-foreground [&_pre]:border-primary-foreground/25 [&_pre]:bg-foreground/90 [&_pre]:text-primary-foreground [&_table]:border-primary-foreground/25 [&_thead]:bg-primary-foreground/15 [&_th]:text-primary-foreground [&_td]:text-primary-foreground/95"
+  "text-foreground [&_p]:text-foreground [&_strong]:text-foreground [&_em]:text-foreground/90 [&_li]:text-foreground [&_h1]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_h4]:text-foreground [&_blockquote]:border-app-ring/40 [&_blockquote]:text-foreground/90 [&_a]:text-app-focus [&_hr]:border-app-border [&_code]:bg-white [&_code]:text-foreground [&_pre]:border-[#E5E7EB] [&_pre]:bg-white [&_pre]:text-foreground"
 
 /** 공용 Textarea(min-h-16) 오버라이드 — 내용에 따라 늘어나되 최대 15줄, 이후 내부 스크롤 */
 const CHAT_INPUT_CLASS =
@@ -249,7 +249,7 @@ export function AiAssistantSidebar({
                 className={`${MESSAGE_BUBBLE_BASE_CLASS} ${
                   message.role === "assistant"
                     ? "bg-muted rounded-tl-sm"
-                    : "bg-primary text-primary-foreground rounded-tr-sm"
+                    : "rounded-tr-sm bg-app-accent-soft text-foreground"
                 }`}
               >
                 <MarkdownContent
