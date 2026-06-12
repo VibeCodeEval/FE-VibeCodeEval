@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link";
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import type React from "react"
 
 import { LayoutDashboard, Users, CalendarClock, Settings, FileCode, List, User, LogOut } from "lucide-react"
@@ -73,10 +73,30 @@ const menuGroupB: MenuItem[] = [
   },
 ]
 
+function isMasterMenuActive(pathname: string, href: string): boolean {
+  if (href === "/master") {
+    return pathname === "/master" || pathname === "/master/"
+  }
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
 export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
+  const pathname = usePathname()
   const router = useRouter()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const menuLinkClassName = (href: string) => {
+    const active = isMasterMenuActive(pathname, href)
+    return `flex items-center gap-3 px-5 py-2.5 rounded-xl border-l-[3px] transition-colors ${
+      active
+        ? "border-app-focus bg-app-sidebar-active font-medium text-app-accent-soft-foreground"
+        : "border-transparent text-muted-foreground hover:bg-app-accent-soft/60 hover:text-foreground"
+    }`
+  }
+
+  const menuLabelClassName = (href: string) =>
+    isMasterMenuActive(pathname, href) ? "text-sm font-semibold" : "text-sm"
 
   const handleLogoutClick = () => {
     setShowLogoutModal(true)
@@ -169,14 +189,14 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center gap-3 px-5 py-2.5 rounded-xl border-l-[3px] border-transparent hover:border-app-ring hover:bg-app-accent-soft/60"
+            className={menuLinkClassName(item.href)}
             onClick={() => onItemClick && onItemClick(item.label)}
           >
             <div className="flex h-5 w-5 items-center justify-center shrink-0">
               {item.icon}
             </div>
             
-            <span style={textStyle}>{item.label}</span>
+            <span className={menuLabelClassName(item.href)}>{item.label}</span>
           </Link>
         ))}
       </nav>
@@ -190,14 +210,14 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center gap-3 px-5 py-2.5 rounded-xl border-l-[3px] border-transparent hover:border-app-ring hover:bg-app-accent-soft/60"
+            className={menuLinkClassName(item.href)}
             onClick={() => onItemClick && onItemClick(item.label)}
           >
             <div className="flex h-5 w-5 items-center justify-center shrink-0">
               {item.icon}
             </div>
 
-            <span style={textStyle}>{item.label}</span>
+            <span className={menuLabelClassName(item.href)}>{item.label}</span>
           </Link>
         ))}
       </nav>
