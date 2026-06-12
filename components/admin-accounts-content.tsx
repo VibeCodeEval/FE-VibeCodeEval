@@ -399,14 +399,8 @@ export function AdminAccountsContent() {
           </CardTitle>
           <Button
             size="sm"
-            className="w-full shrink-0 sm:w-auto"
+            className="w-full shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
             onClick={handleOpenGenerateModal}
-            style={{
-              backgroundColor: "#3B82F6",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
           >
             + 관리자 번호 발급
           </Button>
@@ -762,12 +756,7 @@ export function AdminAccountsContent() {
             {!generatedKey && (
               <Button
                 onClick={handleCreateKey}
-                style={{
-                  backgroundColor: "#3B82F6",
-                  color: "#FFFFFF",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                }}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 관리자 번호 발급
               </Button>
@@ -891,13 +880,7 @@ export function AdminAccountsContent() {
             <Button
               onClick={handleConfirmResetPassword}
               disabled={isResettingPassword}
-              style={{
-                backgroundColor: "#3B82F6",
-                color: "#FFFFFF",
-                fontSize: "14px",
-                fontWeight: 500,
-                opacity: isResettingPassword ? 0.6 : 1,
-              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             >
               {isResettingPassword ? "처리 중..." : "비밀번호 재설정"}
             </Button>
@@ -971,12 +954,7 @@ export function AdminAccountsContent() {
           <DialogFooter>
             <Button
               onClick={handleCloseResetPasswordResult}
-              style={{
-                backgroundColor: "#3B82F6",
-                color: "#FFFFFF",
-                fontSize: "14px",
-                fontWeight: 500,
-              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               닫기
             </Button>

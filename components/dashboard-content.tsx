@@ -88,8 +88,8 @@ export function DashboardContent() {
           {/* Total Participants */}
           <div className="flex flex-col rounded-xl border border-[#E5E5E5] bg-white px-6 py-8 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                <Users className="h-5 w-5 text-blue-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                <Users className="h-5 w-5 text-foreground" />
               </div>
               <span className="text-sm font-medium text-gray-500">총 참가자 수</span>
             </div>
@@ -147,7 +147,7 @@ export function DashboardContent() {
             </div>
             <Link
               href="/admin/logs"
-              className="flex items-center gap-1 text-[13px] font-normal text-blue-600 transition-all hover:text-blue-700 hover:underline"
+              className="flex items-center gap-1 text-[13px] font-normal text-foreground transition-all hover:text-foreground/80 hover:underline"
             >
               모두 보기 <ArrowRight className="h-4 w-4" />
             </Link>
@@ -197,7 +197,7 @@ export function DashboardContent() {
           <div className="mt-5 flex items-center gap-3">
             <Link
               href="/admin/entry-codes"
-              className="flex items-center gap-2 rounded-lg bg-[#3B82F6] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
+              className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
               입장 코드 생성

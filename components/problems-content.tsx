@@ -277,7 +277,7 @@ export function ProblemsContent() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 <ChevronLeft className="h-4 w-4" />
                 이전
@@ -290,8 +290,8 @@ export function ProblemsContent() {
                   className={
                     "flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors " +
                     (page === currentPage
-                      ? "border-[#3B82F6] bg-[#3B82F6] text-white"
-                      : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#E0EDFF]")
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-app-border bg-white text-muted-foreground hover:bg-muted")
                   }
                 >
                   {page}
@@ -301,7 +301,7 @@ export function ProblemsContent() {
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 다음
                 <ChevronRight className="h-4 w-4" />

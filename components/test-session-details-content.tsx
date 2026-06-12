@@ -152,53 +152,117 @@ export default function TestSessionDetailsContent({ examId, onBack }: TestSessio
 
   const getStatusBadge = (label: string) => {
     if (label === "진행 중") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">진행 중</Badge>
+      return (
+        <Badge className="border border-emerald-200 bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-50">
+          진행 중
+        </Badge>
+      )
     }
     if (label === "대기 중") {
-      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">대기 중</Badge>
+      return (
+        <Badge className="border border-app-ring/40 bg-app-accent-soft font-medium text-app-accent-soft-foreground hover:bg-app-accent-soft">
+          대기 중
+        </Badge>
+      )
     }
     if (label === "완료") {
-      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">완료</Badge>
+      return (
+        <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+          완료
+        </Badge>
+      )
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{label}</Badge>
+    return (
+      <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+        {label}
+      </Badge>
+    )
   }
 
   const getExamStatusBadge = (status: string) => {
     if (status === "종료됨") {
-      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">종료됨</Badge>
+      return (
+        <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+          종료됨
+        </Badge>
+      )
     }
     if (status === "응시 완료") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">응시 완료</Badge>
+      return (
+        <Badge className="border border-app-ring/40 bg-app-accent-soft font-medium text-app-accent-soft-foreground hover:bg-app-accent-soft">
+          응시 완료
+        </Badge>
+      )
     }
     if (status === "응시 중") {
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">응시 중</Badge>
+      return (
+        <Badge className="border border-emerald-200 bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-50">
+          응시 중
+        </Badge>
+      )
     }
     if (status === "대기 중") {
-      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">대기 중</Badge>
+      return (
+        <Badge className="border border-app-ring/40 bg-app-accent-soft font-medium text-app-accent-soft-foreground hover:bg-app-accent-soft">
+          대기 중
+        </Badge>
+      )
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{status}</Badge>
+    return (
+      <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+        {status}
+      </Badge>
+    )
   }
 
   const getSubmissionBadge = (label: string) => {
     if (label === "시작 안 함") {
-      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">시작 안 함</Badge>
+      return (
+        <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+          시작 안 함
+        </Badge>
+      )
     }
     if (label === "진행 중") {
-      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">진행 중</Badge>
+      return (
+        <Badge className="border border-amber-200 bg-amber-50 font-medium text-amber-700 hover:bg-amber-50">
+          진행 중
+        </Badge>
+      )
     }
     if (label === "제출 실패") {
-      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">제출 실패</Badge>
+      return (
+        <Badge className="border border-red-200 bg-red-50 font-medium text-red-700 hover:bg-red-50">
+          제출 실패
+        </Badge>
+      )
     }
     if (label.startsWith("채점 완료")) {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{label}</Badge>
+      return (
+        <Badge className="border border-emerald-200 bg-emerald-50 font-medium text-emerald-800 hover:bg-emerald-50">
+          {label}
+        </Badge>
+      )
     }
     if (label === "제출·채점 중") {
-      return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">{label}</Badge>
+      return (
+        <Badge className="border border-amber-200 bg-amber-50 font-medium text-amber-700 hover:bg-amber-50">
+          {label}
+        </Badge>
+      )
     }
     if (label === "제출됨") {
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">제출됨</Badge>
+      return (
+        <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+          제출됨
+        </Badge>
+      )
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{label}</Badge>
+    return (
+      <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+        {label}
+      </Badge>
+    )
   }
 
   const getPageNumbers = () => {
@@ -397,8 +461,8 @@ export default function TestSessionDetailsContent({ examId, onBack }: TestSessio
                               onClick={() => setCurrentPage(page)}
                               className={`h-8 w-8 p-0 ${
                                 currentPage === page
-                                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                                  : "text-gray-600 hover:bg-gray-100"
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                  : "text-muted-foreground hover:bg-muted"
                               }`}
                             >
                               {page}

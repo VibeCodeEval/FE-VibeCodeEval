@@ -47,10 +47,10 @@ function mapBoardEntry(entry: ExamineeBoardEntry, exam: Exam): Participant {
 
 function ConnectionBadge({ status }: { status: AdminUsersConnectionStatus }) {
   const styles: Record<AdminUsersConnectionStatus, string> = {
-    "응시완료": "border-[#16A34A] bg-[#DCFCE7] text-[#16A34A]",
-    "응시중": "border-[#3B82F6] bg-white text-[#3B82F6]",
-    "대기중": "border-[#6B7280] bg-white text-[#6B7280]",
-    "종료됨": "border-[#9CA3AF] bg-[#F3F4F6] text-[#6B7280]",
+    "응시중": "border-emerald-200 bg-emerald-50 text-emerald-700 font-semibold",
+    "응시완료": "border-app-ring/40 bg-app-accent-soft text-app-accent-soft-foreground",
+    "대기중": "border-app-ring/40 bg-app-accent-soft text-app-accent-soft-foreground",
+    "종료됨": "border-app-border bg-muted text-muted-foreground",
   }
   return (
     <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>
@@ -61,12 +61,16 @@ function ConnectionBadge({ status }: { status: AdminUsersConnectionStatus }) {
 
 function SubmissionBadge({ status }: { status: AdminUsersSubmissionStatus }) {
   const styles: Record<AdminUsersSubmissionStatus, string> = {
-    "미제출": "bg-[#F3F4F6] text-[#6B7280]",
-    "채점중": "bg-[#FEF3C7] text-[#D97706]",
-    "채점완료": "bg-[#DCFCE7] text-[#16A34A]",
+    "미제출": "bg-muted text-muted-foreground",
+    "채점중": "bg-amber-50 text-amber-700 border border-amber-200",
+    "채점완료": "border border-emerald-200 bg-emerald-50 text-emerald-800",
   }
 
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>{status}</span>
+  return (
+    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>
+      {status}
+    </span>
+  )
 }
 
 /** 참가자 목록 그리드: 좌측(이름·시험) / 중앙(전화·상태) / 우측(토큰) */
@@ -211,7 +215,7 @@ export function UsersContent() {
               value={selectedExamId}
               onChange={(e) => setSelectedExamId(e.target.value)}
               disabled={isLoadingExams}
-              className="appearance-none rounded-lg border border-[#E5E5E5] bg-white py-2 pl-4 pr-10 text-sm text-[#1A1A1A] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] disabled:opacity-50"
+              className="appearance-none rounded-lg border border-app-border bg-white py-2 pl-4 pr-10 text-sm text-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring disabled:opacity-50"
             >
               <option value="all">모든 세션</option>
               {exams.map((exam) => (
@@ -233,7 +237,7 @@ export function UsersContent() {
               placeholder="이름 또는 시험으로 검색…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] bg-white py-2 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+              className="w-full rounded-lg border border-app-border bg-white py-2 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
             />
           </div>
         </div>
@@ -339,7 +343,7 @@ export function UsersContent() {
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 <ChevronLeft className="h-4 w-4" />
                 이전
@@ -352,8 +356,8 @@ export function UsersContent() {
                   onClick={() => setCurrentPage(page)}
                   className={`flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors ${
                     page === currentPage
-                      ? "border-[#3B82F6] bg-[#3B82F6] text-white"
-                      : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#E0EDFF]"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-app-border bg-white text-muted-foreground hover:bg-muted"
                   }`}
                 >
                   {page}
@@ -364,7 +368,7 @@ export function UsersContent() {
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 다음
                 <ChevronRight className="h-4 w-4" />
