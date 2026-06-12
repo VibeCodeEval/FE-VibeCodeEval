@@ -60,7 +60,9 @@ function MenuItem({
     <Link
       href={href}
       className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-        active ? "bg-[#E0EDFF] font-medium text-[#3B82F6]" : "text-[#6B7280] hover:bg-[#F0F7FF] hover:text-[#1A1A1A]"
+        active
+          ? "border-l-[3px] border-app-focus bg-app-sidebar-active font-medium text-app-accent-soft-foreground"
+          : "border-l-[3px] border-transparent text-muted-foreground hover:bg-app-accent-soft/60 hover:text-foreground"
       }`}
     >
       <Icon className="h-5 w-5" strokeWidth={1.5} />
@@ -129,32 +131,32 @@ export function AdminSidebar() {
   }
 
   return (
-    <aside className="flex w-[240px] h-screen flex-col border-r border-[#E5E5E5] bg-white overflow-y-auto">
+    <aside className="flex w-[240px] h-screen flex-col border-r border-app-border bg-white overflow-y-auto">
       {/* SECTION 1 — Logo Area */}
       <div className="flex items-center gap-3 px-5 py-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#7C3AED]">
-          <span className="text-sm font-bold text-white">AI</span>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
+          <span className="text-sm font-bold text-primary-foreground">AI</span>
         </div>
-        <span className="text-sm font-semibold text-[#1A1A1A]">AI Vibe Coding Test</span>
+        <span className="text-sm font-semibold text-foreground">AI Vibe Coding Test</span>
       </div>
 
       {/* Divider 1 */}
-      <div className="mx-4 border-t border-[#E5E5E5]" />
+      <div className="mx-4 border-t border-app-border" />
 
       {/* SECTION 2 — Profile Area */}
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F3E8FF]">
-            <User className="h-5 w-5 text-[#7C3AED]" strokeWidth={1.5} />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+            <User className="h-5 w-5 text-foreground" strokeWidth={1.5} />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-[#1A1A1A]">{displayName}</span>
-            <span className="text-xs text-[#6B7280]">관리자</span>
+            <span className="text-sm font-medium text-foreground">{displayName}</span>
+            <span className="text-xs text-muted-foreground">관리자</span>
           </div>
         </div>
         <button
           onClick={handleLogoutClick}
-          className="flex items-center justify-center rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#1A1A1A]"
+          className="flex items-center justify-center rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           title="로그아웃"
         >
           <LogOut className="h-4 w-4" strokeWidth={1.5} />
@@ -162,7 +164,7 @@ export function AdminSidebar() {
       </div>
 
       {/* Divider 2 */}
-      <div className="mx-4 border-t border-[#E5E5E5]" />
+      <div className="mx-4 border-t border-app-border" />
 
       {/* SECTION 3 — Menu Group A (Main management) */}
       <nav className="flex flex-col gap-1 px-3 py-4">
@@ -178,7 +180,7 @@ export function AdminSidebar() {
       </nav>
 
       {/* Divider 3 */}
-      <div className="mx-4 border-t border-[#E5E5E5]" />
+      <div className="mx-4 border-t border-app-border" />
 
       {/* SECTION 4 — Menu Group B (Exam/operation) */}
       <nav className="flex flex-col gap-1 px-3 py-4">
@@ -194,7 +196,7 @@ export function AdminSidebar() {
       </nav>
 
       {/* Divider 4 */}
-      <div className="mx-4 border-t border-[#E5E5E5]" />
+      <div className="mx-4 border-t border-app-border" />
 
       {/* SECTION 5 — Menu Group C (System/config) */}
       <nav className="flex flex-col gap-1 px-3 py-4">
@@ -213,10 +215,10 @@ export function AdminSidebar() {
       <Dialog open={showLogoutModal} onOpenChange={setShowLogoutModal}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-[#1A1A1A]">
+            <DialogTitle className="text-lg font-semibold text-foreground">
               로그아웃 하시겠습니까?
             </DialogTitle>
-            <DialogDescription className="text-[#6B7280] mt-2">
+            <DialogDescription className="text-muted-foreground mt-2">
               로그아웃하면 관리자 대시보드에서 나가게 됩니다.
             </DialogDescription>
           </DialogHeader>
@@ -224,14 +226,14 @@ export function AdminSidebar() {
             <Button
               variant="outline"
               onClick={() => setShowLogoutModal(false)}
-              className="border-[#E5E5E5] text-[#374151]"
+              className="border-app-border text-foreground"
             >
               취소
             </Button>
             <Button
               onClick={handleConfirmLogout}
               disabled={isLoggingOut}
-              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
             >
               {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
             </Button>

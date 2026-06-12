@@ -179,7 +179,7 @@ export function ProblemsContent() {
               placeholder="문제 검색…"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="h-10 w-72 rounded-lg border border-[#E5E5E5] bg-white pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+              className="h-10 w-72 rounded-lg border border-[#E5E5E5] bg-white pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
             />
           </div>
 
@@ -248,7 +248,9 @@ export function ProblemsContent() {
                     <span
                       className={
                         "rounded-full px-2.5 py-0.5 text-xs font-medium " +
-                        (problem.available ? "bg-[#E0EDFF] text-[#3B82F6]" : "bg-[#F3F4F6] text-[#6B7280]")
+                        (problem.available
+                          ? "bg-app-accent-soft text-app-accent-soft-foreground"
+                          : "border border-border bg-muted text-muted-foreground")
                       }
                     >
                       {problem.available ? "사용 가능" : "사용 불가"}
@@ -257,7 +259,7 @@ export function ProblemsContent() {
                       checked={problem.available}
                       disabled={togglingProblemId === problem.id}
                       onCheckedChange={(checked) => void handleToggleAvailability(problem.id, checked)}
-                      className="data-[state=checked]:bg-[#3B82F6]"
+                      className="data-[state=checked]:bg-primary"
                     />
                   </div>
                 </div>
@@ -277,7 +279,7 @@ export function ProblemsContent() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 <ChevronLeft className="h-4 w-4" />
                 이전
@@ -290,8 +292,8 @@ export function ProblemsContent() {
                   className={
                     "flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors " +
                     (page === currentPage
-                      ? "border-[#3B82F6] bg-[#3B82F6] text-white"
-                      : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#E0EDFF]")
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-app-border bg-white text-muted-foreground hover:bg-muted")
                   }
                 >
                   {page}
@@ -301,7 +303,7 @@ export function ProblemsContent() {
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 다음
                 <ChevronRight className="h-4 w-4" />

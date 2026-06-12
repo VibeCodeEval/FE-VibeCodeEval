@@ -107,7 +107,7 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
         width: "240px",
         minWidth: "240px",
         backgroundColor: "#FFFFFF",
-        borderRight: "1px solid #E5E5E5",
+        borderRight: "1px solid var(--app-border)",
         fontFamily: sidebarFontFamily,
       }}
     >
@@ -119,7 +119,7 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
           style={{
             width: "40px",
             height: "40px",
-            backgroundColor: "#7C3AED",
+            backgroundColor: "var(--primary)",
           }}
         >
           <span style={{ ...textStyle, color: "#FFFFFF", fontWeight: 500 }}>AI</span>
@@ -140,10 +140,10 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
             style={{
               width: "36px",
               height: "36px",
-              backgroundColor: "#F3E8FF",
+              backgroundColor: "var(--muted)",
             }}
           >
-            <User size={20} strokeWidth={1.5} style={{ color: "#7C3AED" }} />
+            <User size={20} strokeWidth={1.5} style={{ color: "var(--foreground)" }} />
           </div>
           {/* Profile Text */}
           <div className="flex flex-col">
@@ -169,7 +169,7 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center gap-3 px-5 py-2.5 rounded-xl hover:bg-[#F5F5F5]"
+            className="flex items-center gap-3 px-5 py-2.5 rounded-xl border-l-[3px] border-transparent hover:border-app-ring hover:bg-app-accent-soft/60"
             onClick={() => onItemClick && onItemClick(item.label)}
           >
             <div className="flex h-5 w-5 items-center justify-center shrink-0">
@@ -190,7 +190,7 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center gap-3 px-5 py-2.5 rounded-xl hover:bg-[#F5F5F5]"
+            className="flex items-center gap-3 px-5 py-2.5 rounded-xl border-l-[3px] border-transparent hover:border-app-ring hover:bg-app-accent-soft/60"
             onClick={() => onItemClick && onItemClick(item.label)}
           >
             <div className="flex h-5 w-5 items-center justify-center shrink-0">
@@ -224,7 +224,7 @@ export function Sidebar({ activeItem, onItemClick }: SidebarProps) {
             <Button
               onClick={handleConfirmLogout}
               disabled={isLoggingOut}
-              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
             >
               {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
             </Button>
@@ -247,8 +247,8 @@ function MenuItemButton({ item, isActive, onClick }: MenuItemButtonProps) {
       onClick={onClick}
       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150"
       style={{
-        backgroundColor: isActive ? "#E0EDFF" : "transparent",
-        color: isActive ? "#3B82F6" : "#6B7280",
+        backgroundColor: isActive ? "var(--app-accent-muted)" : "transparent",
+        color: isActive ? "var(--foreground)" : "var(--muted-foreground)",
         fontFamily: sidebarFontFamily,
         fontWeight: isActive ? 500 : 400,
         fontSize: "14px",
@@ -257,18 +257,18 @@ function MenuItemButton({ item, isActive, onClick }: MenuItemButtonProps) {
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
-          e.currentTarget.style.backgroundColor = "#F0F7FF"
-          e.currentTarget.style.color = "#1A1A1A"
+          e.currentTarget.style.backgroundColor = "var(--muted)"
+          e.currentTarget.style.color = "var(--foreground)"
         }
       }}
       onMouseLeave={(e) => {
         if (!isActive) {
           e.currentTarget.style.backgroundColor = "transparent"
-          e.currentTarget.style.color = "#6B7280"
+          e.currentTarget.style.color = "var(--muted-foreground)"
         }
       }}
     >
-      <span className="shrink-0" style={{ color: isActive ? "#3B82F6" : "#6B7280" }}>
+      <span className="shrink-0" style={{ color: isActive ? "var(--foreground)" : "var(--muted-foreground)" }}>
         {item.icon}
       </span>
       <span>{item.label}</span>

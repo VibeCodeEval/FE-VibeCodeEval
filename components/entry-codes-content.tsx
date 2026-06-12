@@ -67,6 +67,18 @@ const pickEntryCode = (source: unknown): string | undefined => {
   return undefined
 }
 
+/** 시험 상태 배지 스타일 (라벨/판단 로직과 분리) */
+function getExamStateBadgeClassName(examEnded: boolean, isInProgress: boolean): string {
+  const base = "rounded-full border px-2.5 py-0.5 text-xs whitespace-nowrap text-center"
+  if (examEnded) {
+    return `${base} border-app-border bg-muted font-medium text-muted-foreground`
+  }
+  if (isInProgress) {
+    return `${base} border-emerald-200 bg-emerald-50 font-semibold text-emerald-700`
+  }
+  return `${base} border-app-ring/40 bg-app-accent-soft font-medium text-app-accent-soft-foreground`
+}
+
 /** 시험 시작 버튼(0) → 종료 버튼(1) → 종료됨(2). UI 버튼 분기와 동일한 state 기준 */
 function getExamEntryCodesActionPriority(state: string): number {
   const normalized = (state ?? "").trim().toUpperCase()
@@ -675,15 +687,15 @@ export function EntryCodesContent() {
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col">
       {/* Top Header Bar */}
-      <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8 lg:pr-8 xl:pr-10">
+      <header className="flex h-[88px] shrink-0 items-center justify-between border-b border-[#E5E5E5] bg-white px-8 lg:pr-10 xl:pr-12">
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">코드 관리</h1>
           <p className="text-sm text-[#6B7280]">참가자 시험 입장 코드를 관리합니다</p>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 gap-2 lg:mr-1 xl:mr-2">
           <button
             onClick={() => setIsCreateExamOpen(true)}
-            className="rounded-full bg-[#3B82F6] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
+            className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             시험 생성
           </button>
@@ -749,13 +761,7 @@ export function EntryCodesContent() {
                     <span className="hidden shrink-0 px-3 text-[#9CA3AF] xl:inline">|</span>
                     {/* 상태 배지 */}
                     <div className="flex w-full shrink-0 justify-start xl:w-20 xl:justify-center">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs whitespace-nowrap text-center ${
-                          isInProgress
-                            ? "bg-[#E0EDFF] font-semibold text-[#3B82F6]"
-                            : "bg-[#F3F4F6] font-medium text-[#6B7280]"
-                        }`}
-                      >
+                      <span className={getExamStateBadgeClassName(examEnded, isInProgress)}>
                         {examStateLabel}
                       </span>
                     </div>
@@ -793,7 +799,7 @@ export function EntryCodesContent() {
                       <button
                         onClick={() => handleStartExam(exam)}
                         disabled={isStartingExam && selectedExamForStart?.id === exam.id}
-                        className="shrink-0 whitespace-nowrap rounded-full border border-[#3B82F6] bg-white px-4 py-1.5 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="shrink-0 whitespace-nowrap rounded-full border border-foreground bg-white px-4 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {isStartingExam && selectedExamForStart?.id === exam.id ? "시작 중..." : "시험 시작 >"}
                       </button>
@@ -839,7 +845,7 @@ export function EntryCodesContent() {
               <button
                 onClick={() => setCurrentExamPage((p) => Math.max(1, p - 1))}
                 disabled={currentExamPage === 1}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 <ChevronLeft className="h-4 w-4" />
                 이전
@@ -852,8 +858,8 @@ export function EntryCodesContent() {
                   onClick={() => setCurrentExamPage(page)}
                   className={`flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors ${
                     page === currentExamPage
-                      ? "border-[#3B82F6] bg-[#3B82F6] text-white"
-                      : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#E0EDFF]"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-app-border bg-white text-muted-foreground hover:bg-muted"
                   }`}
                 >
                   {page}
@@ -864,7 +870,7 @@ export function EntryCodesContent() {
               <button
                 onClick={() => setCurrentExamPage((p) => Math.min(examTotalPages, p + 1))}
                 disabled={currentExamPage === examTotalPages || examTotalPages === 0}
-                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#6B7280] transition-colors hover:bg-[#E0EDFF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+                className="flex h-8 items-center gap-1 rounded-md border border-app-border bg-white px-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
               >
                 다음
                 <ChevronRight className="h-4 w-4" />

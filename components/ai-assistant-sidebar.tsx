@@ -21,13 +21,13 @@ const MESSAGE_BUBBLE_BASE_CLASS =
 const CHAT_MARKDOWN_ASSISTANT_CLASS =
   "[&_pre]:border-[#E5E7EB] [&_pre]:bg-white [&_code]:bg-white"
 
-/** 파란 말풍선 — 밝은 배경용 MarkdownContent 오버라이드 */
+/** 사용자 말풍선 — soft accent 배경용 MarkdownContent 오버라이드 */
 const CHAT_MARKDOWN_USER_CLASS =
-  "text-white [&_p]:text-white [&_strong]:text-white [&_em]:text-white/90 [&_li]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h4]:text-white [&_blockquote]:border-white/40 [&_blockquote]:text-white/90 [&_a]:text-blue-100 [&_hr]:border-white/30 [&_code]:bg-white/20 [&_code]:text-white [&_pre]:border-white/25 [&_pre]:bg-[#1D4ED8] [&_pre]:text-white [&_table]:border-white/25 [&_thead]:bg-white/15 [&_th]:text-white [&_td]:text-white/95"
+  "text-foreground [&_p]:text-foreground [&_strong]:text-foreground [&_em]:text-foreground/90 [&_li]:text-foreground [&_h1]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_h4]:text-foreground [&_blockquote]:border-app-ring/40 [&_blockquote]:text-foreground/90 [&_a]:text-app-focus [&_hr]:border-app-border [&_code]:bg-white [&_code]:text-foreground [&_pre]:border-[#E5E7EB] [&_pre]:bg-white [&_pre]:text-foreground"
 
 /** 공용 Textarea(min-h-16) 오버라이드 — 내용에 따라 늘어나되 최대 15줄, 이후 내부 스크롤 */
 const CHAT_INPUT_CLASS =
-  "!min-h-9 max-h-[15lh] min-w-0 flex-1 resize-none overflow-y-auto leading-5 break-words border-[#D0D0D0] bg-white [overflow-wrap:anywhere] whitespace-pre-wrap"
+  "!min-h-9 max-h-[15lh] min-w-0 flex-1 resize-none overflow-y-auto leading-5 break-words border-app-border bg-white [overflow-wrap:anywhere] whitespace-pre-wrap"
 
 interface AiAssistantSidebarProps {
   isOpen: boolean
@@ -184,7 +184,7 @@ export function AiAssistantSidebar({
           isOpen ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       >
-        <div className="bg-[#2563EB] text-white px-2 py-6 rounded-l-lg shadow-lg flex flex-col items-center gap-2 hover:bg-[#1D4ED8] transition-colors">
+        <div className="bg-primary text-primary-foreground px-2 py-6 rounded-l-lg shadow-md flex flex-col items-center gap-2 hover:bg-primary/90 hover:shadow-lg transition-colors">
           <ChevronLeft className="w-4 h-4" />
           <span className="text-xs font-medium" style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}>
             AI Assistant
@@ -194,26 +194,26 @@ export function AiAssistantSidebar({
 
       {/* Expanded Sidebar */}
       <aside
-        className={`fixed right-0 top-[73px] z-30 flex h-[calc(100vh-73px)] min-h-0 w-[400px] flex-col overflow-hidden border-l border-[#D0D0D0] bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-[73px] z-30 flex h-[calc(100vh-73px)] min-h-0 w-[400px] flex-col overflow-hidden border-l border-app-border bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex shrink-0 items-center justify-between px-4 py-4 border-b border-[#E5E7EB]">
+        <div className="flex shrink-0 items-center justify-between px-4 py-4 border-b border-app-border">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#2563EB] rounded-lg flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 bg-app-accent-soft rounded-lg flex items-center justify-center ring-1 ring-app-ring/30">
+              <Bot className="w-4 h-4 text-app-focus" />
             </div>
-            <span className="font-semibold text-[#1F2937]">AI 어시스턴트</span>
+            <span className="font-semibold text-foreground">AI 어시스턴트</span>
           </div>
-          <button onClick={onToggle} className="p-1.5 hover:bg-[#F3F4F6] rounded-md transition-colors">
-            <ChevronRight className="w-5 h-5 text-[#6B7280]" />
+          <button onClick={onToggle} className="p-1.5 hover:bg-app-accent-soft/60 rounded-md transition-colors">
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
         {/* 히스토리 로딩 중 표시 */}
         {!isHistoryLoaded && (
-          <div className="flex shrink-0 items-center gap-1 border-b border-[#E5E7EB] bg-[#F9FAFB] px-4 py-2 text-xs text-[#6B7280]">
+          <div className="flex shrink-0 items-center gap-1 border-b border-app-border bg-app-surface-muted px-4 py-2 text-xs text-muted-foreground">
             <svg className="animate-spin w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -236,20 +236,20 @@ export function AiAssistantSidebar({
             >
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                  message.role === "assistant" ? "bg-[#2563EB]" : "bg-[#6B7280]"
+                  message.role === "assistant" ? "bg-app-accent-soft ring-1 ring-app-ring/25" : "bg-muted-foreground"
                 }`}
               >
                 {message.role === "assistant" ? (
-                  <Bot className="h-4 w-4 text-white" />
+                  <Bot className="h-4 w-4 text-app-focus" />
                 ) : (
-                  <User className="h-4 w-4 text-white" />
+                  <User className="h-4 w-4 text-primary-foreground" />
                 )}
               </div>
               <div
                 className={`${MESSAGE_BUBBLE_BASE_CLASS} ${
                   message.role === "assistant"
-                    ? "bg-[#F3F4F6] rounded-tl-sm"
-                    : "bg-[#2563EB] rounded-tr-sm"
+                    ? "bg-muted rounded-tl-sm"
+                    : "rounded-tr-sm bg-app-accent-soft text-foreground"
                 }`}
               >
                 <MarkdownContent
@@ -267,13 +267,13 @@ export function AiAssistantSidebar({
           {/* 응답 대기 중 타이핑 인디케이터 */}
           {isSending && (
             <div className="flex min-w-0 gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2563EB]">
-                <Bot className="h-4 w-4 text-white" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-app-accent-soft ring-1 ring-app-ring/25">
+                <Bot className="h-4 w-4 text-app-focus" />
               </div>
-              <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-[#F3F4F6] px-4 py-3">
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#9CA3AF] [animation-delay:-0.3s]" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#9CA3AF] [animation-delay:-0.15s]" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#9CA3AF]" />
+              <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/50" />
               </div>
             </div>
           )}
@@ -281,7 +281,7 @@ export function AiAssistantSidebar({
         </div>
 
         {/* Input Area */}
-        <div className="shrink-0 overflow-hidden border-t border-[#E5E7EB] bg-[#F9FAFB] p-4">
+        <div className="shrink-0 overflow-hidden border-t border-app-border bg-app-surface-muted p-4">
           <div className="flex items-end gap-2">
             <Textarea
               value={inputValue}
@@ -300,7 +300,7 @@ export function AiAssistantSidebar({
             <Button
               onClick={handleSend}
               size="icon"
-              className="shrink-0 bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="shrink-0 bg-primary hover:bg-primary/90 hover:ring-2 hover:ring-app-ring/40 text-primary-foreground px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSending || !inputValue.trim() || !isConnected}
             >
               <Send className="w-4 h-4" />

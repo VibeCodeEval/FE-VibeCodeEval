@@ -81,7 +81,7 @@ export function ProblemSection({ examId }: ProblemSectionProps) {
   const problem = assignment?.problem
 
   return (
-    <div className="bg-white rounded-xl border border-[#D0D0D0] p-6 flex-shrink-0">
+    <div className="bg-white rounded-xl border border-app-border p-6 flex-shrink-0">
       <h2 className="text-lg font-semibold text-[#1F2937] mb-4">
         {loading
           ? "문제 배정을 확인하는 중입니다..."
@@ -98,7 +98,7 @@ export function ProblemSection({ examId }: ProblemSectionProps) {
             {problem.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]"
+                className="text-xs px-2 py-0.5 rounded-full bg-app-accent-soft text-app-accent-soft-foreground border border-app-ring/40"
               >
                 {tag}
               </span>

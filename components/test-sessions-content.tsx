@@ -26,14 +26,42 @@ import {
   type TestSessionListItem,
 } from "@/lib/master-test-sessions"
 
+function getMasterSessionStatusBadgeClassName(displayLabel: string, filterStatus?: string): string {
+  if (filterStatus === "Cancelled") {
+    return "border border-red-200 bg-red-50 text-red-700 hover:bg-red-50"
+  }
+  if (displayLabel === "진행 중") {
+    return "border border-emerald-200 bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-50"
+  }
+  if (displayLabel === "대기 중") {
+    return "border border-app-ring/40 bg-app-accent-soft font-medium text-app-accent-soft-foreground hover:bg-app-accent-soft"
+  }
+  if (displayLabel === "완료" || displayLabel === "종료" || displayLabel === "종료됨") {
+    return "border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted"
+  }
+  return "border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted"
+}
+
 function submissionBadgeClassName(label: string): string {
-  if (label === "시작 안 함") return "bg-gray-100 text-gray-700 hover:bg-gray-100"
-  if (label === "진행 중") return "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
-  if (label === "제출 실패") return "bg-red-100 text-red-700 hover:bg-red-100"
-  if (label.startsWith("채점 완료")) return "bg-green-100 text-green-700 hover:bg-green-100"
-  if (label === "제출·채점 중") return "bg-amber-100 text-amber-800 hover:bg-amber-100"
-  if (label === "제출됨") return "bg-blue-100 text-blue-700 hover:bg-blue-100"
-  return "bg-gray-100 text-gray-700 hover:bg-gray-100"
+  if (label === "시작 안 함") {
+    return "border border-app-border bg-muted text-muted-foreground hover:bg-muted"
+  }
+  if (label === "진행 중") {
+    return "border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50"
+  }
+  if (label === "제출 실패") {
+    return "border border-red-200 bg-red-50 text-red-700 hover:bg-red-50"
+  }
+  if (label.startsWith("채점 완료")) {
+    return "border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-50"
+  }
+  if (label === "제출·채점 중") {
+    return "border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50"
+  }
+  if (label === "제출됨") {
+    return "border border-app-border bg-muted text-muted-foreground hover:bg-muted"
+  }
+  return "border border-app-border bg-muted text-muted-foreground hover:bg-muted"
 }
 
 /** statusLabel 우선, 없으면 Active/Completed 매핑, 그 외 status 원문 */
@@ -176,9 +204,17 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
 
   const getStatusBadge = (status: string) => {
     if (status === "Active") {
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">진행 중</Badge>
+      return (
+        <Badge className="border border-emerald-200 bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-50">
+          진행 중
+        </Badge>
+      )
     }
-    return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">완료</Badge>
+    return (
+      <Badge className="border border-app-border bg-muted font-medium text-muted-foreground hover:bg-muted">
+        완료
+      </Badge>
+    )
   }
 
   const getPageNumbers = () => {
@@ -344,13 +380,10 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                     <TableCell className="text-center" style={{ width: "120px" }}>
                       <Badge
                         variant="secondary"
-                        className={
-                          session.status === "Active"
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : session.status === "Cancelled"
-                              ? "bg-red-100 text-red-700 hover:bg-red-100"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
-                        }
+                        className={getMasterSessionStatusBadgeClassName(
+                          formatSessionStatusDisplay(session),
+                          session.status,
+                        )}
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
@@ -428,7 +461,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                   size="sm"
                   className={
                     currentPage === page
-                      ? "h-8 min-w-8 bg-blue-600 hover:bg-blue-700 text-white"
+                      ? "h-8 min-w-8 bg-primary hover:bg-primary/90 text-primary-foreground"
                       : "h-8 min-w-8 text-[#6B7280] hover:text-[#1A1A1A]"
                   }
                   style={{ fontSize: "14px", fontWeight: 500 }}
@@ -575,9 +608,12 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                   <Badge
                     variant="secondary"
                     className={
-                      detailsSession?.status === "Active"
-                        ? "bg-green-100 text-green-700 hover:bg-green-100"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+                      detailsSession
+                        ? getMasterSessionStatusBadgeClassName(
+                            formatSessionStatusDisplay(detailsSession),
+                            detailsSession.status,
+                          )
+                        : "border border-app-border bg-muted font-medium text-muted-foreground"
                     }
                     style={{ fontSize: "12px", fontWeight: 500 }}
                   >
@@ -674,8 +710,8 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                             variant="secondary"
                             className={
                               participant.connectionStatus === "Connected"
-                                ? "bg-green-100 text-green-700 hover:bg-green-100"
-                                : "bg-red-100 text-red-700 hover:bg-red-100"
+                                ? "border border-emerald-200 bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-50"
+                                : "border border-red-200 bg-red-50 text-red-700 hover:bg-red-50"
                             }
                             style={{ fontSize: "12px", fontWeight: 500 }}
                           >
@@ -698,7 +734,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2"
+                            className="h-8 text-foreground hover:text-foreground/80 hover:bg-muted px-2"
                             style={{ fontSize: "13px", fontWeight: 500 }}
                           >
                             상세 보기
@@ -732,7 +768,7 @@ export function TestSessionsContent({ onViewDetails }: TestSessionsContentProps)
                         size="sm"
                         className={
                           participantPage === page
-                            ? "h-8 min-w-8 bg-blue-600 hover:bg-blue-700 text-white"
+                            ? "h-8 min-w-8 bg-primary hover:bg-primary/90 text-primary-foreground"
                             : "h-8 min-w-8 text-[#6B7280] hover:text-[#1A1A1A]"
                         }
                         style={{ fontSize: "14px", fontWeight: 500 }}

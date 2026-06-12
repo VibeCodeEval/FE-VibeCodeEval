@@ -20,11 +20,7 @@ import {
   isActiveExam,
   type MasterSystemStatusDisplay,
 } from "@/lib/master-dashboard-kpi"
-import {
-  isMasterSessionInProgress,
-  pickRecentSessions,
-  type MasterRecentSession,
-} from "@/lib/master-test-sessions"
+import { pickRecentSessions, type MasterRecentSession } from "@/lib/master-test-sessions"
 import { AdminPageHeader } from "@/components/admin-page-header"
 import {
   formatMasterActivityLogDateTime,
@@ -170,11 +166,11 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                 style={{
                   width: "48px",
                   height: "48px",
-                  backgroundColor: "#EFF6FF",
+                  backgroundColor: "var(--muted)",
                   borderRadius: "12px",
                 }}
               >
-                <Users size={24} style={{ color: "#3B82F6" }} />
+                <Users size={24} style={{ color: "var(--foreground)" }} />
               </div>
             </div>
           </CardContent>
@@ -278,15 +274,13 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
                     </span>
                   </div>
                   <Badge
-                    style={{
-                      backgroundColor: isMasterSessionInProgress(session.status)
-                        ? "#DCFCE7"
-                        : "#F3F4F6",
-                      color: isMasterSessionInProgress(session.status) ? "#22C55E" : "#6B7280",
-                      fontWeight: 500,
-                      fontSize: "12px",
-                      border: "none",
-                    }}
+                    className={
+                      session.status === "진행 중"
+                        ? "border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700"
+                        : session.status === "대기 중"
+                          ? "border border-app-ring/40 bg-app-accent-soft text-xs font-medium text-app-accent-soft-foreground"
+                          : "border border-app-border bg-muted text-xs font-medium text-muted-foreground"
+                    }
                   >
                     {session.status}
                   </Badge>
@@ -298,8 +292,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
               <Button
                 asChild
                 variant="ghost"
-                className="w-full flex items-center justify-center gap-2"
-                style={{ color: "#3B82F6", fontSize: "14px", fontWeight: 500 }}
+                className="w-full flex items-center justify-center gap-2 text-foreground"
               >
                 <Link href="/master/test-sessions">
                   모든 세션 보기
@@ -384,8 +377,7 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
               <Button
                 asChild
                 variant="ghost"
-                className="w-full flex items-center justify-center gap-2"
-                style={{ color: "#3B82F6", fontSize: "14px", fontWeight: 500 }}
+                className="w-full flex items-center justify-center gap-2 text-foreground"
               >
                 <Link href="/master/platform-logs">
                   모든 로그 보기
@@ -404,25 +396,16 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           {/* Manage Test Sessions */}
           <Link href="/master/test-sessions" className="block">
             <Card
-              className="cursor-pointer transition-all hover:shadow-md"
+              className="cursor-pointer border border-app-border transition-all hover:border-app-ring hover:shadow-md"
               style={{
                 borderRadius: "12px",
-                border: "1px solid #E5E5E5",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
               <CardContent className="p-5">
                 <div className="flex items-center gap-4">
-                  <div
-                    className="flex items-center justify-center"
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      backgroundColor: "#EFF6FF",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    <CalendarClock size={24} style={{ color: "#3B82F6" }} />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-app-accent-soft text-app-accent-soft-foreground">
+                    <CalendarClock size={24} className="text-app-accent-soft-foreground" />
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>테스트 세션 관리</span>
@@ -436,25 +419,16 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           {/* Manage Problems */}
           <Link href="/master/problem" className="block">
             <Card
-              className="cursor-pointer transition-all hover:shadow-md"
+              className="cursor-pointer border border-app-border transition-all hover:border-app-ring hover:shadow-md"
               style={{
                 borderRadius: "12px",
-                border: "1px solid #E5E5E5",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
               <CardContent className="p-5">
                 <div className="flex items-center gap-4">
-                  <div
-                    className="flex items-center justify-center"
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      backgroundColor: "#F3E8FF",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    <FileCode size={24} style={{ color: "#7C3AED" }} />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-app-accent-soft text-app-accent-soft-foreground">
+                    <FileCode size={24} className="text-app-accent-soft-foreground" />
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>문제 관리</span>
@@ -468,25 +442,16 @@ export function MasterDashboardContent({ onNavigate }: DashboardContentProps) {
           {/* Open Platform Logs */}
           <Link href="/master/platform-logs" className="block">
             <Card
-              className="cursor-pointer transition-all hover:shadow-md"
+              className="cursor-pointer border border-app-border transition-all hover:border-app-ring hover:shadow-md"
               style={{
                 borderRadius: "12px",
-                border: "1px solid #E5E5E5",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
               <CardContent className="p-5">
                 <div className="flex items-center gap-4">
-                  <div
-                    className="flex items-center justify-center"
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      backgroundColor: "#F3F4F6",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    <ScrollText size={24} style={{ color: "#6B7280" }} />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-app-accent-soft text-app-accent-soft-foreground">
+                    <ScrollText size={24} className="text-app-accent-soft-foreground" />
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <span style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>플랫폼 로그 열기</span>

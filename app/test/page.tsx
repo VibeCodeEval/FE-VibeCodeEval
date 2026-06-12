@@ -100,7 +100,7 @@ export default function TestPage() {
 
   if (isRestoring || !examId || !participantId) {
     return (
-      <div className="min-h-screen w-full bg-[#F5F5F5] flex items-center justify-center">
+      <div className="min-h-screen w-full bg-app-surface flex items-center justify-center">
         <div className="text-center">
           <p className="text-base font-medium text-[#1F2937]">
             {restoreError ?? "시험 세션을 복구하는 중입니다..."}

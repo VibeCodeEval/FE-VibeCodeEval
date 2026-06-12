@@ -23,10 +23,10 @@ export const masterActivityLogStatusColors: Record<
   MasterActivityLogStatusLabel,
   { bg: string; text: string; marker: string }
 > = {
-  "가입 번호 발급": { bg: "#EBF0FA", text: "#4A74E0", marker: "#4A74E0" },
+  "가입 번호 발급": { bg: "#E9EEF3", text: "#5C6B7E", marker: "#5C6B7E" },
   "비활성화": { bg: "#FBEAEC", text: "#D6455D", marker: "#D6455D" },
   "재활성화": { bg: "#E8F5EF", text: "#4AA785", marker: "#4AA785" },
-  "관리자 가입 완료": { bg: "#F0EBFA", text: "#7A5AF8", marker: "#7A5AF8" },
+  "관리자 가입 완료": { bg: "#ECFDF3", text: "#2F6F4E", marker: "#2F6F4E" },
   "계정 삭제": { bg: "#FEF2F2", text: "#DC2626", marker: "#DC2626" },
   "비밀번호 재설정": { bg: "#FFF7ED", text: "#EA580C", marker: "#EA580C" },
   "전역 설정 변경": { bg: "#F3F4F6", text: "#6B7280", marker: "#6B7280" },
