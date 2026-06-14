@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* 오른쪽 메인 영역 */}
-      <div className="flex-1 flex flex-col h-screen ml-[240px]" style={{ backgroundColor: "#F9FAFB" }}>
+      <div className="flex-1 flex flex-col h-screen ml-[240px] bg-app-surface-muted">
         {/* 메인 컨텐츠 영역 */}
         <main className="flex-1 overflow-y-auto">
           {children}

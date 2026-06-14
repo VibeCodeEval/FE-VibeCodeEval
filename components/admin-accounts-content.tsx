@@ -377,18 +377,28 @@ export function AdminAccountsContent() {
   }
 
   return (
-    <div className="flex h-full flex-1 flex-col">
+    <div className="flex h-full min-w-0 flex-1 flex-col">
       <AdminPageHeader
         title="관리자 계정 관리"
         description="관리자 계정과 접근 권한을 관리합니다."
+        actions={
+          <Button
+            size="sm"
+            className="shrink-0 whitespace-nowrap bg-primary px-3 text-primary-foreground hover:bg-primary/90 md:px-4"
+            onClick={handleOpenGenerateModal}
+          >
+            <span className="md:hidden">+ 발급</span>
+            <span className="hidden md:inline">+ 관리자 번호 발급</span>
+          </Button>
+        }
       />
 
-      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
       {/* Admin Users Card */}
       <Card className="flex min-w-0 flex-1 flex-col border border-[#E5E5E5] shadow-sm">
-        <CardHeader className="flex min-w-0 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <CardHeader className="px-4 py-3 sm:px-6">
           <CardTitle
-            className="min-w-0 shrink"
+            className="min-w-0"
             style={{
               fontSize: "20px",
               fontWeight: 700,
@@ -397,19 +407,6 @@ export function AdminAccountsContent() {
           >
             관리자 목록
           </CardTitle>
-          <Button
-            size="sm"
-            className="w-full shrink-0 sm:w-auto"
-            onClick={handleOpenGenerateModal}
-            style={{
-              backgroundColor: "#3B82F6",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
-          >
-            + 관리자 번호 발급
-          </Button>
         </CardHeader>
         <CardContent className="flex min-w-0 flex-1 flex-col overflow-hidden px-0 pb-0 pt-0">
           {listError && !isLoading && (
@@ -762,12 +759,7 @@ export function AdminAccountsContent() {
             {!generatedKey && (
               <Button
                 onClick={handleCreateKey}
-                style={{
-                  backgroundColor: "#3B82F6",
-                  color: "#FFFFFF",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                }}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 관리자 번호 발급
               </Button>
@@ -891,13 +883,7 @@ export function AdminAccountsContent() {
             <Button
               onClick={handleConfirmResetPassword}
               disabled={isResettingPassword}
-              style={{
-                backgroundColor: "#3B82F6",
-                color: "#FFFFFF",
-                fontSize: "14px",
-                fontWeight: 500,
-                opacity: isResettingPassword ? 0.6 : 1,
-              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             >
               {isResettingPassword ? "처리 중..." : "비밀번호 재설정"}
             </Button>
@@ -971,12 +957,7 @@ export function AdminAccountsContent() {
           <DialogFooter>
             <Button
               onClick={handleCloseResetPasswordResult}
-              style={{
-                backgroundColor: "#3B82F6",
-                color: "#FFFFFF",
-                fontSize: "14px",
-                fontWeight: 500,
-              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               닫기
             </Button>

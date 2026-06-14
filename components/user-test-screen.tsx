@@ -43,7 +43,7 @@ const SCORING_STATUS_LABEL: Record<SubmissionStatus, string> = {
 
 const SCORING_STATUS_COLOR: Record<SubmissionStatus, string> = {
   PENDING:               "text-[#6B7280]",
-  JUDGING:               "text-[#2563EB]",
+  JUDGING:               "text-foreground",
   ACCEPTED:              "text-[#059669]",
   WRONG_ANSWER:          "text-[#DC2626]",
   TIME_LIMIT_EXCEEDED:   "text-[#D97706]",
@@ -246,16 +246,16 @@ export default function UserTestScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
+    <div className="min-h-screen bg-app-surface">
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-50 bg-white border-b border-[#D0D0D0]">
+      <header className="sticky top-0 z-50 bg-white border-b border-app-border">
         <div className="flex items-center justify-between px-6 py-4">
           {/* Left - Logo */}
           <span className="font-semibold text-[#1F2937] pl-2">Vibe Coding Evaluator</span>
 
           {/* Center - Remaining Time */}
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-[#2563EB]" />
+            <Clock className="w-5 h-5 text-app-focus" />
             <span className="text-lg font-medium text-[#1F2937]">남은 시간:</span>
             {examStateData?.endsAt ? (
               <RemainingTimer
@@ -263,20 +263,20 @@ export default function UserTestScreen() {
                 onTimeOver={handleTimeExpired}
               />
             ) : (
-              <span className="font-mono text-xl text-[#2563EB] font-bold">00:00:00</span>
+              <span className="font-mono text-xl text-app-focus font-bold">00:00:00</span>
             )}
           </div>
 
           {/* Right - Token and Submit */}
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-[#4B5563]">
-              <Coins className="w-4 h-4" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Coins className="w-4 h-4 text-app-accent-soft-foreground" />
               <span className="text-sm font-medium">토큰:</span>
-              <span className="font-mono text-[#1F2937] font-semibold">{usedTokens.toLocaleString()} / {maxTokens.toLocaleString()}</span>
+              <span className="font-mono text-app-accent-soft-foreground font-semibold">{usedTokens.toLocaleString()} / {maxTokens.toLocaleString()}</span>
             </div>
             {!isExamEnded && (
               <Button
-                className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-6"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
                 onClick={() => setIsSubmitModalOpen(true)}
                 disabled={isExamEnded}
               >
@@ -358,13 +358,13 @@ export default function UserTestScreen() {
             <div className="flex gap-4 justify-center">
               <Button
                 variant="outline"
-                className="px-8 border-[#D0D0D0] text-[#4B5563] hover:bg-[#F5F5F5] bg-transparent"
+                className="px-8 border-app-border text-muted-foreground hover:bg-muted bg-transparent"
                 onClick={() => setIsSubmitModalOpen(false)}
               >
                 아니요
               </Button>
               <Button
-                className="px-8 bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
+                className="px-8 bg-primary hover:bg-primary/90 text-primary-foreground"
                 disabled={isModalSubmitting}
                 onClick={async () => {
                   setIsModalSubmitting(true)

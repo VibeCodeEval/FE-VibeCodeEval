@@ -175,7 +175,7 @@ export function ProblemContent() {
                     e.stopPropagation()
                     void handleViewDetail(problem)
                   }}
-                  className="flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-blue-600 transition-colors hover:bg-blue-50"
+                  className="flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-app-accent-soft-foreground transition-colors hover:bg-app-accent-soft"
                   style={{ fontSize: "14px", fontWeight: 500 }}
                 >
                   <Eye size={18} />

@@ -83,7 +83,7 @@ const STATUS_LABEL: Record<SubmissionStatus, string> = {
 
 const STATUS_COLOR: Record<SubmissionStatus, string> = {
   PENDING:              "text-[#6B7280] bg-[#F3F4F6]",
-  JUDGING:              "text-[#2563EB] bg-[#EFF6FF]",
+  JUDGING:              "text-foreground bg-muted",
   ACCEPTED:             "text-[#059669] bg-[#ECFDF5]",
   WRONG_ANSWER:         "text-[#DC2626] bg-[#FEF2F2]",
   TIME_LIMIT_EXCEEDED:  "text-[#D97706] bg-[#FFFBEB]",
@@ -272,7 +272,7 @@ export const CodeEditorSection = forwardRef<CodeEditorSectionHandle, CodeEditorS
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   return (
-    <div className="bg-white rounded-xl border border-[#D0D0D0] flex flex-col flex-1 min-h-0">
+    <div className="bg-white rounded-xl border border-app-border flex flex-col flex-1 min-h-0">
       {/* Editor Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB]">
         <span className="text-sm font-medium text-[#1F2937]">Code Editor</span>

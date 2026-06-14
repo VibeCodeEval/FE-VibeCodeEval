@@ -36,10 +36,7 @@ export default function MasterLayout({
         <Sidebar />
       </div>
 
-      <div
-        className="ml-[240px] flex h-screen flex-1 flex-col"
-        style={{ backgroundColor: "#F9FAFB" }}
-      >
+      <div className="ml-[240px] flex h-screen flex-1 flex-col bg-app-surface-muted">
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>

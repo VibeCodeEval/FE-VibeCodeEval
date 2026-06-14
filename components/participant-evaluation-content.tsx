@@ -77,6 +77,23 @@ function formatScore(n: number | null | undefined): string {
   return `${Number(n).toFixed(1)}`
 }
 
+/** 관리자 화면용 시각 표시 — 예: 2026. 06. 12. 18:31 */
+function formatAdminEvaluationDateTime(value: string | null | undefined): string {
+  if (!value?.trim()) return "–"
+  try {
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return "–"
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    const hour = String(date.getHours()).padStart(2, "0")
+    const minute = String(date.getMinutes()).padStart(2, "0")
+    return `${year}. ${month}. ${day}. ${hour}:${minute}`
+  } catch {
+    return "–"
+  }
+}
+
 export function ParticipantEvaluationContent({
   entryCode = "",
   examId: examIdProp,
@@ -298,7 +315,7 @@ export function ParticipantEvaluationContent({
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">참가자 평가 상세</h1>
           <p className="text-sm text-[#6B7280]">
-            보드 API와 관리자 전용 제출 상세 API에서 불러온 데이터입니다. 미제공 필드는 안내 문구로 표시됩니다.
+            참가자의 제출 정보, 채점 점수, 테스트 결과를 확인할 수 있습니다.
           </p>
         </div>
       </header>
@@ -340,7 +357,6 @@ export function ParticipantEvaluationContent({
             <p className="mt-3 text-lg font-semibold text-[#1A1A1A]">
               {isLoadingBoard ? "…" : (examTitle ?? entryCode) || "–"}
             </p>
-            {examId != null && <p className="mt-1 text-xs text-[#6B7280]">examId: {examId}</p>}
           </div>
           <div className="rounded-xl border border-[#E5E5E5] bg-white p-5 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">토큰 사용량</span>
@@ -376,11 +392,6 @@ export function ParticipantEvaluationContent({
             {effectiveTotalScore != null && (
               <p className="mt-2 text-xs text-[#6B7280]">
                 기준: 80점 이상 높음 · 50점 이상 보통 · 50점 미만 낮음
-                {detailScoresMeaningful
-                  ? " (관리자 제출 상세 API 총점)"
-                  : showBoardTotalOnly
-                    ? " (관리자 보드 총점)"
-                    : ""}
               </p>
             )}
           </div>
@@ -397,11 +408,19 @@ export function ParticipantEvaluationContent({
                 <span className="text-sm text-[#6B7280]">–</span>
               )}
             </div>
-            {boardEntry?.submittedAt && (
-              <p className="mt-2 text-xs text-[#6B7280]">제출 시각: {boardEntry.submittedAt}</p>
-            )}
-            {boardEntry?.evaluatedAt && (
-              <p className="text-xs text-[#6B7280]">점수 갱신: {boardEntry.evaluatedAt}</p>
+            {(boardEntry?.submittedAt || boardEntry?.evaluatedAt) && (
+              <p className="mt-2 text-xs text-[#6B7280]">
+                {[
+                  boardEntry?.submittedAt
+                    ? `제출 시각: ${formatAdminEvaluationDateTime(boardEntry.submittedAt)}`
+                    : null,
+                  boardEntry?.evaluatedAt
+                    ? `점수 갱신: ${formatAdminEvaluationDateTime(boardEntry.evaluatedAt)}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
             )}
           </div>
         </div>
@@ -420,37 +439,33 @@ export function ParticipantEvaluationContent({
                 {detailScoresMeaningful ? formatScore(scoreFromDetail?.prompt ?? null) : "–"}
               </p>
               <p className="mt-1 text-sm font-medium text-[#374151]">프롬프트 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">관리자 제출 상세 API의 score.prompt</p>
             </div>
             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
               <p className="text-3xl font-bold text-[#1A1A1A]">
                 {detailScoresMeaningful ? formatScore(scoreFromDetail?.perf ?? null) : "–"}
               </p>
               <p className="mt-1 text-sm font-medium text-[#374151]">성능 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">관리자 제출 상세 API의 score.perf</p>
             </div>
             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6 shadow-sm">
               <p className="text-3xl font-bold text-[#1A1A1A]">
                 {detailScoresMeaningful ? formatScore(scoreFromDetail?.correctness ?? null) : "–"}
               </p>
               <p className="mt-1 text-sm font-medium text-[#374151]">정답률 점수</p>
-              <p className="mt-1 text-xs text-[#6B7280]">
-                {detailScoresMeaningful
-                  ? "관리자 제출 상세 API score.correctness"
-                  : showBoardTotalOnly
-                    ? "항목별 값 없음 — 아래 총점만 보드 참고"
-                    : "데이터 없음"}
-              </p>
+              {!detailScoresMeaningful && (
+                <p className="mt-1 text-xs text-[#6B7280]">
+                  {showBoardTotalOnly ? "항목별 값 없음 — 아래 총점 참고" : "데이터 없음"}
+                </p>
+              )}
             </div>
           </div>
           {detailScoresMeaningful && (
             <p className="mt-3 text-center text-sm font-semibold text-[#1A1A1A]">
-              총점 {formatScore(scoreFromDetail?.total ?? null)} (관리자 제출 상세 API)
+              총점 {formatScore(scoreFromDetail?.total ?? null)}
             </p>
           )}
           {!detailScoresMeaningful && showBoardTotalOnly && (
             <p className="mt-3 text-center text-sm font-semibold text-[#1A1A1A]">
-              총점 {formatScore(Number(boardEntry!.totalScore))} (관리자 보드 — 상세 점수 행 없음)
+              총점 {formatScore(Number(boardEntry!.totalScore))}
             </p>
           )}
           {!detailScoresMeaningful && !showBoardTotalOnly && !isLoadingSubmission && (
@@ -506,7 +521,7 @@ export function ParticipantEvaluationContent({
             <button
               type="button"
               onClick={handleExport}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2563EB]"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               결과보내기 (CSV)
             </button>
@@ -520,7 +535,7 @@ export function ParticipantEvaluationContent({
             key={toast.id}
             className="flex w-[360px] items-start gap-3 rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-lg animate-in slide-in-from-right-full duration-300"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]">
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
               <CheckCircle className="h-3.5 w-3.5 text-white" strokeWidth={2} />
             </div>
             <div className="flex-1">

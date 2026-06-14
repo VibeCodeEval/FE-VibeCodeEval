@@ -64,7 +64,7 @@ export function RemainingTimer({ endAt, onTimeOver }: RemainingTimerProps) {
   }
 
   return (
-    <span className="font-mono text-xl text-[#2563EB] font-bold">
+    <span className="font-mono text-xl text-app-focus font-bold">
       {formatTime(remainingSeconds)}
     </span>
   )

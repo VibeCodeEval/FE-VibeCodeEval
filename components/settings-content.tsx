@@ -376,7 +376,7 @@ export function SettingsContent() {
             <Button 
               onClick={handleLogout} 
               disabled={isLoggingOut}
-              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white disabled:opacity-50"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
             </Button>
@@ -503,7 +503,7 @@ export function SettingsContent() {
             <Button
               onClick={handleConfirmPasswordChange}
               disabled={isChangingPassword}
-              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white disabled:opacity-50"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {isChangingPassword ? "변경 중..." : "비밀번호 변경"}
             </Button>
@@ -526,7 +526,7 @@ export function SettingsContent() {
           <DialogFooter className="mt-4 flex w-full justify-center sm:justify-center">
             <Button
               onClick={() => setShowPasswordChangeSuccessModal(false)}
-              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               확인
             </Button>
